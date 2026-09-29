@@ -1,5 +1,6 @@
 """Factory for creating evaluation LLM clients (Moonshot Kimi 2.5 via AWS Bedrock Converse API)."""
 from typing import Optional
+import boto3
 from langchain_aws import ChatBedrockConverse
 from src.config import settings
 
@@ -10,11 +11,12 @@ def get_eval_llm(
     model_id: Optional[str] = None,
 ) -> ChatBedrockConverse:
     """
-    Returns Moonshot Kimi 2.5 ChatModel using AWS Bedrock API key.
+    Returns Moonshot Kimi 2.5 ChatModel using AWS Bedrock Converse API.
     """
+    client = boto3.client("bedrock-runtime", region_name=settings.aws_region)
     return ChatBedrockConverse(
         model_id=model_id or settings.bedrock_eval_model_id,
-        bedrock_api_key=settings.bedrock_api_key,
+        client=client,
         region_name=settings.aws_region,
         temperature=temperature if temperature is not None else settings.eval_temperature,
         max_tokens=max_tokens if max_tokens is not None else settings.eval_max_tokens,
