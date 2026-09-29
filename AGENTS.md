@@ -83,4 +83,11 @@ evaluator/
 - [x] Configured chunking parameters to `chunk_size=1000` and `chunk_overlap=200` across `corpus_loader.py` and `ingest_documents.py`.
 - [x] Integrated FlashRank cross-encoder reranker (`flashrank`) into `src/kb/retriever.py` with expanded candidate pool (top 40) and relaxed source diversity ceiling (`max_per_source=5`) to ensure complete statutory and landmark case coverage without premature truncation.
 - [x] Refined `case_puttaswamy_2017.md` with explicit 4-fold proportionality test and decisional autonomy facets.
-- [ ] Active: Ready for Step 4 — Core UPSC Answer Evaluation Engine with Kimi 2.5.
+- [x] Implemented Core UPSC Answer Evaluation Engine (`src/evaluation/engine.py`) with 2-call architecture:
+  - Deep CoT Diagnostic Analysis (`prompt_templates.py`)
+  - G-Eval continuous probability-weighted scoring using native Moonshot Kimi 2.5 logprobs (`geval_scorer.py`)
+  - Multi-archetype presentation handling (paragraphs vs diagrams vs tables)
+  - Dual Grounding (mandatory KB anchors vs valid open-world insights)
+  - Hard Demand Relevance Gatekeeper against off-topic essays
+- [x] Created evaluation demo script (`scripts/evaluate_sample_answer.py`) and unit tests (`tests/test_evaluation_engine.py`).
+- [ ] Active: Ready for User Acceptance & Testing.
