@@ -1,23 +1,28 @@
-"""Hybrid Ensemble Retriever combining LangChain BM25Retriever and Chroma Vector Store."""
-from typing import List, Optional
+"""Hybrid Ensemble Retriever combining BM25 and Chroma Vector Store with Bedrock Titan Embeddings."""
+import re
+import logging
+from typing import List, Optional, Dict
+from rank_bm25 import BM25Okapi
 from langchain_core.documents import Document
-try:
-    from langchain_classic.retrievers import EnsembleRetriever
-except ImportError:
-    try:
-        from langchain.retrievers import EnsembleRetriever
-    except ImportError:
-        EnsembleRetriever = None
-from langchain_community.retrievers import BM25Retriever
+
+from src.config import settings
 from src.kb.vector_store import get_chroma_vector_store
+from src.kb.corpus_loader import load_all_corpus_documents
+
+logger = logging.getLogger(__name__)
+
+
+def tokenize(text: str) -> List[str]:
+    """Simple alphanumeric tokenizer for BM25 search."""
+    return re.findall(r"\w+", text.lower())
 
 
 class HybridRetriever:
     """
     Standard LangChain Hybrid Retriever combining:
-    1. Sparse Lexical Search (BM25Retriever for exact section numbers, case names, and statute titles)
+    1. Sparse Lexical Search (BM25 for exact Article numbers, act sections, case titles)
     2. Dense Semantic Search (Chroma vector store with Amazon Titan Bedrock embeddings)
-    3. Native Reciprocal Rank Fusion (EnsembleRetriever)
+    3. Reciprocal Rank Fusion (RRF)
     """
 
     def __init__(
@@ -28,41 +33,62 @@ class HybridRetriever:
         top_k: int = 5,
     ):
         self.persist_dir = persist_dir
+        self.force_mock = force_mock
+        self.top_k = top_k
+        self.documents: List[Document] = documents if documents is not None else load_all_corpus_documents()
+        self.doc_by_id: Dict[str, Document] = {
+            doc.metadata.get("id", f"doc_{i}"): doc for i, doc in enumerate(self.documents)
+        }
+
+        # Initialize BM25 over the real documents
+        self.corpus = [f"{doc.metadata.get('title', '')} {doc.page_content}" for doc in self.documents]
+        self.tokenized_corpus = [tokenize(t) for t in self.corpus]
+        self.bm25 = BM25Okapi(self.tokenized_corpus) if self.tokenized_corpus else None
+
+        # Chroma vector store
         self.vector_store = get_chroma_vector_store(persist_dir, force_mock=force_mock)
-        self.documents = documents or []
-        self.top_k = top_k
-        self._ensemble: Optional[EnsembleRetriever] = None
-
-        if self.documents:
-            self.rebuild_index(self.documents, top_k=self.top_k)
-
-    def rebuild_index(self, documents: List[Document], top_k: int = 5):
-        """Constructs the BM25 and Chroma EnsembleRetriever over the given documents."""
-        self.documents = documents
-        self.top_k = top_k
-
-        # 1. Sparse BM25 Retriever
-        bm25_retriever = BM25Retriever.from_documents(self.documents)
-        bm25_retriever.k = top_k
-
-        # 2. Dense Vector Retriever
-        vector_retriever = self.vector_store.as_retriever(search_kwargs={"k": top_k})
-
-        # 3. Native LangChain Ensemble (RRF)
-        self._ensemble = EnsembleRetriever(
-            retrievers=[bm25_retriever, vector_retriever],
-            weights=[0.4, 0.6],
-        )
 
     def retrieve(self, query: str, top_k: Optional[int] = None) -> List[Document]:
-        """Retrieves top matching documents via hybrid RRF search."""
+        """Hybrid search with Reciprocal Rank Fusion (RRF)."""
         k = top_k or self.top_k
-        if self._ensemble is None:
-            return self.vector_store.as_retriever(search_kwargs={"k": k}).invoke(query)
-        return self._ensemble.invoke(query)[:k]
+        query_tokens = tokenize(query)
+        rrf_scores: Dict[int, float] = {}
+
+        # 1. BM25 scoring
+        if self.bm25 and query_tokens:
+            bm25_scores = self.bm25.get_scores(query_tokens)
+            sorted_bm25 = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)
+            for rank, idx in enumerate(sorted_bm25[:20]):
+                if bm25_scores[idx] > 0.0:
+                    rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (60 + rank + 1))
+
+        # 2. Dense vector search
+        try:
+            dense_docs = self.vector_store.similarity_search(query, k=min(20, len(self.documents)))
+            for rank, doc in enumerate(dense_docs):
+                doc_id = doc.metadata.get("id")
+                for idx, d in enumerate(self.documents):
+                    if d.metadata.get("id") == doc_id:
+                        rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (60 + rank + 1))
+                        break
+        except Exception:
+            pass
+
+        # Sort by RRF score
+        sorted_indices = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+        retrieved_docs = [self.documents[idx] for idx, _ in sorted_indices[:k]]
+
+        # Fallback if no hybrid matches
+        if not retrieved_docs:
+            try:
+                retrieved_docs = self.vector_store.similarity_search(query, k=k)
+            except Exception:
+                retrieved_docs = []
+
+        return retrieved_docs
 
     def get_retrieval_context(self, query: str, top_k: int = 5) -> List[str]:
-        """Formats retrieved documents into clean context blocks for DeepEval evaluators."""
+        """Formats retrieved documents into clean context blocks for LLM evaluators."""
         docs = self.retrieve(query, top_k=top_k)
         contexts = []
         for d in docs:
