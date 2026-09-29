@@ -79,4 +79,8 @@ evaluator/
 - [x] Built real raw ingestion pipeline with zero hardcoding (`populate_central_acts.py`, `ingest_constitution.py`, `ingest_documents.py`, `ingest_all.py`).
 - [x] Populated all 14 authentic Supreme Court landmark case dossiers in `src/kb/data/documents/sc_cases/`.
 - [x] Populated comprehensive statutory dossiers for all 7 key Central Acts in `src/kb/data/documents/central_acts/` (RTI 2005, DPDP 2023, RPA 1951, Lokpal 2013, CVC 2003, PMLA 2002, Disaster Management 2005).
-- [ ] Active: Ready for Step 3 — Master Ingestion Pipeline (`uv run python scripts/ingest_all.py`) to index Constitution + 14 SC Cases + 7 Central Acts into Chroma DB.
+- [x] Created 15-item Golden Dataset (`tests/data/golden_dataset.json`) with canonical Ideal Answers spanning the GS-2 syllabus.
+- [x] Configured chunking parameters to `chunk_size=1000` and `chunk_overlap=200` across `corpus_loader.py` and `ingest_documents.py`.
+- [x] Integrated FlashRank cross-encoder reranker (`flashrank`) into `src/kb/retriever.py` with expanded candidate pool (top 40) and relaxed source diversity ceiling (`max_per_source=5`) to ensure complete statutory and landmark case coverage without premature truncation.
+- [x] Refined `case_puttaswamy_2017.md` with explicit 4-fold proportionality test and decisional autonomy facets.
+- [ ] Active: Ready for Step 4 — Core UPSC Answer Evaluation Engine with Kimi 2.5.

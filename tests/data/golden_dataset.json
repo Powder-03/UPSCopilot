@@ -1,0 +1,107 @@
+[
+  {
+    "id": "gold_01",
+    "category": "Ordinance & Judicial Review",
+    "query": "Examine the constitutional safeguards against executive abuse of the ordinance-making power. How did the Supreme Court curb mechanical re-promulgation in D.C. Wadhwa and Krishna Kumar Singh?",
+    "ideal_answer": "Under Article 123 (for the President) and Article 213 (for the Governor), an ordinance can only be promulgated when both or either House of Parliament/State Legislature is not in session and circumstances exist which render it necessary to take immediate action. The Constitution mandates that an ordinance must be laid before the legislature and ceases to operate after six weeks from the reassembly of the legislature. In D.C. Wadhwa v. State of Bihar (1987), the Supreme Court held that the mechanical and repeated re-promulgation of ordinances without placing them before the legislative assembly is a subversion of the democratic legislative process, a colorable exercise of power, and a fraud on the Constitution. In Krishna Kumar Singh v. State of Bihar (2017), a 7-judge Constitution bench reaffirmed that ordinance-making is an exceptional emergency power, that tabling the ordinance before the legislature is mandatory, and that the executive's satisfaction is not immune from judicial review.",
+    "key_entities": ["Article 123", "Article 213", "D.C. Wadhwa (1987)", "Krishna Kumar Singh (2017)"]
+  },
+  {
+    "id": "gold_02",
+    "category": "Basic Structure & Constituent Power",
+    "query": "Explain the doctrine of Basic Structure and how the Supreme Court reconciled the balance between Fundamental Rights and Directive Principles in Minerva Mills.",
+    "ideal_answer": "Under Article 368, Parliament has the constituent power to amend the Constitution. In Kesavananda Bharati v. State of Kerala (1973), a 13-judge Constitution bench ruled that Parliament's amending power is not unlimited and cannot be used to damage, alter, or destroy the basic structure or essential framework of the Constitution. In Minerva Mills v. Union of India (1980), the Supreme Court struck down Section 55 of the 42nd Amendment Act (which inserted clauses (4) and (5) into Article 368 claiming unlimited constituent power and barring judicial review). The Court also struck down Section 4 of the 42nd Amendment, holding that giving blanket supremacy to all Directive Principles (Part IV) over Fundamental Rights (Part III) destroyed the basic structure, famously declaring that the Indian Constitution is founded on the bedrock of the balance between Part III and Part IV.",
+    "key_entities": ["Article 368", "Kesavananda Bharati (1973)", "Minerva Mills (1980)", "Part III and Part IV balance"]
+  },
+  {
+    "id": "gold_03",
+    "category": "Federalism & Emergency Provisions",
+    "query": "How did the landmark S.R. Bommai judgment provide safeguards against the partisan invocation of Article 356 (President's Rule)?",
+    "ideal_answer": "Article 356 empowers the President to impose President's Rule in a State upon receiving a report from the Governor or otherwise if satisfied that the government of the State cannot be carried on in accordance with the provisions of the Constitution. In S.R. Bommai v. Union of India (1994), a 9-judge Constitution bench held that federalism is part of the basic structure of the Constitution. The Court laid down that presidential proclamations under Article 356 are subject to judicial review, and the executive's satisfaction must be based on objective, relevant material. The Court mandated that the floor of the Legislative Assembly is the only constitutional forum to test a Ministry's majority (Floor Test). Crucially, Bommai ruled that the Legislative Assembly cannot be dissolved until both Houses of Parliament approve the proclamation, and the Court has the power to restore a dismissed government and revive a dissolved assembly if the proclamation is found to be malafide or unconstitutional.",
+    "key_entities": ["Article 356", "S.R. Bommai (1994)", "Floor Test", "Federalism as basic structure"]
+  },
+  {
+    "id": "gold_04",
+    "category": "Anti-Defection & Speaker Jurisdiction",
+    "query": "Critically analyze the adjudicatory power of the Speaker under the Tenth Schedule in light of Kihoto Hollohan and recent constitutional challenges.",
+    "ideal_answer": "The Tenth Schedule, inserted by the 52nd Constitutional Amendment Act (1985), provides for the disqualification of legislators on grounds of defection, including voluntarily giving up party membership or voting contrary to party whip. Under Paragraph 6, all disqualification questions are referred to the Chairman or Speaker of the House. In Kihoto Hollohan v. Zachillhu (1992), a Constitution bench upheld the constitutional validity of the Tenth Schedule but struck down Paragraph 7 (which excluded judicial review). The Court held that the Speaker/Chairman acts as a statutory tribunal while deciding defection petitions, and therefore their decisions are subject to judicial review under Articles 136 and 226 on grounds of jurisdictional error, malafides, or violation of natural justice, though judicial intervention is generally impermissible at an interlocutory pre-decision stage.",
+    "key_entities": ["Tenth Schedule", "Kihoto Hollohan (1992)", "Paragraph 6 and 7", "Speaker as Tribunal"]
+  },
+  {
+    "id": "gold_05",
+    "category": "Fundamental Rights & Privacy",
+    "query": "Analyze the right to privacy as an intrinsic part of Article 21 and the four-fold proportionality test established in the Puttaswamy judgment.",
+    "ideal_answer": "In Justice K.S. Puttaswamy (Retd.) v. Union of India (2017), a unanimous 9-judge Constitution bench declared the Right to Privacy to be a fundamental right intrinsically protected under Article 21 (Right to Life and Personal Liberty) and as part of the freedoms guaranteed by Part III of the Constitution, explicitly overruling M.P. Sharma (1954) and Kharak Singh (1962). The Court established that privacy encompasses bodily integrity, informational privacy, and decisional autonomy. The Court laid down that any State infringement on privacy must satisfy a four-fold proportionality test: (1) Legality (existence of an enacted law), (2) Legitimate State Aim (ensuring state action serves a pressing public interest), (3) Suitability (a rational nexus between the state action and the objective), and (4) Necessity (employing the least intrusive measure without causing disproportionate harm to the individual).",
+    "key_entities": ["Article 21", "Puttaswamy (2017)", "Four-fold proportionality test", "Informational privacy"]
+  },
+  {
+    "id": "gold_06",
+    "category": "Freedom of Speech & Digital Rights",
+    "query": "Discuss the constitutional validity of indefinite internet shutdowns and freedom of expression in the digital realm following Anuradha Bhasin v. Union of India.",
+    "ideal_answer": "In Anuradha Bhasin v. Union of India (2020), the Supreme Court ruled that the freedom of speech and expression and the freedom to practice any profession or carry on any trade, business, or occupation through the medium of the internet are constitutionally protected under Article 19(1)(a) and Article 19(1)(g) respectively. The Court held that suspension of telecom and internet services cannot be indefinite, as an indefinite suspension is impermissible under the Temporary Suspension of Telecom Services (Public Emergency or Public Safety) Rules, 2017. Any restriction on internet access must satisfy the principles of necessity and proportionality under Article 19(2) and 19(6), and all suspension orders must be published proactively and subjected to mandatory periodic review by the statutory Review Committee.",
+    "key_entities": ["Article 19(1)(a)", "Article 19(1)(g)", "Anuradha Bhasin (2020)", "Telecom Suspension Rules 2017"]
+  },
+  {
+    "id": "gold_07",
+    "category": "Substantive Due Process & Personal Liberty",
+    "query": "How did Maneka Gandhi v. Union of India transform the interpretation of 'procedure established by law' into substantive 'due process' under Article 21?",
+    "ideal_answer": "In Maneka Gandhi v. Union of India (1978), a 7-judge Constitution bench decisively expanded the scope of Article 21, overruling the restrictive, positivist interpretation in A.K. Gopalan (1950). The Supreme Court held that the 'procedure established by law' depriving a person of life or personal liberty cannot be an arbitrary, whimsical, or oppressive procedure; it must be 'just, fair, and reasonable', effectively assimilating the American doctrine of substantive due process into Indian constitutional jurisprudence. Furthermore, the Court established the doctrine of inter-relationship between Fundamental Rights, ruling that Articles 14, 19, and 21 form a 'Golden Triangle' and must be read together, meaning any procedure under Article 21 must also be non-arbitrary under Article 14 and reasonable under Article 19.",
+    "key_entities": ["Article 21", "Maneka Gandhi (1978)", "Just fair and reasonable", "Golden Triangle (Articles 14, 19, 21)"]
+  },
+  {
+    "id": "gold_08",
+    "category": "Fiscal Federalism & Taxation",
+    "query": "Explain the nature of cooperative federalism in India's indirect tax regime and the legal status of GST Council recommendations under Mohit Minerals.",
+    "ideal_answer": "The Goods and Services Tax (GST) framework was established by the 101st Constitutional Amendment Act (2016), introducing Article 246A (which gives simultaneous, non-obstante power to Parliament and State Legislatures to legislate on GST) and Article 279A (constituting the GST Council). In Union of India v. Mohit Minerals (2022), a 3-judge bench of the Supreme Court held that recommendations made by the GST Council are not statutorily binding on Parliament or the State Legislatures, but possess persuasive value. The Court emphasized that Indian federalism represents a continuous dialogue between two equal sovereign tiers (cooperative and uncooperative federalism), and treating GST Council decisions as binding mandates would erode the legislative sovereignty of State Assemblies contrary to the simultaneous power conferred by Article 246A.",
+    "key_entities": ["Article 246A", "Article 279A", "Mohit Minerals (2022)", "GST Council recommendations"]
+  },
+  {
+    "id": "gold_09",
+    "category": "Right to Information & Transparency",
+    "query": "Discuss the statutory exemptions under Section 8 of the RTI Act 2005 and how Section 8(2) acts as a public interest override.",
+    "ideal_answer": "The Right to Information Act, 2005 codifies the citizen's right to know under Article 19(1)(a). Section 8(1) sets out specific grounds exempting public authorities from disclosing information, including matters prejudicing national sovereignty, security, strategic interests, or foreign relations (8(1)(a)), contempt of court (8(1)(b)), breach of parliamentary privilege (8(1)(c)), commercial confidence and trade secrets (8(1)(d)), fiduciary relationships (8(1)(e)), and personal information with no relationship to public activity (8(1)(j)). However, Section 8(2) introduces the crucial 'Public Interest Override', mandating that a public authority may disclose information even if it falls within the Section 8(1) exemptions if the public interest in disclosure outweighs the harm to protected interests. Section 8(2) explicitly overrides the Official Secrets Act, 1923.",
+    "key_entities": ["RTI Act 2005", "Section 8(1)", "Section 8(2)", "Public Interest Override", "Official Secrets Act 1923"]
+  },
+  {
+    "id": "gold_10",
+    "category": "Digital Data Protection",
+    "query": "What are the core obligations of Data Fiduciaries and rights of Data Principals under the Digital Personal Data Protection Act, 2023?",
+    "ideal_answer": "The Digital Personal Data Protection Act (DPDP Act), 2023 regulates the processing of digital personal data. It defines the 'Data Principal' as the individual to whom data relates (Sec 2(j)) and 'Data Fiduciary' as the entity determining the purpose and means of processing (Sec 2(i)). Under Section 6, data can only be processed on the basis of free, specific, informed, and unambiguous consent, or for specified legitimate uses (Sec 7). Section 8 mandates that Data Fiduciaries must maintain data accuracy, implement reasonable technical and organizational security safeguards, notify the Data Protection Board of India and affected individuals in case of a data breach, and delete data once its purpose is fulfilled. Section 9 strictly prohibits tracking, behavioral monitoring, or targeted advertising for children. Significant Data Fiduciaries (Sec 10) must appoint an India-based Data Protection Officer (DPO), conduct Data Protection Impact Assessments (DPIA), and carry out periodic independent audits.",
+    "key_entities": ["DPDP Act 2023", "Data Principal", "Data Fiduciary", "Significant Data Fiduciary", "Sections 6, 8, 9, 10"]
+  },
+  {
+    "id": "gold_11",
+    "category": "Economic Crimes & Bail Standards",
+    "query": "Examine the stringent bail conditions under Section 45 and the reverse burden of proof under Section 24 of the Prevention of Money-Laundering Act, 2002.",
+    "ideal_answer": "The Prevention of Money-Laundering Act (PMLA), 2002 was enacted to fulfill India's commitments under the Vienna Convention and FATF standards. Section 3 defines money-laundering as involvement in any process or activity connected with 'proceeds of crime' derived from a scheduled predicate offence. Section 45(1) establishes the rigorous 'twin conditions' for granting bail to an accused: (1) the Public Prosecutor must be given an opportunity to oppose bail, and (2) where opposed, the Court must be satisfied that there are reasonable grounds for believing the accused is not guilty of the offence and is not likely to commit any offence while on bail. Section 24 reverses the customary presumption of innocence by placing the burden of proof on the accused to prove that alleged proceeds of crime are untainted. In Vijay Madanlal Choudhary v. Union of India (2022), the Supreme Court upheld the constitutionality of Section 45 twin conditions and Section 24 reverse burden, recognizing money laundering as an aggravated economic offence.",
+    "key_entities": ["PMLA 2002", "Section 24", "Section 45", "Twin conditions for bail", "Vijay Madanlal Choudhary (2022)"]
+  },
+  {
+    "id": "gold_12",
+    "category": "Disaster Management & Crisis Governance",
+    "query": "Describe the three-tier institutional and financial architecture under the Disaster Management Act, 2005, and its invocation during the COVID-19 pandemic.",
+    "ideal_answer": "The Disaster Management Act, 2005 established a shift from reactive relief to proactive disaster risk reduction. It creates a three-tier institutional structure: (1) National Level: National Disaster Management Authority (NDMA) headed by the Prime Minister (Sec 3) with an executive arm in the National Executive Committee (NEC) headed by the Union Home Secretary (Sec 8); (2) State Level: State Disaster Management Authority (SDMA) headed by the Chief Minister (Sec 14); and (3) District Level: District Disaster Management Authority (DDMA) headed by the District Magistrate/Collector (Sec 25) as the primary field operational unit. The Act creates specialized response via the National Disaster Response Force (NDRF, Sec 44) and sets up designated Response and Mitigation Funds (NDRF/NDMF and SDRF/SDMF). On 24 March 2020, the Act was invoked nationwide for the first time by the NEC under Section 6 and 10 to issue binding pandemic lockdown guidelines across all States.",
+    "key_entities": ["Disaster Management Act 2005", "NDMA (Prime Minister)", "SDMA (Chief Minister)", "DDMA (District Magistrate)", "NDRF", "COVID-19 invocation"]
+  },
+  {
+    "id": "gold_13",
+    "category": "Electoral Law & Disqualification",
+    "query": "How did the Supreme Court's ruling in Lily Thomas v. Union of India transform the disqualification regime for convicted lawmakers under the RPA 1951?",
+    "ideal_answer": "Under Section 8 of the Representation of the People Act (RPA), 1951, lawmakers face disqualification upon conviction for criminal offences. While Section 8(1) and 8(2) specify particular offences, Section 8(3) lays down that a person convicted of any offence and sentenced to imprisonment for not less than two years stands disqualified from the date of conviction and for a further six years post-release. Previously, Section 8(4) carved out a protective window for sitting MPs and MLAs, stating that disqualification would not take effect for three months or until an appeal/revision was disposed of by a court. In Lily Thomas v. Union of India (2013), the Supreme Court struck down Section 8(4) as ultra vires Articles 102(1)(e) and 191(1)(e) of the Constitution, holding that Parliament lacked the legislative competence to create a distinction between candidates seeking election and sitting legislators, making disqualification instantaneous upon sentencing.",
+    "key_entities": ["RPA 1951", "Section 8(3)", "Section 8(4)", "Lily Thomas (2013)", "Articles 102 and 191"]
+  },
+  {
+    "id": "gold_14",
+    "category": "Constitutional Bodies & Electoral Integrity",
+    "query": "Discuss the constitutional issues surrounding the appointment and independence of Election Commissioners as addressed in Anoop Baranwal v. Union of India.",
+    "ideal_answer": "Article 324(2) of the Constitution provides that the appointment of the Chief Election Commissioner (CEC) and other Election Commissioners (ECs) shall be made by the President, subject to the provisions of any law made in that behalf by Parliament. For over seven decades, no specific parliamentary enactment existed, leaving appointments exclusively to the executive discretion of the Union Government. In Anoop Baranwal v. Union of India (2023), a 5-judge Constitution bench held that free and fair elections and institutional independence of the Election Commission form part of the basic structure of the Constitution. To eliminate executive dominance and preserve public trust, the Court directed that the appointment of the CEC and ECs must be made on the advice of a broad-based Committee comprising the Prime Minister, the Leader of the Opposition in the Lok Sabha (or the leader of the single largest opposition party), and the Chief Justice of India until Parliament enacted a statutory law.",
+    "key_entities": ["Article 324(2)", "Anoop Baranwal (2023)", "Chief Election Commissioner", "Basic structure of free and fair elections"]
+  },
+  {
+    "id": "gold_15",
+    "category": "Anti-Corruption & Ombudsman Architecture",
+    "query": "Explain the composition, jurisdiction, and investigative powers of the Lokpal under the Lokpal and Lokayuktas Act, 2013.",
+    "ideal_answer": "Enacted following recommendations of the First Administrative Reforms Commission (1966) and Second ARC (2007), the Lokpal and Lokayuktas Act, 2013 established an independent anti-corruption ombudsman. Under Section 3, the Lokpal consists of a Chairperson (a former CJI, former Supreme Court judge, or eminent jurist) and up to eight members, with 50% being judicial members and 50% selected from SC, ST, OBC, minorities, and women. Under Section 4, appointments are made by a Selection Committee consisting of the Prime Minister, Speaker of Lok Sabha, Leader of Opposition, CJI or nominee judge, and an eminent jurist. Section 14 extends Lokpal's jurisdiction over the Prime Minister (with subject-matter exceptions and mandatory in-camera proceedings approved by two-thirds of the full bench), Union Ministers, Members of Parliament, and Central Government Group A, B, C, and D officers. Crucially, under Section 25, the Lokpal possesses statutory powers of superintendence over the CBI for cases referred by it, and CBI investigating officers handling such cases cannot be transferred without Lokpal's prior approval.",
+    "key_entities": ["Lokpal and Lokayuktas Act 2013", "Section 3 (Composition)", "Section 4 (Selection Committee)", "Section 14 (Jurisdiction)", "Section 25 (Superintendence over CBI)"]
+  }
+]

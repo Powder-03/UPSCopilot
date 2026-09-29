@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     kb_storage_dir: str = Field(default="src/kb/storage", alias="KB_STORAGE_DIR")
     data_dir: str = Field(default="src/kb/data", alias="DATA_DIR")
 
+    # Confident AI / DeepEval Key
+    confident_api_key: Optional[str] = Field(default=None, alias="CONFIDENT_API_KEY")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

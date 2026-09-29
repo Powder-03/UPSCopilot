@@ -22,7 +22,10 @@ dependencies = [
     "langchain-aws>=0.1.0",
     "langchain-community>=0.2.0",
     "langchain-chroma>=0.1.0",
-    "langgraph>=0.1.0"
+    "langgraph>=0.1.0",
+    "deepeval>=4.2.6",
+    "pywin32>=312",
+    "flashrank>=0.2.10",
 ]
 
 [build-system]

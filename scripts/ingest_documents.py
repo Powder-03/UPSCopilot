@@ -94,7 +94,7 @@ def load_all_external_documents(docs_dir: Optional[str] = None) -> List[Document
     # Split into chunks suitable for Bedrock Titan embeddings
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=150,
+        chunk_overlap=200,
         separators=["\n\n", "\n", " ", ""],
     )
     chunked_docs = splitter.split_documents(raw_docs)

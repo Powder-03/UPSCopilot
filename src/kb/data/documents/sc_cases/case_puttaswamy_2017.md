@@ -28,16 +28,17 @@ Retired High Court Judge K.S. Puttaswamy challenged the constitutional validity 
 2. **Overruled Precedents**:
    The Court explicitly overruled *M.P. Sharma* (1954) and *Kharak Singh* (1962) to the extent that they held privacy was not a fundamental right.
 
-3. **Three Pillars / Facets of Privacy**:
-   - **Spatial Privacy**: Privacy of the physical space, home, and personal belongings against arbitrary search/seizure.
-   - **Bodily Autonomy**: Control over one's own body, medical choices, reproductive freedom, and personal dignity.
+3. **Facets of Privacy**:
+   - **Bodily Integrity / Autonomy**: Control over one's own body, medical choices, reproductive freedom, and personal dignity.
    - **Informational Privacy**: Control over personal data, digital footprints, and protection against unauthorized surveillance or profiling.
+   - **Decisional Autonomy**: Privacy of personal intimacies, marriage, lifestyle choices, and individual decisions free from unwarranted state interference.
 
-4. **The Three-Fold Proportionality Test**:
-   Like any fundamental right, privacy is not absolute, but state interference must strictly satisfy the 3-fold proportionality standard:
-   1. **Legality**: Existence of an enacted, valid law authorizing the intrusion.
-   2. **Legitimate State Aim**: The law must serve a legitimate state goal (e.g., national security, crime prevention, public health).
-   3. **Proportionality**: The nature and degree of intrusion must be rational, necessary, and the **least restrictive measure** available, with robust procedural safeguards against abuse.
+4. **The Four-Fold Proportionality Test**:
+   Like any fundamental right, privacy is not absolute, but state interference must strictly satisfy the 4-fold proportionality standard:
+   1. **Legality**: Existence of an enacted, valid statutory law authorizing the intrusion.
+   2. **Legitimate State Aim**: The state action must serve a pressing, legitimate public objective (e.g., national security, crime prevention, public health).
+   3. **Suitability (Rational Nexus)**: A rational connection must exist between the measure adopted and the legitimate state objective.
+   4. **Necessity (Least Restrictive Measure)**: The measure must be the least intrusive means available, without causing disproportionate harm to the individual.
 
 ---
 

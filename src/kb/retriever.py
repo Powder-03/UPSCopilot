@@ -36,6 +36,9 @@ class HybridRetriever:
         self.force_mock = force_mock
         self.top_k = top_k
         self.documents: List[Document] = documents if documents is not None else load_all_corpus_documents()
+        self.id_to_idx: Dict[str, int] = {
+            doc.metadata["id"]: i for i, doc in enumerate(self.documents) if doc.metadata.get("id")
+        }
         self.doc_by_id: Dict[str, Document] = {
             doc.metadata.get("id", f"doc_{i}"): doc for i, doc in enumerate(self.documents)
         }
@@ -48,8 +51,17 @@ class HybridRetriever:
         # Chroma vector store
         self.vector_store = get_chroma_vector_store(persist_dir, force_mock=force_mock)
 
-    def retrieve(self, query: str, top_k: Optional[int] = None) -> List[Document]:
-        """Hybrid search with Reciprocal Rank Fusion (RRF)."""
+        # FlashRank Cross-Encoder Reranker
+        try:
+            from flashrank import Ranker
+            self.ranker = Ranker()
+            logger.info("FlashRank cross-encoder reranker initialized successfully.")
+        except Exception as e:
+            logger.warning(f"FlashRank initialization skipped: {e}")
+            self.ranker = None
+
+    def retrieve(self, query: str, top_k: Optional[int] = None, use_reranker: bool = True) -> List[Document]:
+        """Hybrid search with Reciprocal Rank Fusion (RRF) and FlashRank cross-encoder reranking."""
         k = top_k or self.top_k
         query_tokens = tokenize(query)
         rrf_scores: Dict[int, float] = {}
@@ -58,38 +70,83 @@ class HybridRetriever:
         if self.bm25 and query_tokens:
             bm25_scores = self.bm25.get_scores(query_tokens)
             sorted_bm25 = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)
-            for rank, idx in enumerate(sorted_bm25[:20]):
+            for rank, idx in enumerate(sorted_bm25[:30]):
                 if bm25_scores[idx] > 0.0:
                     rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (60 + rank + 1))
 
         # 2. Dense vector search
+        dense_direct_docs: List[Document] = []
         try:
-            dense_docs = self.vector_store.similarity_search(query, k=min(20, len(self.documents)))
+            dense_docs = self.vector_store.similarity_search(query, k=min(30, max(len(self.documents), 30)))
             for rank, doc in enumerate(dense_docs):
                 doc_id = doc.metadata.get("id")
-                for idx, d in enumerate(self.documents):
-                    if d.metadata.get("id") == doc_id:
-                        rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (60 + rank + 1))
-                        break
-        except Exception:
-            pass
+                if doc_id and doc_id in self.id_to_idx:
+                    idx = self.id_to_idx[doc_id]
+                    rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (60 + rank + 1))
+                else:
+                    dense_direct_docs.append(doc)
+        except Exception as e:
+            logger.warning(f"Error in dense similarity search: {e}")
 
-        # Sort by RRF score
+        # Gather an expanded candidate pool for cross-encoder reranking
+        candidate_pool_size = max(40, k * 4)
         sorted_indices = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-        retrieved_docs = [self.documents[idx] for idx, _ in sorted_indices[:k]]
+        candidate_docs = [self.documents[idx] for idx, _ in sorted_indices[:candidate_pool_size]]
 
-        # Fallback if no hybrid matches
-        if not retrieved_docs:
+        # Augment from direct dense results if needed
+        seen_texts = {d.page_content[:80] for d in candidate_docs}
+        for d in dense_direct_docs:
+            if d.page_content[:80] not in seen_texts:
+                candidate_docs.append(d)
+                seen_texts.add(d.page_content[:80])
+            if len(candidate_docs) >= candidate_pool_size:
+                break
+
+        if not candidate_docs:
+            return []
+
+        # 3. Cross-Encoder Reranking via FlashRank with Diversity Filter
+        if use_reranker and self.ranker and len(candidate_docs) > 1:
             try:
-                retrieved_docs = self.vector_store.similarity_search(query, k=k)
-            except Exception:
-                retrieved_docs = []
+                from flashrank import RerankRequest
+                passages = [
+                    {"id": i, "text": f"{d.metadata.get('title', '')}\n{d.page_content}"}
+                    for i, d in enumerate(candidate_docs)
+                ]
+                rerank_request = RerankRequest(query=query, passages=passages)
+                reranked = self.ranker.rerank(rerank_request)
 
-        return retrieved_docs
+                # Diversity filtering: allow up to 5 chunks per source document so deep statutory
+                # or case dossiers are not prematurely truncated, while still preventing total single-doc monopoly.
+                selected_docs: List[Document] = []
+                source_counts: Dict[str, int] = {}
+                for r in reranked:
+                    doc = candidate_docs[r["id"]]
+                    src = doc.metadata.get("source", doc.metadata.get("title", "unknown"))
+                    if source_counts.get(src, 0) < 5:
+                        selected_docs.append(doc)
+                        source_counts[src] = source_counts.get(src, 0) + 1
+                    if len(selected_docs) >= k:
+                        break
 
-    def get_retrieval_context(self, query: str, top_k: int = 5) -> List[str]:
+                # If k slots not filled, backfill from remaining
+                if len(selected_docs) < k:
+                    for r in reranked:
+                        doc = candidate_docs[r["id"]]
+                        if doc not in selected_docs:
+                            selected_docs.append(doc)
+                        if len(selected_docs) >= k:
+                            break
+
+                return selected_docs
+            except Exception as e:
+                logger.warning(f"FlashRank reranking error, falling back to RRF: {e}")
+
+        return candidate_docs[:k]
+
+    def get_retrieval_context(self, query: str, top_k: int = 8, use_reranker: bool = True) -> List[str]:
         """Formats retrieved documents into clean context blocks for LLM evaluators."""
-        docs = self.retrieve(query, top_k=top_k)
+        docs = self.retrieve(query, top_k=top_k, use_reranker=use_reranker)
         contexts = []
         for d in docs:
             title = d.metadata.get("title", "Document")

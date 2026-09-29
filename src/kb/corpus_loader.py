@@ -156,10 +156,18 @@ def load_all_external_documents(docs_dir: Optional[str] = None) -> List[Document
     # Split into chunks suitable for Bedrock Titan embeddings
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=150,
+        chunk_overlap=200,
         separators=["\n\n", "\n", " ", ""],
     )
     chunked_docs = splitter.split_documents(raw_docs)
+
+    # Assign deterministic, unique IDs to all external chunks
+    for i, doc in enumerate(chunked_docs):
+        src = doc.metadata.get("source", "doc").replace(".pdf", "").replace(".md", "").replace(".txt", "")
+        page = doc.metadata.get("page")
+        page_suffix = f"_p{page}" if page else ""
+        doc.metadata["id"] = f"{src}{page_suffix}_chunk_{i}"
+
     logger.info(f"Split {len(raw_docs)} document pages/files into {len(chunked_docs)} chunks.")
     return chunked_docs
 
@@ -170,6 +178,12 @@ def load_all_corpus_documents() -> List[Document]:
     ext_docs = load_all_external_documents()
 
     total = const_docs + ext_docs
+
+    # Guarantee every document has a non-empty unique ID
+    for idx, doc in enumerate(total):
+        if not doc.metadata.get("id"):
+            doc.metadata["id"] = f"corpus_doc_{idx}"
+
     logger.info(
         f"Corpus Summary: {len(const_docs)} Authentic Constitutional articles, "
         f"{len(ext_docs)} Official legislative/case/document chunks. "
