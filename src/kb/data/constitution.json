@@ -1,0 +1,191 @@
+[
+  {
+    "id": "art_14",
+    "category": "constitution",
+    "title": "Article 14 - Equality before law",
+    "keywords": ["Article 14", "Equality before law", "Equal protection of laws", "Rule of Law", "Arbitrariness", "Natural justice", "Gender justice", "Gender equality", "Uniform Civil Code", "Personal laws"],
+    "content": "The State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India. Manifest arbitrariness is antithetical to equality (E.P. Royappa doctrine). Foundational for gender equality and non-discrimination in personal laws.",
+    "high_yield_takeaway": "Cornerstone of Fundamental Rights and Rule of Law; used to strike down arbitrary executive actions and ensure gender justice.",
+    "citation_ref": "Part III, Constitution of India"
+  },
+  {
+    "id": "art_19",
+    "category": "constitution",
+    "title": "Article 19 - Protection of certain rights regarding freedom of speech, etc.",
+    "keywords": ["Article 19", "Freedom of speech and expression", "19(1)(a)", "Reasonable restrictions", "19(2)", "Press freedom", "Right to protest"],
+    "content": "All citizens shall have the right to freedom of speech and expression, peaceful assembly, association, movement, residence, and profession. Subject to reasonable restrictions under Art 19(2) on sovereignty, public order, and morality.",
+    "high_yield_takeaway": "Vital for media freedom, hate speech laws, internet bans (Anuradha Bhasin), and peaceful assembly.",
+    "citation_ref": "Part III, Constitution of India"
+  },
+  {
+    "id": "art_21",
+    "category": "constitution",
+    "title": "Article 21 - Protection of life and personal liberty",
+    "keywords": ["Article 21", "Right to life", "Personal liberty", "Due process of law", "Procedure established by law", "Right to privacy", "Clean environment", "Right to health"],
+    "content": "No person shall be deprived of his life or personal liberty except according to procedure established by law. Substantively expanded via Maneka Gandhi (1978) to require just, fair, and reasonable procedure, and Puttaswamy (2017) to include privacy.",
+    "high_yield_takeaway": "The expansive ark of the Constitution encompassing privacy, dignity, health, livelihood, and speedy trial.",
+    "citation_ref": "Part III, Constitution of India"
+  },
+  {
+    "id": "art_25",
+    "category": "constitution",
+    "title": "Article 25 - Freedom of conscience and free profession, practice and propagation of religion",
+    "keywords": ["Article 25", "Freedom of religion", "Freedom of conscience", "Religious freedom", "Essential religious practices doctrine", "Public order morality health", "Secularism"],
+    "content": "Subject to public order, morality and health and to the other provisions of this Part, all persons are equally entitled to freedom of conscience and the right freely to profess, practise and propagate religion. State can regulate secular activities associated with religious practice and provide for social welfare.",
+    "high_yield_takeaway": "Essential religious practices test; key tension with Uniform Civil Code (Art 44) and gender equality in personal laws.",
+    "citation_ref": "Part III, Constitution of India"
+  },
+  {
+    "id": "art_32",
+    "category": "constitution",
+    "title": "Article 32 - Remedies for enforcement of rights conferred by this Part",
+    "keywords": ["Article 32", "Right to Constitutional Remedies", "Writs", "Habeas Corpus", "Mandamus", "Heart and soul of the Constitution", "Public Interest Litigation", "PIL"],
+    "content": "The right to move the Supreme Court by appropriate proceedings for the enforcement of Fundamental Rights is guaranteed. The Supreme Court shall have power to issue directions, orders or writs (habeas corpus, mandamus, prohibition, quo warranto, and certiorari). Termed the 'heart and soul' of the Constitution by Dr. B.R. Ambedkar.",
+    "high_yield_takeaway": "Primary tool for judicial review and human rights protection. Basic structure of the Constitution.",
+    "citation_ref": "Part III, Constitution of India"
+  },
+  {
+    "id": "art_44",
+    "category": "constitution",
+    "title": "Article 44 - Uniform Civil Code for the citizens",
+    "keywords": ["Article 44", "Uniform Civil Code", "UCC", "Directive Principles", "DPSP", "Personal laws", "Gender justice"],
+    "content": "The State shall endeavour to secure for the citizens a Uniform Civil Code throughout the territory of India. Non-justiciable DPSP intended to foster secular integration and gender parity across succession, marriage, and adoption.",
+    "high_yield_takeaway": "Frequently debated regarding secularism vs religious freedom (Art 25), gender rights (Shah Bano, Sarla Mudgal).",
+    "citation_ref": "Part IV, Constitution of India"
+  },
+  {
+    "id": "art_74",
+    "category": "constitution",
+    "title": "Article 74 - Council of Ministers to aid and advise President",
+    "keywords": ["Article 74", "Aid and advise", "Presidential discretion", "Nominal executive", "Cabinet", "Council of Ministers", "42nd Amendment", "44th Amendment"],
+    "content": "There shall be a Council of Ministers with the Prime Minister at the head to aid and advise the President who shall, in the exercise of his functions, act in accordance with such advice. Provided the President may require the Council to reconsider advice once.",
+    "high_yield_takeaway": "Establishes parliamentary executive supremacy; President bound by cabinet advice (Shamsher Singh doctrine).",
+    "citation_ref": "Part V, Constitution of India"
+  },
+  {
+    "id": "art_123",
+    "category": "constitution",
+    "title": "Article 123 - Power of President to promulgate Ordinances during recess of Parliament",
+    "keywords": ["Article 123", "Ordinance making power", "Executive legislation", "Recess of Parliament", "Repromulgation of ordinances", "Parliamentary democracy", "D.C. Wadhwa"],
+    "content": "If at any time Parliament is not in session and the President is satisfied that circumstances exist which render it necessary for him to take immediate action, he may promulgate an Ordinance. Must be laid before Parliament within 6 weeks of reassembly.",
+    "high_yield_takeaway": "Subject to judicial review for colorable exercise of power and fraud on the Constitution (D.C. Wadhwa & Krishna Kumar Singh rulings).",
+    "citation_ref": "Part V, Constitution of India"
+  },
+  {
+    "id": "art_142",
+    "category": "constitution",
+    "title": "Article 142 - Enforcement of decrees and orders of Supreme Court and orders as to discovery, etc.",
+    "keywords": ["Article 142", "Complete justice", "Plenary powers", "Supreme Court inherent powers", "Judicial activism"],
+    "content": "The Supreme Court in the exercise of its jurisdiction may pass such decree or make such order as is necessary for doing complete justice in any cause or matter pending before it.",
+    "high_yield_takeaway": "Used by the Apex Court in Bhopal Gas tragedy, Ayodhya title suit, releasing long-term prisoners (Perarivalan), and framing interim guidelines (Vishaka).",
+    "citation_ref": "Part V, Constitution of India"
+  },
+  {
+    "id": "art_163",
+    "category": "constitution",
+    "title": "Article 163 - Council of Ministers to aid and advise Governor",
+    "keywords": ["Article 163", "Governor discretion", "Aid and advise", "Council of Ministers", "Discretionary powers", "Governor of state", "Governor's discretionary powers", "Discretionary powers Governor", "Centre-State relations", "Federal balance", "Constitutional safeguards", "Judicial remedies"],
+    "content": "There shall be a Council of Ministers with the Chief Minister at the head to aid and advise the Governor, except in so far as he is by or under this Constitution required to act in his discretion. If any question arises whether a matter falls under Governor's discretion, the Governor's decision shall be final.",
+    "high_yield_takeaway": "Broader discretionary latitude than the President; core flashpoint in Centre-State conflicts and federal balance (Nabam Rebia 2016 curtailed arbitrary usage).",
+    "citation_ref": "Part VI, Constitution of India"
+  },
+  {
+    "id": "art_174",
+    "category": "constitution",
+    "title": "Article 174 - Sessions of the State Legislature, prorogation and dissolution",
+    "keywords": ["Article 174", "Summoning assembly", "Prorogation", "Dissolution of assembly", "Governor floor test"],
+    "content": "The Governor shall from time to time summon the House or each House of the Legislature of the State to meet at such time and place as he thinks fit, but six months shall not intervene between its last sitting in one session and the date appointed for its first sitting in the next session.",
+    "high_yield_takeaway": "Governor can summon the house only on aid and advise of Cabinet, except when the government has prima facie lost majority (Nabam Rebia / Shiv Sena rulings).",
+    "citation_ref": "Part VI, Constitution of India"
+  },
+  {
+    "id": "art_200",
+    "category": "constitution",
+    "title": "Article 200 - Assent to Bills passed by State Legislature",
+    "keywords": ["Article 200", "Governor assent to bills", "Reservation of bills", "Withholding assent", "Pocket veto", "President assent Art 201", "Governor discretion", "Discretionary powers", "Centre-State relations", "Federal balance", "Constitutional safeguards"],
+    "content": "When a Bill has been passed by the Legislative Assembly, it shall be presented to the Governor and the Governor shall declare either that he assents to the Bill, or that he withholds assent therefrom, or that he reserves the Bill for the consideration of the President, or returns it with a message 'as soon as possible'.",
+    "high_yield_takeaway": "SC (2023 Punjab & Telangana Governor rulings) held that Governor cannot sit indefinitely on bills or kill them through pocket veto; key safeguard for federal balance.",
+    "citation_ref": "Part VI, Constitution of India"
+  },
+  {
+    "id": "art_239aa",
+    "category": "constitution",
+    "title": "Article 239AA - Special provisions with respect to Delhi",
+    "keywords": ["Article 239AA", "Delhi governance", "Lieutenant Governor", "Elected government Delhi", "Public order police land", "Services ordinance"],
+    "content": "As from the commencement of the Constitution (69th Amendment) Act, 1991, the Union Territory of Delhi shall be called the National Capital Territory of Delhi, with an elected Legislative Assembly empowered to make laws on State and Concurrent List items except Public Order, Police, and Land.",
+    "high_yield_takeaway": "Apex Court (2018 & 2023 Constitution Benches) affirmed elected government's executive control over civil services and representative democracy.",
+    "citation_ref": "Part VIII, Constitution of India"
+  },
+  {
+    "id": "art_262",
+    "category": "constitution",
+    "title": "Article 262 - Adjudication of disputes relating to waters of inter-State rivers",
+    "keywords": ["Article 262", "Inter-State river water disputes", "Water tribunals", "Inter-State River Water Disputes Act 1956", "Cauvery dispute", "Krishna dispute"],
+    "content": "Parliament may by law provide for the adjudication of any dispute or complaint with respect to the use, distribution or control of the waters of, or in, any inter-State river or river valley. Parliament may by law exclude jurisdiction of the Supreme Court.",
+    "high_yield_takeaway": "Crucial federal dispute mechanism; criticized for prolonged tribunal delays and enforcement deadlocks.",
+    "citation_ref": "Part XI, Constitution of India"
+  },
+  {
+    "id": "art_263",
+    "category": "constitution",
+    "title": "Article 263 - Provisions with respect to an Inter-State Council",
+    "keywords": ["Article 263", "Inter-State Council", "Cooperative federalism", "Centre-State relations", "Zonal Councils", "Sarkaria Commission"],
+    "content": "If at any time it appears to the President that the public interests would be served by the establishment of a Council charged with investigating and discussing subjects in which some or all of the States, or the Union and one or more of the States, have a common interest.",
+    "high_yield_takeaway": "Permanent constitutional institutional forum for cooperative federalism; recommended by Sarkaria & Punchhi Commissions to meet at least 3 times a year.",
+    "citation_ref": "Part XI, Constitution of India"
+  },
+  {
+    "id": "art_279a",
+    "category": "constitution",
+    "title": "Article 279A - Goods and Services Tax Council",
+    "keywords": ["Article 279A", "GST Council", "Fiscal federalism", "One nation one tax", "Cooperative fiscal federalism", "101st Amendment"],
+    "content": "The President shall constitute a Council to be called the Goods and Services Tax Council. The Council consists of the Union Finance Minister (Chairperson), Union Minister of State, and State Finance Ministers. Decisions taken by 3/4th weighted majority (Union 1/3rd, States 2/3rd).",
+    "high_yield_takeaway": "Pinnacle of collaborative fiscal federalism; SC (Mohit Minerals 2022) held recommendations have persuasive value, upholding cooperative federalism.",
+    "citation_ref": "Part XII, Constitution of India"
+  },
+  {
+    "id": "art_280",
+    "category": "constitution",
+    "title": "Article 280 - Finance Commission",
+    "keywords": ["Article 280", "Finance Commission", "Tax devolution", "Vertical devolution", "Horizontal devolution", "Grants-in-aid", "Fiscal federalism"],
+    "content": "The President shall constitute a Finance Commission consisting of a Chairman and four other members every fifth year or earlier to make recommendations regarding the distribution of net proceeds of taxes between Union and States, and allocation between the States.",
+    "high_yield_takeaway": "The constitutional balancing wheel of fiscal federalism addressing vertical and horizontal fiscal imbalances.",
+    "citation_ref": "Part XII, Constitution of India"
+  },
+  {
+    "id": "art_324",
+    "category": "constitution",
+    "title": "Article 324 - Superintendence, direction and control of elections to be vested in an Election Commission",
+    "keywords": ["Article 324", "Election Commission of India", "ECI", "Free and fair elections", "Model Code of Conduct", "Anoop Baranwal case", "Electoral democracy"],
+    "content": "The superintendence, direction and control of the preparation of the electoral rolls for, and the conduct of, all elections to Parliament and to the Legislature of every State shall be vested in the Election Commission.",
+    "high_yield_takeaway": "Plenary power to ensure free and fair elections. SC (Anoop Baranwal 2023) established independent selection panel for Election Commissioners.",
+    "citation_ref": "Part XV, Constitution of India"
+  },
+  {
+    "id": "art_356",
+    "category": "constitution",
+    "title": "Article 356 - Provisions in case of failure of constitutional machinery in States",
+    "keywords": ["Article 356", "President's Rule", "Failure of constitutional machinery", "State emergency", "S.R. Bommai", "Dead letter", "Discretionary powers Governor", "Centre-State relations", "Federal balance", "Constitutional safeguards", "Judicial remedies"],
+    "content": "If the President, on receipt of report from the Governor of a State or otherwise, is satisfied that a situation has arisen in which the government of the State cannot be carried on in accordance with the provisions of this Constitution, the President may by Proclamation assume to himself all or any functions of State government.",
+    "high_yield_takeaway": "Dr. Ambedkar hoped it would remain a 'dead letter'; heavily abused historically; disciplined by S.R. Bommai (1994) establishing judicial review, mandatory floor tests, and safeguarding federal balance.",
+    "citation_ref": "Part XVIII, Constitution of India"
+  },
+  {
+    "id": "art_368",
+    "category": "constitution",
+    "title": "Article 368 - Power of Parliament to amend the Constitution and procedure therefor",
+    "keywords": ["Article 368", "Constitutional amendment", "Constituent power", "Basic Structure doctrine", "Kesavananda Bharati", "Minerva Mills"],
+    "content": "Parliament may in exercise of its constituent power amend by way of addition, variation or repeal any provision of this Constitution in accordance with the procedure laid down in this article.",
+    "high_yield_takeaway": "Subordinate to the Basic Structure Doctrine; Parliament cannot alter the essential identity and core values of the Constitution (Kesavananda Bharati).",
+    "citation_ref": "Part XX, Constitution of India"
+  },
+  {
+    "id": "sched_10",
+    "category": "constitution",
+    "title": "Tenth Schedule - Anti-Defection Law",
+    "keywords": ["Tenth Schedule", "Anti-Defection Law", "52nd Amendment", "Disqualification of legislators", "Speaker's powers", "Kihoto Hollohan", "Horse trading", "Political defections"],
+    "content": "Introduced by the 52nd Constitutional Amendment Act, 1985. Sets provisions for disqualification of members of Parliament and State Legislatures on grounds of defection (voluntarily giving up membership or voting contrary to party whip). Decided by Speaker/Chairman.",
+    "high_yield_takeaway": "Criticized for stifling intra-party dissent and Speaker's partisan delays; Kihoto Hollohan (1992) established judicial review over Speaker's final order.",
+    "citation_ref": "Tenth Schedule, Constitution of India"
+  }
+]

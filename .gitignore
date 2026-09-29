@@ -1,0 +1,76 @@
+# Environment & Secret Keys (CRITICAL)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Testing & Type Checking
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# Vector Store, Embeddings & Large Local Data
+src/kb/storage/chroma_db/
+src/kb/storage/*.npy
+src/kb/storage/*.jsonl
+src/kb/data/raw/*.json
+*.parquet
+*.sqlite3
+chroma/
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary
+*.log
+logs/
+tmp/
+scratch/

@@ -1,0 +1,137 @@
+[
+  {
+    "id": "case_kesavananda_1973",
+    "category": "case_law",
+    "title": "Kesavananda Bharati v. State of Kerala (1973)",
+    "keywords": ["Kesavananda Bharati", "Basic Structure Doctrine", "Article 368", "Constituent power", "Amendment of Constitution", "Judicial Review", "13-Judge Bench"],
+    "content": "Largest 13-Judge Constitution Bench ruled by 7-6 majority that while Parliament has wide power to amend any part of the Constitution under Art 368 including Fundamental Rights, it cannot alter, destroy or abrogate the 'Basic Structure' or essential identity of the Constitution.",
+    "high_yield_takeaway": "The ultimate constitutional safeguard against parliamentary authoritarianism. The bedrock of judicial review in India.",
+    "citation_ref": "(1973) 4 SCC 225"
+  },
+  {
+    "id": "case_sr_bommai_1994",
+    "category": "case_law",
+    "title": "S.R. Bommai v. Union of India (1994)",
+    "keywords": ["S.R. Bommai", "Article 356", "President's Rule", "Floor test mandatory", "Federalism as basic structure", "Secularism as basic structure", "Discretionary powers Governor"],
+    "content": "A landmark 9-judge bench ruled that federalism and secularism are part of the Basic Structure. Proclamation of President's Rule under Article 356 is subject to judicial review. The material on which satisfaction is based can be judicially examined. The floor of the legislative assembly is the ONLY constitutional forum to test a government's majority, not the Governor's subjective opinion.",
+    "high_yield_takeaway": "Must be cited whenever Article 356, Governor's discretion, or federal balance is questioned. Dramatically reduced abuse of President's Rule.",
+    "citation_ref": "(1994) 3 SCC 1"
+  },
+  {
+    "id": "case_maneka_gandhi_1978",
+    "category": "case_law",
+    "title": "Maneka Gandhi v. Union of India (1978)",
+    "keywords": ["Maneka Gandhi", "Article 21", "Due process of law", "Procedure established by law", "Golden Triangle", "Art 14 19 21", "Natural justice"],
+    "content": "Overruled A.K. Gopalan. Ruled that 'procedure established by law' under Art 21 cannot be arbitrary, oppressive or fanciful; it must be 'just, fair and reasonable', thereby infusing American 'due process' into Indian constitutional law. Established the 'Golden Triangle' linking Articles 14, 19, and 21.",
+    "high_yield_takeaway": "Pivotal transformation of Article 21 from a procedural guarantee to a substantive human rights charter.",
+    "citation_ref": "(1978) 1 SCC 248"
+  },
+  {
+    "id": "case_puttaswamy_2017",
+    "category": "case_law",
+    "title": "Justice K.S. Puttaswamy (Retd.) v. Union of India (2017)",
+    "keywords": ["Puttaswamy", "Right to Privacy", "Article 21", "Data protection", "Proportionality test", "Informational privacy", "Surveillance"],
+    "content": "A unanimous 9-judge bench recognized the Right to Privacy as a fundamental right intrinsic to life and personal liberty under Article 21. Any state restriction on privacy must satisfy a 3-fold proportionality test: (1) Legality (prescribed by law), (2) Legitimate state aim, and (3) Proportionality (least intrusive means).",
+    "high_yield_takeaway": "The constitutional benchmark for evaluating Aadhaar, digital personal data protection, surveillance, DNA profiling, and phone tapping.",
+    "citation_ref": "(2017) 10 SCC 1"
+  },
+  {
+    "id": "case_nabam_rebia_2016",
+    "category": "case_law",
+    "title": "Nabam Rebia and Bamang Felix v. Deputy Speaker (2016)",
+    "keywords": ["Nabam Rebia", "Governor powers", "Article 163", "Article 174", "Summoning assembly", "Discretionary powers", "Arunachal Pradesh"],
+    "content": "A 5-judge Constitution bench held that the Governor's discretionary powers under Article 163 are strictly limited and not all-encompassing. The Governor cannot summon or advance a legislative assembly session under Art 174 without the aid and advise of the elected Council of Ministers, unless the government has prima facie lost legislative majority.",
+    "high_yield_takeaway": "Direct precedent curbing Governor's unilateral exercise of assembly summoning and political interference.",
+    "citation_ref": "(2016) 8 SCC 1"
+  },
+  {
+    "id": "case_shamsher_singh_1974",
+    "category": "case_law",
+    "title": "Shamsher Singh v. State of Punjab (1974)",
+    "keywords": ["Shamsher Singh", "Aid and advise", "President and Governor powers", "Cabinet form of government", "Nominal head"],
+    "content": "A 7-judge Constitution bench ruled that the President and the Governor are constitutional/formal heads of executive power. Under the Westminster parliamentary system, they must exercise their formal constitutional powers solely on the aid and advise of the Council of Ministers, save in exceptional non-amenable circumstances.",
+    "high_yield_takeaway": "Definitive authority establishing cabinet primacy over Governor/Presidential discretion.",
+    "citation_ref": "(1974) 2 SCC 831"
+  },
+  {
+    "id": "case_punjab_governor_2023",
+    "category": "case_law",
+    "title": "State of Punjab v. Principal Secretary to Governor (2023)",
+    "keywords": ["Punjab Governor case 2023", "Article 200", "Assent to bills", "Pocket veto", "Withholding assent", "Tamil Nadu Governor", "Telangana Governor"],
+    "content": "Chief Justice D.Y. Chandrachud led bench ruled that the Governor cannot sit indefinitely on bills passed by the State Legislature. Under Article 200, if the Governor withholds assent, he MUST return the bill to the Assembly 'as soon as possible' with a message. The Governor cannot exercise a pocket veto to derail state legislative democracy.",
+    "high_yield_takeaway": "The most recent and critical jurisprudence on Article 200 assent controversies.",
+    "citation_ref": "2023 INSC 1018"
+  },
+  {
+    "id": "case_nct_delhi_2023",
+    "category": "case_law",
+    "title": "Govt of NCT of Delhi v. Union of India (Services Case, 2023)",
+    "keywords": ["NCT Delhi services case 2023", "Article 239AA", "Lieutenant Governor", "Civil services control", "Triple chain of accountability", "Representative democracy"],
+    "content": "A 5-judge Constitution bench held that the elected government of NCT Delhi has executive and legislative control over civil services ('Services' under Entry 41 of State List). Enunciated the 'Triple Chain of Accountability': Civil servants are accountable to ministers, ministers are accountable to legislature, legislature is accountable to citizens.",
+    "high_yield_takeaway": "Essential for questions on asymmetric federalism, Union Territories, and civil service neutrality.",
+    "citation_ref": "(2023) 9 SCC 1"
+  },
+  {
+    "id": "case_indra_sawhney_1992",
+    "category": "case_law",
+    "title": "Indra Sawhney v. Union of India (Mandal Case, 1992)",
+    "keywords": ["Indra Sawhney", "Reservation", "50 percent ceiling", "Creamy layer", "Article 16(4)", "Backward classes", "Mandal Commission"],
+    "content": "A 9-judge Constitution bench upheld 27% OBC reservation under Art 16(4) but introduced the 'creamy layer' exclusion. Ruled that total reservations must not exceed 50% except under extraordinary situations, and reservation cannot be granted purely on economic criteria (later modified by 103rd Amendment/Janhit Abhiyan).",
+    "high_yield_takeaway": "Foundational precedent for affirmative action, reservations, and social justice jurisprudence.",
+    "citation_ref": "1992 Supp (3) SCC 217"
+  },
+  {
+    "id": "case_minerva_mills_1980",
+    "category": "case_law",
+    "title": "Minerva Mills v. Union of India (1980)",
+    "keywords": ["Minerva Mills", "Basic Structure", "Harmony FR and DPSP", "Article 368 clauses 4 and 5", "Judicial Review", "Two wheels of a chariot"],
+    "content": "Struck down Clauses (4) and (5) of Art 368 inserted by 42nd Amendment which sought to give unlimited amending power to Parliament. Held that the harmony and balance between Fundamental Rights (Part III) and Directive Principles (Part IV) is an essential feature of the Basic Structure—like two wheels of a chariot.",
+    "high_yield_takeaway": "Balances welfare state directives (DPSP) with individual liberty (FR); reaffirms judicial review.",
+    "citation_ref": "(1980) 3 SCC 625"
+  },
+  {
+    "id": "case_anuradha_bhasin_2020",
+    "category": "case_law",
+    "title": "Anuradha Bhasin v. Union of India (2020)",
+    "keywords": ["Anuradha Bhasin", "Internet shutdown", "Article 19(1)(a)", "Freedom of trade online 19(1)(g)", "Section 144 CrPC", "Proportionality test", "Kashmir shutdown"],
+    "content": "Apex Court ruled that freedom of speech and expression and freedom to practice any profession over the internet are constitutionally protected under Art 19(1)(a) and 19(1)(g). Indefinite internet shutdowns are impermissible; suspension orders must satisfy proportionality and are subject to mandatory periodic review.",
+    "high_yield_takeaway": "Key authority on digital rights, freedom of speech, and executive limits on public order bans.",
+    "citation_ref": "(2020) 3 SCC 637"
+  },
+  {
+    "id": "case_anoop_baranwal_2023",
+    "category": "case_law",
+    "title": "Anoop Baranwal v. Union of India (2023)",
+    "keywords": ["Anoop Baranwal", "Election Commission of India", "Article 324", "Appointment of CEC and ECs", "Selection committee", "Electoral integrity"],
+    "content": "A 5-judge Constitution bench held that an independent Election Commission is critical for democracy (basic structure). Directed that Chief Election Commissioner and ECs must be selected by a high-power committee consisting of the Prime Minister, Leader of Opposition, and Chief Justice of India, until Parliament enacts a law.",
+    "high_yield_takeaway": "Landmark ruling on independent constitutional watchdogs, electoral democracy, and separation of powers.",
+    "citation_ref": "(2023) 6 SCC 161"
+  },
+  {
+    "id": "case_kihoto_hollohan_1992",
+    "category": "case_law",
+    "title": "Kihoto Hollohan v. Zachillhu (1992)",
+    "keywords": ["Kihoto Hollohan", "Tenth Schedule", "Anti-defection law", "Speaker's powers", "Tribunal", "Judicial review of Speaker"],
+    "content": "Upheld constitutional validity of the Tenth Schedule (Anti-Defection Law) but struck down Paragraph 7 (which excluded judicial review). Ruled that the Speaker/Chairman acts as a tribunal when deciding disqualification petitions and is thus amenable to judicial review on grounds of mala fides or violation of natural justice.",
+    "high_yield_takeaway": "Essential case for legislative accountability and challenges with partisan Speakers sitting on defection petitions.",
+    "citation_ref": "1992 Supp (2) SCC 651"
+  },
+  {
+    "id": "case_mohit_minerals_2022",
+    "category": "case_law",
+    "title": "Union of India v. Mohit Minerals Pvt Ltd (2022)",
+    "keywords": ["Mohit Minerals", "GST Council", "Article 279A", "Cooperative federalism", "Fiscal federalism", "Persuasive value of GST Council"],
+    "content": "Apex Court ruled that recommendations of the GST Council under Article 279A are not binding on Parliament or State Legislatures, but have persuasive value. Highlighted that Indian federalism is a dialogue between two sovereign entities and collaborative fiscal federalism requires consensus, not coercion.",
+    "high_yield_takeaway": "Fundamental for essays and answers on fiscal federalism, state autonomy, and taxation disputes.",
+    "citation_ref": "(2022) 10 SCC 700"
+  },
+  {
+    "id": "case_d_c_wadhwa_1987",
+    "category": "case_law",
+    "title": "D.C. Wadhwa v. State of Bihar (1987)",
+    "keywords": ["D.C. Wadhwa", "Ordinance raj", "Article 213", "Article 123", "Repromulgation of ordinances", "Fraud on Constitution"],
+    "content": "Supreme Court held that successive repromulgation of ordinances without placing them before the legislature is a colorable exercise of power and a 'fraud on the Constitution'. Executive cannot usurp lawmaking powers of the legislature through the backdoor.",
+    "high_yield_takeaway": "The definitive precedent against executive ordinance raj (re-affirmed in Krishna Kumar Singh 2017).",
+    "citation_ref": "(1987) 1 SCC 378"
+  }
+]
