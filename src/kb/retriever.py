@@ -1,7 +1,13 @@
 """Hybrid Ensemble Retriever combining LangChain BM25Retriever and Chroma Vector Store."""
 from typing import List, Optional
 from langchain_core.documents import Document
-from langchain.retrievers import EnsembleRetriever
+try:
+    from langchain_classic.retrievers import EnsembleRetriever
+except ImportError:
+    try:
+        from langchain.retrievers import EnsembleRetriever
+    except ImportError:
+        EnsembleRetriever = None
 from langchain_community.retrievers import BM25Retriever
 from src.kb.vector_store import get_chroma_vector_store
 
