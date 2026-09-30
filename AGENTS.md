@@ -48,7 +48,7 @@ evaluator/
 ├── scripts/
 │   ├── dev/              # test_llm.py, check_kimi_logprobs.py (developer probes)
 │   ├── ingest/           # all.py (master pipeline), download_acts.py (govt PDFs)
-│   └── evaluate/         # answer_copy.py (fixture-driven copy CLI), sample.py, retrieval.py
+│   └── evaluate/         # topper_copy_evaluation.py (multi-run consistency CLI), sample.py, retrieval.py
 ├── src/
 │   ├── config.py         # Settings loading from .env (pydantic-settings)
 │   ├── evaluation/
