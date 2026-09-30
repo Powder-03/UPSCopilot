@@ -39,3 +39,29 @@ packages = ["src"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "bedrock: tests that require live AWS Bedrock credentials (deselect with '-m \"not bedrock\"')",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "scripts", "tests"]
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes, I: import sorting, UP: pyupgrade, B: bugbear (mutable defaults etc.)
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "E501",  # line length is handled by the formatter
+    "B008",  # function call in default argument (settings singletons are intentional)
+    "UP042", # keep (str, Enum) idiom; StrEnum migration deferred
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/**" = ["I001"]  # scripts keep hand-ordered imports for readability
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6.0",
+    "pre-commit>=3.7.0",
+]

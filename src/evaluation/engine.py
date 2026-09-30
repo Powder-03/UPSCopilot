@@ -7,62 +7,218 @@ Orchestrates:
 5. Dual Grounding (Mandatory KB provisions vs Valid Open-World insights)
 6. Presentation Archetype analysis (Paragraphs vs Diagrams)
 """
-import re
-import json
 import logging
-from typing import Optional, Dict, Any, List
-from langchain_core.messages import SystemMessage, HumanMessage
+from typing import Any
 
-from src.config import settings
-from src.kb.retriever import HybridRetriever
-from src.evaluation.model_factory import get_eval_llm
+from langchain_core.messages import HumanMessage, SystemMessage
+
 from src.evaluation.geval_scorer import BedrockGEvalScorer
+from src.evaluation.model_factory import get_eval_llm
 from src.evaluation.prompt_templates import (
     SYSTEM_PROMPT_UPSC_EXAMINER,
     build_cot_diagnostic_prompt,
 )
+from src.kb.retriever import HybridRetriever
 from src.models.enums import (
-    UPSCPerformanceBand,
-    PresentationArchetype,
-    DemandStatus,
     CitationStatus,
+    DemandStatus,
     DirectiveType,
+    PresentationArchetype,
+    UPSCPerformanceBand,
 )
-from src.models.schema import (
+from src.models.evaluation import (
+    CitationAudit,
+    CitationItem,
     EvaluationResult,
     MicroDemandItem,
-    CitationItem,
-    CitationAudit,
-    PresentationEvaluation,
     PillarGEvalScore,
+    PresentationEvaluation,
 )
+from src.utils.json import extract_json_dict
 
 logger = logging.getLogger(__name__)
 
+# --- Calibration constants: authentic UPSC marking policy ---
+TOPPER_CEILING_PCT = 0.70       # Examiners never award more than ~70%; grade inflation is prohibited
+MIN_SCORE_FLOOR = 0.5           # An on-topic attempt is never awarded a bare zero
+OFF_TOPIC_GATE_DEFAULT = 0.10   # Fallback relevance gate, matching the policy stated in the system prompt
+OFF_TOPIC_MAX_MARKS = 1.0       # Hard cap for an answer that addresses a different question
+MAX_PRESENTATION_BONUS = 0.5    # Capped tie-breaker; Pillar 2 already scores structure
 
-def _extract_json_dict(text: str) -> Dict[str, Any]:
-    """Robustly extracts the primary JSON object from LLM response text."""
-    if not text:
-        return {}
+# --- Defaults applied when the LLM omits an optional diagnostic field ---
+DEFAULT_COT_TRAIL = "Chain of thought generated."
+DEFAULT_STRENGTHS = ["Addressed core themes of the question."]
+DEFAULT_WEAKNESSES = ["Expand multi-dimensional governance angles."]
+DEFAULT_ACTION_PLAN = ["Incorporate precise constitutional articles and landmark case ratios."]
 
-    # Check for markdown code fence
-    fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if fence:
-        candidate = fence.group(1).strip()
-    else:
-        start = text.find("{")
-        if start == -1:
-            return {}
-        candidate = text[start:]
 
-    try:
-        obj, _ = json.JSONDecoder().raw_decode(candidate)
-        if isinstance(obj, dict):
-            return obj
-    except Exception as e:
-        logger.warning(f"Error parsing JSON from LLM output: {e}")
+def _match_enum(enum_cls, raw: Any, default):
+    """Matches a raw LLM string to an enum member: exact match first, then longest substring.
 
-    return {}
+    Normalizes spaces/hyphens to underscores so natural phrasings like "to what extent"
+    resolve correctly, and prefers the most specific value ("critically_analyze" over "discuss").
+    """
+    val = str(raw or "").strip().lower().replace(" ", "_").replace("-", "_")
+    for member in enum_cls:
+        if member.value == val:
+            return member
+    for member in sorted(enum_cls, key=lambda m: len(m.value), reverse=True):
+        if member.value in val:
+            return member
+    return default
+
+
+def _parse_citation_status(raw: Any) -> CitationStatus:
+    """Parses a mandatory-anchor citation status, checking negative statuses first.
+
+    Prevents values like "not_found"/"not found" from matching the substring "found"
+    and being misclassified as MANDATORY_FOUND.
+    """
+    val = str(raw or "").strip().lower().replace(" ", "_").replace("-", "_")
+    if "hallucinat" in val or "wrong" in val:
+        return CitationStatus.HALLUCINATED_OR_WRONG
+    if "missing" in val or "not_found" in val or "notfound" in val or val.startswith("not"):
+        return CitationStatus.MANDATORY_MISSING
+    if "found" in val or "present" in val or "cited" in val:
+        return CitationStatus.MANDATORY_FOUND
+    return CitationStatus.MANDATORY_MISSING
+
+
+def _classify_performance_band(pct: float) -> UPSCPerformanceBand:
+    """Maps a percentage to the official UPSC band (the 35-45% Average band is inclusive of 45%)."""
+    if pct < 35.0:
+        return UPSCPerformanceBand.NEEDS_FOUNDATION
+    if pct <= 45.0:
+        return UPSCPerformanceBand.AVERAGE
+    if pct < 56.0:
+        return UPSCPerformanceBand.GOOD
+    return UPSCPerformanceBand.TOPPER
+
+
+def _parse_micro_demands(raw_demands: Any) -> list[MicroDemandItem]:
+    """Builds typed micro-demand items, skipping (never failing on) malformed entries."""
+    micro_demands: list[MicroDemandItem] = []
+    for d_raw in raw_demands or []:
+        try:
+            micro_demands.append(
+                MicroDemandItem(
+                    demand=d_raw.get("demand", "Sub-demand"),
+                    status=_match_enum(DemandStatus, d_raw.get("status"), DemandStatus.PARTIALLY_ADDRESSED),
+                    marks_allocated=float(d_raw.get("marks_allocated", 2.5)),
+                    marks_obtained=float(d_raw.get("marks_obtained", 1.0)),
+                    comment=d_raw.get("comment", ""),
+                )
+            )
+        except Exception as e:
+            logger.warning(f"Error parsing micro-demand: {e}")
+    return micro_demands
+
+
+def _parse_citation_audit(raw_citations: Any) -> CitationAudit:
+    """Splits the LLM citation audit into KB anchors, open-world credits, and hallucinations."""
+    raw_citations = raw_citations or {}
+    return CitationAudit(
+        mandatory_kb_anchors=[
+            CitationItem(
+                name=c.get("name", ""),
+                status=_parse_citation_status(c.get("status")),
+                source="knowledge_base",
+                notes=c.get("notes", ""),
+            )
+            for c in raw_citations.get("mandatory_kb_anchors", [])
+        ],
+        open_world_credits=[
+            CitationItem(
+                name=c.get("name", ""),
+                status=CitationStatus.OPEN_WORLD_CREDITED,
+                source="open_world",
+                notes=c.get("notes", ""),
+            )
+            for c in raw_citations.get("open_world_credits", [])
+        ],
+        hallucinated_citations=[
+            CitationItem(
+                name=c.get("name", ""),
+                status=CitationStatus.HALLUCINATED_OR_WRONG,
+                source="knowledge_base",
+                notes=c.get("notes", ""),
+            )
+            for c in raw_citations.get("hallucinated_citations", [])
+        ],
+        summary=raw_citations.get("summary", "Factual and statutory grounding evaluated."),
+    )
+
+
+def _parse_presentation(raw_pres: Any) -> PresentationEvaluation:
+    """Normalizes the presentation audit, clamping the density score and the bounded bonus."""
+    raw_pres = raw_pres or {}
+    return PresentationEvaluation(
+        detected_archetype=_match_enum(
+            PresentationArchetype,
+            raw_pres.get("detected_archetype"),
+            PresentationArchetype.PARAGRAPH_HEAVY,
+        ),
+        visual_density_score=max(0.0, min(10.0, float(raw_pres.get("visual_density_score", 5.0)))),
+        diagrams_and_tables_found=raw_pres.get("diagrams_and_tables_found", []),
+        presentation_bonus=max(
+            0.0, min(MAX_PRESENTATION_BONUS, float(raw_pres.get("presentation_bonus", 0.0)))
+        ),
+        examiner_critique=raw_pres.get("examiner_critique", "Adequate presentation format."),
+        topper_reformatting_tip=raw_pres.get(
+            "topper_reformatting_tip",
+            "Structure key points under explicit subheadings with numbered bullet points.",
+        ),
+    )
+
+
+def _parse_diagnostic(diagnostic: dict[str, Any]) -> dict[str, Any]:
+    """Normalizes the raw Call-1 JSON into typed, defensively-defaulted evaluation parts."""
+    is_off_topic = bool(diagnostic.get("is_off_topic", False))
+    return {
+        "cot_trail": diagnostic.get("cot_reasoning_trail", DEFAULT_COT_TRAIL),
+        "is_off_topic": is_off_topic,
+        "demand_relevance_gate": float(
+            diagnostic.get("demand_relevance_gate", 1.0 if not is_off_topic else OFF_TOPIC_GATE_DEFAULT)
+        ),
+        "directive": _match_enum(DirectiveType, diagnostic.get("directive_detected"), None),
+        "micro_demands": _parse_micro_demands(diagnostic.get("micro_demands")),
+        "citation_audit": _parse_citation_audit(diagnostic.get("citation_audit")),
+        "presentation": _parse_presentation(diagnostic.get("presentation")),
+        "strengths": diagnostic.get("strengths", DEFAULT_STRENGTHS),
+        "weaknesses": diagnostic.get("weaknesses", DEFAULT_WEAKNESSES),
+        "topper_action_plan": diagnostic.get("topper_action_plan", DEFAULT_ACTION_PLAN),
+        "pillar_summary": diagnostic.get("pillar_summary", {}),
+    }
+
+
+def _warn_on_degraded_scoring(pillars: dict[str, PillarGEvalScore]) -> None:
+    """Surfaces degraded scoring so a fallback run is never mistaken for a real logprob G-Eval."""
+    degraded = [name for name, p in pillars.items() if p.scoring_method != "logprob"]
+    if degraded:
+        logger.warning(
+            f"G-Eval ran without native logprobs for pillars {degraded} "
+            f"(method: {pillars[degraded[0]].scoring_method}); ratings are point estimates."
+        )
+
+
+def _apply_marking_policy(
+    pillars: dict[str, PillarGEvalScore],
+    presentation: PresentationEvaluation,
+    is_off_topic: bool,
+    demand_relevance_gate: float,
+    max_marks: float,
+) -> tuple[float, UPSCPerformanceBand]:
+    """Applies the presentation bonus, the off-topic gate, and authentic UPSC score ceilings."""
+    raw_total = sum(p.calibrated_score for p in pillars.values()) + presentation.presentation_bonus
+
+    if is_off_topic:
+        logger.warning("Hard Demand Relevance Gate triggered: Off-topic answer detected!")
+        total = round(min(OFF_TOPIC_MAX_MARKS, raw_total * demand_relevance_gate), 2)
+        return total, UPSCPerformanceBand.NEEDS_FOUNDATION
+
+    topper_ceiling = max_marks * TOPPER_CEILING_PCT
+    total = round(min(topper_ceiling, max(MIN_SCORE_FLOOR, raw_total)), 2)
+    return total, _classify_performance_band((total / max_marks) * 100.0)
 
 
 class UPSCEvaluationEngine:
@@ -70,9 +226,9 @@ class UPSCEvaluationEngine:
 
     def __init__(
         self,
-        retriever: Optional[HybridRetriever] = None,
+        retriever: HybridRetriever | None = None,
         eval_llm=None,
-        geval_scorer: Optional[BedrockGEvalScorer] = None,
+        geval_scorer: BedrockGEvalScorer | None = None,
     ):
         self.retriever = retriever or HybridRetriever(top_k=6)
         self.llm = eval_llm or get_eval_llm()
@@ -87,159 +243,26 @@ class UPSCEvaluationEngine:
         """Evaluates a candidate answer using 2-call CoT + G-Eval probability trailing."""
         logger.info(f"Starting UPSC evaluation for question ({int(max_marks)} marks)...")
 
-        # Step 1: Ground Truth Retrieval from authentic Knowledge Base
-        kb_context: List[str] = self.retriever.get_retrieval_context(question, top_k=6)
-        logger.info(f"Retrieved {len(kb_context)} ground-truth context blocks from Knowledge Base.")
+        kb_context = self._retrieve_ground_truth(question)
+        parts = self._run_diagnostic(question, candidate_answer, kb_context, max_marks)
 
-        # Step 2: Call 1 — CoT Diagnostic Analysis & Qualitative Audit
-        cot_prompt = build_cot_diagnostic_prompt(
-            question=question,
-            candidate_answer=candidate_answer,
-            kb_context=kb_context,
-            max_marks=max_marks,
-        )
-
-        messages = [
-            SystemMessage(content=SYSTEM_PROMPT_UPSC_EXAMINER),
-            HumanMessage(content=cot_prompt),
-        ]
-
-        logger.info("Executing Call 1: Qualitative Diagnostic & CoT reasoning...")
-        res = self.llm.invoke(messages)
-        diagnostic = _extract_json_dict(res.content)
-
-        # Parse Call 1 diagnostic fields with safe defaults
-        cot_trail = diagnostic.get("cot_reasoning_trail", "Chain of thought generated.")
-        is_off_topic = bool(diagnostic.get("is_off_topic", False))
-        demand_relevance_gate = float(diagnostic.get("demand_relevance_gate", 1.0 if not is_off_topic else 0.1))
-        
-        # Directive detection
-        raw_directive = str(diagnostic.get("directive_detected", "")).lower()
-        directive = None
-        for d in DirectiveType:
-            if d.value in raw_directive:
-                directive = d
-                break
-
-        # Micro-demands
-        micro_demands: List[MicroDemandItem] = []
-        for d_raw in diagnostic.get("micro_demands", []):
-            try:
-                status_val = str(d_raw.get("status", "partially_addressed")).lower()
-                status = DemandStatus.PARTIALLY_ADDRESSED
-                for s in DemandStatus:
-                    if s.value in status_val:
-                        status = s
-                        break
-
-                micro_demands.append(
-                    MicroDemandItem(
-                        demand=d_raw.get("demand", "Sub-demand"),
-                        status=status,
-                        marks_allocated=float(d_raw.get("marks_allocated", 2.5)),
-                        marks_obtained=float(d_raw.get("marks_obtained", 1.0)),
-                        comment=d_raw.get("comment", ""),
-                    )
-                )
-            except Exception as e:
-                logger.warning(f"Error parsing micro-demand: {e}")
-
-        # Citation Audit
-        raw_citations = diagnostic.get("citation_audit", {})
-        mandatory_anchors = [
-            CitationItem(
-                name=c.get("name", ""),
-                status=CitationStatus.MANDATORY_FOUND if "found" in str(c.get("status", "")).lower() else CitationStatus.MANDATORY_MISSING,
-                source="knowledge_base",
-                notes=c.get("notes", ""),
-            )
-            for c in raw_citations.get("mandatory_kb_anchors", [])
-        ]
-        open_world_credits = [
-            CitationItem(
-                name=c.get("name", ""),
-                status=CitationStatus.OPEN_WORLD_CREDITED,
-                source="open_world",
-                notes=c.get("notes", ""),
-            )
-            for c in raw_citations.get("open_world_credits", [])
-        ]
-        hallucinated = [
-            CitationItem(
-                name=c.get("name", ""),
-                status=CitationStatus.HALLUCINATED_OR_WRONG,
-                source="knowledge_base",
-                notes=c.get("notes", ""),
-            )
-            for c in raw_citations.get("hallucinated_citations", [])
-        ]
-        citation_audit = CitationAudit(
-            mandatory_kb_anchors=mandatory_anchors,
-            open_world_credits=open_world_credits,
-            hallucinated_citations=hallucinated,
-            summary=raw_citations.get("summary", "Factual and statutory grounding evaluated."),
-        )
-
-        # Presentation Evaluation
-        raw_pres = diagnostic.get("presentation", {})
-        arch_val = str(raw_pres.get("detected_archetype", "paragraph_heavy")).lower()
-        archetype = PresentationArchetype.PARAGRAPH_HEAVY
-        for a in PresentationArchetype:
-            if a.value in arch_val:
-                archetype = a
-                break
-
-        presentation = PresentationEvaluation(
-            detected_archetype=archetype,
-            visual_density_score=float(raw_pres.get("visual_density_score", 5.0)),
-            diagrams_and_tables_found=raw_pres.get("diagrams_and_tables_found", []),
-            presentation_bonus=float(raw_pres.get("presentation_bonus", 0.0)),
-            examiner_critique=raw_pres.get("examiner_critique", "Adequate presentation format."),
-            topper_reformatting_tip=raw_pres.get(
-                "topper_reformatting_tip",
-                "Structure key points under explicit subheadings with numbered bullet points.",
-            ),
-        )
-
-        strengths = diagnostic.get("strengths", ["Addressed core themes of the question."])
-        weaknesses = diagnostic.get("weaknesses", ["Expand multi-dimensional governance angles."])
-        topper_action_plan = diagnostic.get("topper_action_plan", ["Incorporate precise constitutional articles and landmark case ratios."])
-        pillar_summary = diagnostic.get("pillar_summary", {})
-
-        # Step 3: Call 2 — G-Eval Multi-Pillar Logprob Scoring Head
         logger.info("Executing Call 2: G-Eval probabilistic logprob scoring head...")
         pillars = self.geval_scorer.score_pillars(
             question=question,
             candidate_answer=candidate_answer,
-            cot_reasoning_trail=cot_trail,
-            pillar_summary=pillar_summary,
+            cot_reasoning_trail=parts["cot_trail"],
+            pillar_summary=parts["pillar_summary"],
             max_marks=max_marks,
         )
+        _warn_on_degraded_scoring(pillars)
 
-        # Step 4: Calibrate Total Score and Apply Relevance Gating
-        raw_total_score = sum(p.calibrated_score for p in pillars.values())
-        raw_total_score += presentation.presentation_bonus
-
-        if is_off_topic:
-            logger.warning("Hard Demand Relevance Gate triggered: Off-topic answer detected!")
-            total_score = round(min(1.0, raw_total_score * demand_relevance_gate), 2)
-            band = UPSCPerformanceBand.NEEDS_FOUNDATION
-        else:
-            # Enforce authentic UPSC limits: top ceiling is ~65-70% max
-            topper_ceiling = max_marks * 0.70
-            min_floor = 0.5
-            total_score = round(min(topper_ceiling, max(min_floor, raw_total_score)), 2)
-            
-            pct = (total_score / max_marks) * 100.0
-            if pct < 35.0:
-                band = UPSCPerformanceBand.NEEDS_FOUNDATION
-            elif pct < 45.0:
-                band = UPSCPerformanceBand.AVERAGE
-            elif pct < 56.0:
-                band = UPSCPerformanceBand.GOOD
-            else:
-                band = UPSCPerformanceBand.TOPPER
-
+        total_score, band = _apply_marking_policy(
+            pillars=pillars,
+            presentation=parts["presentation"],
+            is_off_topic=parts["is_off_topic"],
+            demand_relevance_gate=parts["demand_relevance_gate"],
+            max_marks=max_marks,
+        )
         pct = round((total_score / max_marks) * 100.0, 1)
 
         result = EvaluationResult(
@@ -249,18 +272,47 @@ class UPSCEvaluationEngine:
             total_score=total_score,
             percentage=pct,
             performance_band=band,
-            is_off_topic=is_off_topic,
-            demand_relevance_gate=demand_relevance_gate,
-            directive_detected=directive,
-            cot_reasoning_trail=cot_trail,
-            micro_demands=micro_demands,
+            is_off_topic=parts["is_off_topic"],
+            demand_relevance_gate=parts["demand_relevance_gate"],
+            directive_detected=parts["directive"],
+            cot_reasoning_trail=parts["cot_trail"],
+            micro_demands=parts["micro_demands"],
             pillars=pillars,
-            presentation=presentation,
-            citation_audit=citation_audit,
-            strengths=strengths,
-            weaknesses=weaknesses,
-            topper_action_plan=topper_action_plan,
+            presentation=parts["presentation"],
+            citation_audit=parts["citation_audit"],
+            strengths=parts["strengths"],
+            weaknesses=parts["weaknesses"],
+            topper_action_plan=parts["topper_action_plan"],
         )
 
         logger.info(f"Evaluation completed: Score = {total_score} / {max_marks} ({pct}%) | Band = {band.value}")
         return result
+
+    def _retrieve_ground_truth(self, question: str) -> list[str]:
+        """Step 1: hybrid retrieval of authentic KB context used for grounding verification."""
+        kb_context: list[str] = self.retriever.get_retrieval_context(question, top_k=self.retriever.top_k)
+        logger.info(f"Retrieved {len(kb_context)} ground-truth context blocks from Knowledge Base.")
+        return kb_context
+
+    def _run_diagnostic(
+        self,
+        question: str,
+        candidate_answer: str,
+        kb_context: list[str],
+        max_marks: float,
+    ) -> dict[str, Any]:
+        """Step 2: Call 1 deep CoT diagnostic, returned as typed evaluation parts."""
+        cot_prompt = build_cot_diagnostic_prompt(
+            question=question,
+            candidate_answer=candidate_answer,
+            kb_context=kb_context,
+            max_marks=max_marks,
+        )
+        messages = [
+            SystemMessage(content=SYSTEM_PROMPT_UPSC_EXAMINER),
+            HumanMessage(content=cot_prompt),
+        ]
+
+        logger.info("Executing Call 1: Qualitative Diagnostic & CoT reasoning...")
+        response = self.llm.invoke(messages)
+        return _parse_diagnostic(extract_json_dict(response.content))

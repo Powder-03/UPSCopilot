@@ -52,13 +52,20 @@ coverage.xml
 .ruff_cache/
 
 # Vector Store, Embeddings & Large Local Data
-src/kb/storage/chroma_db/
-src/kb/storage/*.npy
-src/kb/storage/*.jsonl
-src/kb/data/raw/*.json
+data/storage/
+data/raw/*.json
 *.parquet
 *.sqlite3
 chroma/
+
+# Large scanned PDFs (question papers, topper answer sheets, downloaded Act PDFs)
+# Kept local only: bulky binaries that must never be committed or pushed.
+*.pdf
+/GS-II.pdf
+/VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf
+
+# Generated evaluation artifacts
+tests/outputs/
 
 # IDEs & Editors
 .vscode/

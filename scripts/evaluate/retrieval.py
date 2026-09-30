@@ -1,53 +1,28 @@
-import sys
-import os
-import re
+"""DeepEval retrieval benchmark over the GS-2 golden dataset.
+
+Scores the hybrid retriever with Contextual Recall / Precision using Moonshot Kimi 2.5
+on Bedrock as the judge model.
+
+Usage:
+    uv run python scripts/evaluate/retrieval.py [--limit N] [--top-k K] [--fixture PATH]
+"""
+import argparse
 import json
+from pathlib import Path
 
-if sys.platform == "win32":
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
-os.environ["PYTHONIOENCODING"] = "utf-8"
-from typing import Optional
 from deepeval import evaluate
-from deepeval.test_case import LLMTestCase
-from deepeval.metrics import ContextualRecallMetric, ContextualPrecisionMetric
-from deepeval.models.base_model import DeepEvalBaseLLM
 from deepeval.evaluate.configs import AsyncConfig
-
-import logging
-logging.getLogger("langchain_aws").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("botocore").setLevel(logging.WARNING)
+from deepeval.metrics import ContextualPrecisionMetric, ContextualRecallMetric
+from deepeval.models.base_model import DeepEvalBaseLLM
+from deepeval.test_case import LLMTestCase
 
 from src.config import settings
 from src.evaluation.model_factory import get_eval_llm
 from src.kb.retriever import HybridRetriever
+from src.utils.cli import configure_console, setup_logging
+from src.utils.json import clean_json_text
 
-
-def _clean_json_output(text: str) -> str:
-    """Extracts and validates a clean JSON object, discarding trailing commentary."""
-    if not text:
-        return "{}"
-
-    # 1. Extract from markdown code block if present
-    fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if fence:
-        candidate = fence.group(1).strip()
-    else:
-        start = text.find("{")
-        if start == -1:
-            return text
-        candidate = text[start:]
-
-    # 2. Use raw_decode to parse the first JSON object and strip trailing text
-    try:
-        obj, _ = json.JSONDecoder().raw_decode(candidate)
-        return json.dumps(obj)
-    except Exception:
-        return candidate
+DEFAULT_FIXTURE = Path("tests/fixtures/golden_dataset.json")
 
 
 class BedrockKimiJudge(DeepEvalBaseLLM):
@@ -63,19 +38,19 @@ class BedrockKimiJudge(DeepEvalBaseLLM):
 
     def generate(self, prompt: str, schema=None) -> str:
         res = self.llm.invoke(prompt).content
-        return _clean_json_output(res)
+        return clean_json_text(res)
 
     async def a_generate(self, prompt: str, schema=None) -> str:
         res = await self.llm.ainvoke(prompt)
-        return _clean_json_output(res.content)
+        return clean_json_text(res.content)
 
     def get_model_name(self) -> str:
         return self.name
 
 
-def run_evaluation(limit: Optional[int] = None, top_k: int = 8):
+def run_evaluation(limit: int | None = None, top_k: int = 8, fixture: Path = DEFAULT_FIXTURE):
     """Builds test cases from the golden dataset and runs DeepEval's native benchmark."""
-    with open("tests/data/golden_dataset.json", "r", encoding="utf-8") as f:
+    with open(fixture, encoding="utf-8") as f:
         data = json.load(f)
 
     if limit:
@@ -128,5 +103,21 @@ def run_evaluation(limit: Optional[int] = None, top_k: int = 8):
     )
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run the DeepEval retrieval benchmark.")
+    parser.add_argument("--limit", type=int, default=None, help="Evaluate only the first N golden queries")
+    parser.add_argument("--top-k", type=int, default=8, help="Chunks retrieved per query")
+    parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE, help="Golden dataset JSON path")
+    args = parser.parse_args()
+
+    configure_console()
+    setup_logging()
+
+    if not args.fixture.exists():
+        raise SystemExit(f"Error: golden dataset not found: {args.fixture}")
+
+    run_evaluation(limit=args.limit, top_k=args.top_k, fixture=args.fixture)
+
+
 if __name__ == "__main__":
-    run_evaluation()
+    main()

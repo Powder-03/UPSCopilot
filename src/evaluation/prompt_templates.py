@@ -1,5 +1,4 @@
 """UPSC Mains evaluation prompts, rubrics, and calibrated scoring templates."""
-from typing import List
 
 SYSTEM_PROMPT_UPSC_EXAMINER = """You are a Senior UPSC Civil Services Examination (CSE) Mains Evaluator with decades of experience evaluating General Studies Paper II (Governance, Constitution, Polity, Social Justice).
 
@@ -22,18 +21,19 @@ EVALUATION PRINCIPLES:
    - If PARAGRAPH_HEAVY: Do not penalize legal content, but critique visual fatigue and explain how converting prose into subheadings/bullet points gains marks in a 7-minute exam setting.
    - If HYBRID_DIAGRAMMATIC or TABULAR: Evaluate whether the diagram/table adds genuine conceptual density or is just empty decoration.
 
-4. 5 CANONICAL PILLARS (Weights for 10-markers / 15-markers):
+4. 6 CANONICAL PILLARS (Weights for 10-markers / 15-markers):
    - Pillar 1: Directive & Demand Fulfillment (25% weight)
    - Pillar 2: Structural Architecture & Presentation (15% weight)
    - Pillar 3: Multi-Dimensional Breadth (PESTLE / GS-2 Angles) (20% weight)
-   - Pillar 4: Grounded Legal Citations & Accuracy (25% weight)
+   - Pillar 4: Grounded Legal Citations & Accuracy (20% weight)
    - Pillar 5: Conclusion & Constructive Way Forward (15% weight)
+   - Pillar 6: Introduction & Context Setting (5% weight)
 """
 
 def build_cot_diagnostic_prompt(
     question: str,
     candidate_answer: str,
-    kb_context: List[str],
+    kb_context: list[str],
     max_marks: float = 10.0,
 ) -> str:
     """Builds the deep Chain-of-Thought diagnostic prompt for Call 1."""
@@ -52,7 +52,7 @@ AUTHENTIC KNOWLEDGE BASE CONTEXT (For Grounding Verification):
 
 Perform a rigorous evaluation and output ONLY a valid JSON object matching this schema:
 {{
-  "cot_reasoning_trail": "Step-by-step reasoning trail: 1. Demand decomposition; 2. KB grounding comparison; 3. Open-world insights verification; 4. Presentation & visual layout audit; 5. Off-topic check; 6. Deduction & justification.",
+  "cot_reasoning_trail": "Step-by-step reasoning trail: 1. Demand decomposition; 2. Introduction & context-setting quality; 3. KB grounding comparison; 4. Open-world insights verification; 5. Presentation & visual layout audit; 6. Off-topic check; 7. Deduction & justification.",
   "is_off_topic": false,
   "demand_relevance_gate": 1.0,
   "directive_detected": "discuss / critically_analyze / etc",
@@ -110,7 +110,8 @@ Perform a rigorous evaluation and output ONLY a valid JSON object matching this 
     "structure_presentation": "Rating summary for Pillar 2 (1 to 5 level rationale)",
     "multidimensional_breadth": "Rating summary for Pillar 3 (1 to 5 level rationale)",
     "grounded_citations": "Rating summary for Pillar 4 (1 to 5 level rationale)",
-    "conclusion_way_forward": "Rating summary for Pillar 5 (1 to 5 level rationale)"
+    "conclusion_way_forward": "Rating summary for Pillar 5 (1 to 5 level rationale)",
+    "introduction": "Rating summary for Pillar 6 (1 to 5 level rationale: does the intro define the topic, anchor context, and set up the answer?)"
   }}
 }}
 """
@@ -121,14 +122,15 @@ def build_geval_scoring_prompt(
     cot_reasoning_trail: str,
     pillar_summary: dict,
 ) -> str:
-    """Builds the single-call 5-pillar G-Eval scoring prompt for Call 2."""
+    """Builds the single-call 6-pillar G-Eval scoring prompt for Call 2."""
     p1_summary = pillar_summary.get("demand_fulfillment", "")
     p2_summary = pillar_summary.get("structure_presentation", "")
     p3_summary = pillar_summary.get("multidimensional_breadth", "")
     p4_summary = pillar_summary.get("grounded_citations", "")
     p5_summary = pillar_summary.get("conclusion_way_forward", "")
+    p6_summary = pillar_summary.get("introduction", "")
 
-    return f"""Based on your detailed UPSC examiner Chain-of-Thought reasoning below, assign a rating from 1 to 5 for each of the 5 canonical UPSC pillars.
+    return f"""Based on your detailed UPSC examiner Chain-of-Thought reasoning below, assign a rating from 1 to 5 for each of the 6 canonical UPSC pillars.
 
 RATING SCALE (1 = Poor, 2 = Below Average, 3 = Average, 4 = Good, 5 = Topper Benchmark):
 1: Poor (<35% benchmark, severe omissions)
@@ -143,16 +145,21 @@ QUESTION:
 CANDIDATE ANSWER:
 {candidate_answer}
 
+EXAMINER CHAIN-OF-THOUGHT REASONING TRAIL (from your Call 1 diagnostic):
+{cot_reasoning_trail}
+
 EXAMINER DIAGNOSTIC SUMMARY:
 - Pillar 1 (Demand Fulfillment): {p1_summary}
 - Pillar 2 (Structure & Presentation): {p2_summary}
 - Pillar 3 (Multi-Dimensional Breadth): {p3_summary}
 - Pillar 4 (Grounded Citations): {p4_summary}
 - Pillar 5 (Conclusion & Way Forward): {p5_summary}
+- Pillar 6 (Introduction & Context Setting): {p6_summary}
 
 Output ONLY the ratings in this exact format with single-digit integers (1, 2, 3, 4, or 5) immediately after the colon:
 P1: 4
 P2: 3
 P3: 4
 P4: 5
-P5: 3"""
+P5: 3
+P6: 4"""

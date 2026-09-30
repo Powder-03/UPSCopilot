@@ -1,17 +1,14 @@
 """Master Ingestion Pipeline for UPSC Knowledge Base.
 Ingests real raw sources into Chroma vector store with AWS Bedrock Titan Embeddings:
-1. Complete Constitution of India (all 465 articles from authentic legal data in src/kb/data/raw/)
-2. Official Legislative Central Acts, Supreme Court judgments, and Reference PDFs (from src/kb/data/documents/)
+1. Complete Constitution of India (all 465 articles from authentic legal data in data/raw/)
+2. Official Legislative Central Acts, Supreme Court judgments, and Reference PDFs (from data/documents/)
 """
 import logging
-from typing import List
 from langchain_core.documents import Document
 
 from src.config import settings
 from src.kb.vector_store import get_chroma_vector_store
 from src.kb.corpus_loader import (
-    load_constitution_documents,
-    load_all_external_documents,
     load_all_corpus_documents,
 )
 
@@ -19,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(na
 logger = logging.getLogger("master_ingestion")
 
 
-def run_master_ingestion(persist_dir: str = None, batch_size: int = 50, reset: bool = True) -> List[Document]:
+def run_master_ingestion(persist_dir: str = None, batch_size: int = 50, reset: bool = True) -> list[Document]:
     """Master ingestion function populating the Chroma vector store in batches."""
     logger.info("=" * 60)
     logger.info("Starting Master UPSC Knowledge Base Ingestion Pipeline (Zero Hardcoding)")

@@ -1,18 +1,19 @@
 """Downloader for authentic official legislative Central Acts in PDF format.
-Downloads official gazette/statute PDFs from Indian Government portals into src/kb/data/documents/.
+Downloads official gazette/statute PDFs from Indian Government portals into data/documents/.
 """
 import os
 import ssl
 import logging
 import urllib.request
-from typing import Dict
+
+from src.config import settings
 
 logger = logging.getLogger(__name__)
 
-DOCUMENTS_DIR = os.path.join("src", "kb", "data", "documents")
+DOCUMENTS_DIR = os.path.join(settings.data_dir, "documents")
 
 # Official Government URLs for Central Statutes
-OFFICIAL_ACT_URLS: Dict[str, str] = {
+OFFICIAL_ACT_URLS: dict[str, str] = {
     "RTI_Act_2005.pdf": "https://cic.gov.in/sites/default/files/RTI-Act_English.pdf",
     "DPDP_Act_2023.pdf": "https://www.meity.gov.in/writereaddata/files/Digital%20Personal%20Data%20Protection%20Act%202023.pdf",
     "Disaster_Management_Act_2005.pdf": "https://ndma.gov.in/sites/default/files/PDF/DM_act2005.pdf",
@@ -23,7 +24,7 @@ OFFICIAL_ACT_URLS: Dict[str, str] = {
 }
 
 
-def download_official_acts(target_dir: str = DOCUMENTS_DIR) -> Dict[str, bool]:
+def download_official_acts(target_dir: str = DOCUMENTS_DIR) -> dict[str, bool]:
     """Downloads official PDFs into the target documents directory."""
     os.makedirs(target_dir, exist_ok=True)
     results = {}

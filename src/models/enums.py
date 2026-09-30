@@ -47,3 +47,4 @@ class PillarType(str, Enum):
     MULTIDIMENSIONAL_BREADTH = "multidimensional_breadth"
     GROUNDED_CITATIONS = "grounded_citations"
     CONCLUSION_WAY_FORWARD = "conclusion_way_forward"
+    INTRODUCTION = "introduction"

@@ -1,13 +1,13 @@
 """Corpus document loader for authentic UPSC Knowledge Base sources.
 Loads:
 1. Complete Constitution (465 articles from raw JSON)
-2. External documents (PDFs, Markdown case dossiers, Central Act dossiers from src/kb/data/documents/)
+2. External documents (PDFs, Markdown case dossiers, Central Act dossiers from data/documents/)
 """
-import os
 import glob
 import json
 import logging
-from typing import List, Optional
+import os
+
 import pymupdf as fitz  # PyMuPDF
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -20,15 +20,15 @@ RAW_CONSTITUTION_PATH = os.path.join(settings.data_dir, "raw", "constitution_raw
 DOCUMENTS_DIR = os.path.join(settings.data_dir, "documents")
 
 
-def load_constitution_documents() -> List[Document]:
+def load_constitution_documents() -> list[Document]:
     """Parses all 465 constitutional articles from raw JSON into LangChain Documents."""
     if not os.path.exists(RAW_CONSTITUTION_PATH):
         raise FileNotFoundError(f"Raw constitution file not found at: {RAW_CONSTITUTION_PATH}")
 
-    with open(RAW_CONSTITUTION_PATH, "r", encoding="utf-8") as f:
+    with open(RAW_CONSTITUTION_PATH, encoding="utf-8") as f:
         articles = json.load(f)
 
-    docs: List[Document] = []
+    docs: list[Document] = []
     for item in articles:
         art_num = str(item.get("article", "")).strip()
         title = item.get("title", "").strip()
@@ -71,9 +71,9 @@ def load_constitution_documents() -> List[Document]:
     return docs
 
 
-def load_pdf_file(pdf_path: str) -> List[Document]:
+def load_pdf_file(pdf_path: str) -> list[Document]:
     """Extracts pages from a PDF file using PyMuPDF into Document objects."""
-    docs: List[Document] = []
+    docs: list[Document] = []
     file_name = os.path.basename(pdf_path)
 
     try:
@@ -103,11 +103,11 @@ def load_pdf_file(pdf_path: str) -> List[Document]:
     return docs
 
 
-def load_text_file(text_path: str) -> List[Document]:
+def load_text_file(text_path: str) -> list[Document]:
     """Reads .txt or .md files into Document objects."""
     file_name = os.path.basename(text_path)
     try:
-        with open(text_path, "r", encoding="utf-8") as f:
+        with open(text_path, encoding="utf-8") as f:
             content = f.read().strip()
         if content:
             # Determine document type based on subfolder
@@ -133,12 +133,12 @@ def load_text_file(text_path: str) -> List[Document]:
     return []
 
 
-def load_all_external_documents(docs_dir: Optional[str] = None) -> List[Document]:
+def load_all_external_documents(docs_dir: str | None = None) -> list[Document]:
     """Loads all PDF, TXT, and MD files from the documents directory and splits into chunks."""
     target_dir = docs_dir or DOCUMENTS_DIR
     os.makedirs(target_dir, exist_ok=True)
 
-    raw_docs: List[Document] = []
+    raw_docs: list[Document] = []
 
     # 1. Load PDFs
     for pdf_path in glob.glob(os.path.join(target_dir, "**", "*.pdf"), recursive=True):
@@ -172,7 +172,7 @@ def load_all_external_documents(docs_dir: Optional[str] = None) -> List[Document
     return chunked_docs
 
 
-def load_all_corpus_documents() -> List[Document]:
+def load_all_corpus_documents() -> list[Document]:
     """Loads all authentic raw corpus documents across all domains into a single list."""
     const_docs = load_constitution_documents()
     ext_docs = load_all_external_documents()

@@ -1,13 +1,13 @@
 """Configuration management for AWS Bedrock API, vector store, and evaluation."""
 import os
-from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     # AWS Bedrock API Configuration
-    bedrock_api_key: Optional[str] = Field(default=None, alias="BEDROCK_API_KEY")
+    bedrock_api_key: str | None = Field(default=None, alias="BEDROCK_API_KEY")
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
 
     # Evaluation Model Configuration: Moonshot Kimi 2.5
@@ -24,16 +24,16 @@ class Settings(BaseSettings):
     embedding_dimension: int = Field(default=1024, alias="EMBEDDING_DIMENSION")
 
     # Optional IAM fallback if ever needed by embedding client
-    aws_access_key_id: Optional[str] = Field(default=None, alias="AWS_ACCESS_KEY_ID")
-    aws_secret_access_key: Optional[str] = Field(default=None, alias="AWS_SECRET_ACCESS_KEY")
-    aws_session_token: Optional[str] = Field(default=None, alias="AWS_SESSION_TOKEN")
+    aws_access_key_id: str | None = Field(default=None, alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str | None = Field(default=None, alias="AWS_SECRET_ACCESS_KEY")
+    aws_session_token: str | None = Field(default=None, alias="AWS_SESSION_TOKEN")
 
-    # Storage paths
-    kb_storage_dir: str = Field(default="src/kb/storage", alias="KB_STORAGE_DIR")
-    data_dir: str = Field(default="src/kb/data", alias="DATA_DIR")
+    # Storage paths (repo-root relative; data lives outside the importable package)
+    kb_storage_dir: str = Field(default="data/storage", alias="KB_STORAGE_DIR")
+    data_dir: str = Field(default="data", alias="DATA_DIR")
 
     # Confident AI / DeepEval Key
-    confident_api_key: Optional[str] = Field(default=None, alias="CONFIDENT_API_KEY")
+    confident_api_key: str | None = Field(default=None, alias="CONFIDENT_API_KEY")
 
     model_config = SettingsConfigDict(
         env_file=".env",
