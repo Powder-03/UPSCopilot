@@ -26,6 +26,9 @@ dependencies = [
     "deepeval>=4.2.6",
     "pywin32>=312",
     "flashrank>=0.2.10",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "python-multipart>=0.0.9",
 ]
 
 [build-system]

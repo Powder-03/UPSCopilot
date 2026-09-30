@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     eval_temperature: float = Field(default=0.2, alias="EVAL_TEMPERATURE")
     eval_max_tokens: int = Field(default=4096, alias="EVAL_MAX_TOKENS")
 
+    # Multimodal Vision Model Configuration (for handwriting and diagram OCR)
+    bedrock_vision_model_id: str = Field(
+        default="moonshotai.kimi-k2.5", alias="BEDROCK_VISION_MODEL_ID"
+    )
+    parsing_dpi: int = Field(default=200, alias="PARSING_DPI")
+    parsing_max_workers: int = Field(default=4, alias="PARSING_MAX_WORKERS")
+
     # Bedrock Embedding Models (for Knowledge Base)
     bedrock_embedding_model_id: str = Field(
         default="amazon.titan-embed-text-v2:0", alias="BEDROCK_EMBEDDING_MODEL_ID"
@@ -31,6 +38,16 @@ class Settings(BaseSettings):
     # Storage paths (repo-root relative; data lives outside the importable package)
     kb_storage_dir: str = Field(default="data/storage", alias="KB_STORAGE_DIR")
     data_dir: str = Field(default="data", alias="DATA_DIR")
+    upload_dir: str = Field(default="data/uploads", alias="UPLOAD_DIR")
+    job_dir: str = Field(default="data/jobs", alias="JOB_DIR")
+
+    # Email Delivery Configuration (SES, SMTP, or Mock)
+    email_provider: str = Field(default="mock", alias="EMAIL_PROVIDER")
+    ses_from_email: str = Field(default="evaluator@upscopilot.com", alias="SES_FROM_EMAIL")
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_user: str = Field(default="", alias="SMTP_USER")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
 
     # Confident AI / DeepEval Key
     confident_api_key: str | None = Field(default=None, alias="CONFIDENT_API_KEY")

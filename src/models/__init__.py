@@ -1,4 +1,13 @@
 """Shared domain models: enums, evaluation scorecards, and KB benchmark schemas."""
+from src.models.api import (
+    JobStatus,
+    JobStatusResponse,
+    JobSubmitResponse,
+    OverallFeedback,
+    StudentEvaluationReport,
+    StudentQuestionEvaluation,
+    StudentSummary,
+)
 from src.models.enums import (
     CitationStatus,
     DemandStatus,
@@ -16,8 +25,16 @@ from src.models.evaluation import (
     PresentationEvaluation,
 )
 from src.models.kb import RetrievalEvaluationItem
+from src.models.parsing import ParsedDocument, ParsedQuestion
 
 __all__ = [
+    "JobStatus",
+    "JobStatusResponse",
+    "JobSubmitResponse",
+    "OverallFeedback",
+    "StudentEvaluationReport",
+    "StudentQuestionEvaluation",
+    "StudentSummary",
     "CitationStatus",
     "DemandStatus",
     "DirectiveType",
@@ -31,4 +48,6 @@ __all__ = [
     "PillarGEvalScore",
     "PresentationEvaluation",
     "RetrievalEvaluationItem",
+    "ParsedDocument",
+    "ParsedQuestion",
 ]

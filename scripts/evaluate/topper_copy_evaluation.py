@@ -16,6 +16,7 @@ Usage:
     uv run python scripts/evaluate/topper_copy_evaluation.py --runs 3 --limit 5
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import statistics
 from datetime import datetime
@@ -397,6 +398,20 @@ def save_checkpoint(
         json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
+def evaluate_question_isolated(engine: UPSCEvaluationEngine, q: dict[str, Any]) -> dict[str, Any]:
+    """Hermetic, isolated question evaluation.
+
+    Zero cross-question leakage: The prompt and model call contain only this question
+    and its candidate answer. CoT of Question 1 is NEVER visible to or studied for Question 2.
+    """
+    res = engine.evaluate_answer(
+        question=q["question"],
+        candidate_answer=q["candidate_answer"],
+        max_marks=q["max_marks"],
+    )
+    return extract_question_metrics(q["q_num"], q["max_marks"], q["question"], res)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Evaluate a full UPSC topper answer copy multiple times to analyze scoring consistency."
@@ -412,6 +427,12 @@ def main() -> None:
         type=int,
         default=DEFAULT_RUNS,
         help=f"Number of consecutive evaluation runs to execute (default: {DEFAULT_RUNS})",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=4,
+        help="Number of concurrent worker threads for evaluating questions in parallel (default: 4)",
     )
     parser.add_argument(
         "--limit",
@@ -450,7 +471,7 @@ def main() -> None:
 
     print("\n" + "=" * 82)
     print(f"STARTING MULTI-RUN CONSISTENCY BENCHMARK: {args.title.upper()}")
-    print(f"Input: {args.input} | Questions: {len(questions)} | Target Runs: {args.runs}")
+    print(f"Input: {args.input} | Questions: {len(questions)} | Target Runs: {args.runs} | Workers: {args.workers}")
     print("=" * 82)
 
     # Clean runs list — only resume if explicitly requested
@@ -466,18 +487,28 @@ def main() -> None:
     start_run_idx = len(runs) + 1
 
     for r_idx in range(start_run_idx, args.runs + 1):
-        print(f"\n--- RUN {r_idx}/{args.runs} ({len(questions)} Questions) ---")
-        q_records: list[dict[str, Any]] = []
+        print(f"\n--- RUN {r_idx}/{args.runs} ({len(questions)} Questions | {args.workers} Parallel Workers) ---")
 
-        for q in questions:
-            res = engine.evaluate_answer(
-                question=q["question"],
-                candidate_answer=q["candidate_answer"],
-                max_marks=q["max_marks"],
-            )
-            record = extract_question_metrics(q["q_num"], q["max_marks"], q["question"], res)
-            q_records.append(record)
-            print_minimal_question_line(record)
+        if args.workers > 1:
+            completed_records: list[dict[str, Any]] = []
+            with ThreadPoolExecutor(max_workers=args.workers) as executor:
+                future_to_q = {
+                    executor.submit(evaluate_question_isolated, engine, q): q["q_num"]
+                    for q in questions
+                }
+                for future in as_completed(future_to_q):
+                    record = future.result()
+                    completed_records.append(record)
+                    print_minimal_question_line(record)
+
+            # Preserve strict natural 1..N question ordering
+            q_records = sorted(completed_records, key=lambda r: r["q_num"])
+        else:
+            q_records = []
+            for q in questions:
+                record = evaluate_question_isolated(engine, q)
+                q_records.append(record)
+                print_minimal_question_line(record)
 
         total_score = round(sum(r["total_score"] for r in q_records), 2)
         total_max = sum(r["max_marks"] for r in q_records)

@@ -108,4 +108,33 @@ evaluator/
   - Hard Demand Relevance Gatekeeper against off-topic essays
 - [x] Created evaluation demo script (`scripts/evaluate/sample.py`) and unit tests (`tests/test_evaluation_engine.py`).
 - [x] Full structural refactor (2026-09): dead code purged (shim `kb/schema.py`, broken `kb/embeddings/`, orphan `kb/ingestion/chunker.py`, empty `intelligence/`, duplicate ingest scripts); schemas consolidated into `src/models/` (`evaluation.py`, `kb.py`, `enums.py`); data moved out of the package to root `data/` (Chroma store relocated intact, 769 docs, no re-ingestion); scripts regrouped into `dev/`, `ingest/`, `evaluate/` with the copy-evaluation trio merged into fixture-driven `scripts/evaluate/answer_copy.py`; shared helpers extracted to `src/utils/` (`json.py`, `cli.py`); magic numbers promoted to named constants in `engine.py` (`TOPPER_CEILING_PCT`, `MIN_SCORE_FLOOR`, `OFF_TOPIC_*`, ...) and `retriever.py` (`RRF_K`, `CHANNEL_DEPTH`, `RERANK_POOL_*`, `MAX_CHUNKS_PER_SOURCE`); `evaluate_answer` decomposed into `_retrieve_ground_truth` / `_run_diagnostic` / `_apply_marking_policy`; hardcoded benchmark arrays moved to `tests/fixtures/retrieval_benchmark.json`; stale `test_c2_kb_retrieval.py` replaced by API-correct `test_kb_retrieval.py`; tooling added (ruff config + 182 lint findings fixed, GitHub Actions CI, pre-commit, root `conftest.py` with `--run-bedrock` opt-in). Verified: `ruff check .` clean, 13 offline tests pass, all module imports and script CLIs smoke-tested.
+- [x] Multi-Run Consistency CLI & Concurrency Optimization (`scripts/evaluate/topper_copy_evaluation.py`):
+  - Streamlined output JSON to store only high-level stats, runs summary, and per-question marks/mean/stddev (no nested diagnostic bloat).
+  - Multi-worker concurrent evaluation (`--workers 4`) with hermetic per-question LLM calls (zero cross-question CoT contamination).
+  - In-memory thread-safe KB cache in `engine.py` reducing repeat question retrieval latency to 0.00ms.
+  - Zero-mark fast-path for unattempted/blank candidate answers without redundant LLM invocation.
+- [x] Created Negative Stress-Testing Fixture (`tests/fixtures/gs2_copy_poor.json`):
+  - 2 unattempted questions (Q08, Q18 left blank).
+  - 3 off-topic questions (Q05 ISRO Chandrayaan-3 for Sevottam, Q13 Harappan urban planning for CBI, Q19 Patanjali Yoga for BRICS).
+  - 15 poor-quality answers with gross factual errors (Art 500 for tribunals, Ambedkar inserting Socialist/Secular in 1950, Vajpayee introducing GST in 2017), slang, and lack of governance depth.
+  - Verified evaluation: blank questions receive 0.00 marks, off-topic answers trigger Hard Demand Relevance Gate (capped at 0.25/10), and overall score drops to 14.2% (Below Average / Needs Fundamental Value Add).
+- [x] Implemented Document Parsing & Ingestion Pipeline (`src/parsing/`):
+  - `src/models/parsing.py`: Pydantic schemas (`ParsedQuestion`, `ParsedDocument`) with direct serialization to evaluation engine JSON.
+  - `src/parsing/preprocessor.py`: PyMuPDF (`pymupdf`) page rendering, byte compression, and O(1) histogram-based visual blank page detection.
+  - `src/parsing/prompts.py`: Multimodal vision prompts for UPSC QCAB header extraction, handwriting transcription, strikethrough omission, and diagram conversion (`[Diagram: ...]`, markdown tables).
+  - `src/parsing/vision_client.py`: AWS Bedrock Multimodal Vision client with Converse API, defaulting to Moonshot Kimi 2.5 (`moonshotai.kimi-k2.5`).
+  - `src/parsing/segmenter.py`: QCAB page slicer (10M=2 pages, 15M=3 pages) with canonical 1-to-20 re-sorting and unattempted question reconciliation.
+  - `src/parsing/pipeline.py`: Master multi-threaded ingestion pipeline (`DocumentParsingPipeline`) with parallel question transcription and direct JSON export.
+  - `scripts/parse/parse_copy.py`: Production CLI tool (`uv run python scripts/parse/parse_copy.py --pdf ...`).
+- [x] Implemented Asynchronous End-to-End Evaluation Pipeline & FastAPI Service (Zero Performance Bands & Email Delivery):
+  - `src/models/api.py`: Pydantic models (`StudentQuestionEvaluation`, `OverallFeedback`, `StudentSummary`, `StudentEvaluationReport`, `JobStatusResponse`, `JobSubmitResponse`) enforcing zero performance bands and zero internal CoT/pillar tokens.
+  - `src/services/email_service.py`: Responsive HTML scorecard email generator with Amazon SES (`boto3`), SMTP, and dev mock preview modes.
+  - `src/services/job_manager.py`: Thread-safe background execution manager with disk persistence (`data/jobs/`, `data/uploads/`), progress tracking, and worker thread lifecycle.
+  - `src/pipeline.py`: `UnifiedEvaluationPipeline` orchestrator linking PDF vision OCR + KB retrieval + 2-call evaluator + student distillation.
+  - `src/api/app.py`: FastAPI service with `POST /api/v1/jobs/submit` (immediate HTTP 202 `<500ms`), `GET /api/v1/jobs/{job_id}`, and `GET /api/v1/health`.
+  - `scripts/evaluate/evaluate_pdf.py`: CLI tool with terminal table rendering, JSON scorecard output, and email delivery.
+  - Unit test suite expanded to 32 passing tests (including `test_api_schemas.py`, `test_email_service.py`, `test_job_manager.py`, `test_api_endpoints.py`, `test_pipeline_distiller.py`).
+  - Verified 100% clean with `uv run ruff check .` and `uv run pytest`.
 - [ ] Active: Ready for User Acceptance & Testing.
+
+

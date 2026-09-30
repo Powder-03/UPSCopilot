@@ -12,7 +12,7 @@ from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.evaluation.geval_scorer import BedrockGEvalScorer
+from src.evaluation.geval_scorer import PILLAR_CONFIGS, BedrockGEvalScorer
 from src.evaluation.model_factory import get_eval_llm
 from src.evaluation.prompt_templates import (
     SYSTEM_PROMPT_UPSC_EXAMINER,
@@ -233,6 +233,7 @@ class UPSCEvaluationEngine:
         self.retriever = retriever or HybridRetriever(top_k=6)
         self.llm = eval_llm or get_eval_llm()
         self.geval_scorer = geval_scorer or BedrockGEvalScorer()
+        self._kb_cache: dict[str, list[str]] = {}
 
     def evaluate_answer(
         self,
@@ -242,6 +243,47 @@ class UPSCEvaluationEngine:
     ) -> EvaluationResult:
         """Evaluates a candidate answer using 2-call CoT + G-Eval probability trailing."""
         logger.info(f"Starting UPSC evaluation for question ({int(max_marks)} marks)...")
+
+        # Fast-path for unattempted / blank answers (award authentic 0.0 marks with zero API waste)
+        if not candidate_answer or not candidate_answer.strip():
+            logger.info("Question left blank/unattempted. Awarding 0.0 marks.")
+            empty_pillars = {
+                pillar_type.value: PillarGEvalScore(
+                    pillar=pillar_type,
+                    pillar_name=cfg["name"],
+                    weight_pct=cfg["weight"],
+                    max_marks=round(max_marks * cfg["weight"], 2),
+                    discrete_probabilities={1: 1.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0},
+                    raw_expected_rating=1.0,
+                    calibrated_score=0.0,
+                    feedback="Question left completely unattempted.",
+                )
+                for pillar_type, cfg in PILLAR_CONFIGS.items()
+            }
+            return EvaluationResult(
+                question=question,
+                candidate_answer=candidate_answer,
+                max_marks=max_marks,
+                total_score=0.0,
+                percentage=0.0,
+                performance_band=UPSCPerformanceBand.NEEDS_FOUNDATION,
+                is_off_topic=False,
+                demand_relevance_gate=0.0,
+                directive_detected=DirectiveType.DISCUSS,
+                cot_reasoning_trail="Question left unattempted by the candidate. Zero marks awarded.",
+                micro_demands=[],
+                pillars=empty_pillars,
+                presentation=PresentationEvaluation(
+                    detected_archetype=PresentationArchetype.PARAGRAPH_HEAVY,
+                    visual_density_score=0.0,
+                    examiner_critique="No attempt made.",
+                    topper_reformatting_tip="Attempt all questions under exam time constraints.",
+                ),
+                citation_audit=CitationAudit(),
+                strengths=[],
+                weaknesses=["Question left completely unattempted."],
+                topper_action_plan=["Attempt all questions in GS-2 to capture step marks."],
+            )
 
         kb_context = self._retrieve_ground_truth(question)
         parts = self._run_diagnostic(question, candidate_answer, kb_context, max_marks)
@@ -290,7 +332,10 @@ class UPSCEvaluationEngine:
 
     def _retrieve_ground_truth(self, question: str) -> list[str]:
         """Step 1: hybrid retrieval of authentic KB context used for grounding verification."""
+        if question in self._kb_cache:
+            return self._kb_cache[question]
         kb_context: list[str] = self.retriever.get_retrieval_context(question, top_k=self.retriever.top_k)
+        self._kb_cache[question] = kb_context
         logger.info(f"Retrieved {len(kb_context)} ground-truth context blocks from Knowledge Base.")
         return kb_context
 
