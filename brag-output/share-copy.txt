@@ -1,0 +1,12 @@
+UPSC aspirants write 56 handwritten pages under unbearable pressure, then wait 14 days for a coaching teacher to scribble vague red ink marks.
+
+I built UPSCopilot:
+• Reads cursive handwriting, diagrams & tables with Bedrock Kimi 2.5 Vision
+• Audits citations against 465 authentic constitutional articles & 14 Supreme Court dossiers (catch anyone citing fake Article 500)
+• Continuous G-Eval logprob scoring across 6 canonical pillars
+• Calibrated scorecard straight to your inbox in 90 seconds.
+
+Zero fluff. Zero fake articles. Ruthlessly calibrated.
+
+Built on AWS Bedrock (Kimi 2.5 + Titan Text Embeddings V2).
+https://github.com/Powder-03/UPSCopilot

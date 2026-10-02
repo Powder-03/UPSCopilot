@@ -1,7 +1,6 @@
 """LangChain Chroma vector store integration with AWS Bedrock embeddings."""
 import os
 
-from langchain_aws import BedrockEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.embeddings import Embeddings
 
@@ -29,14 +28,25 @@ class DeterministicMockEmbeddings(Embeddings):
 
 
 def get_embedding_function(force_mock: bool = False) -> Embeddings:
-    """Returns BedrockEmbeddings if credentials exist, or DeterministicMockEmbeddings as fallback."""
-    if force_mock or not settings.has_aws_credentials:
+    """Returns BedrockEmbeddings if credentials exist and bedrock is active, or DeterministicMockEmbeddings as fallback."""
+    if force_mock or settings.is_vertex_active or not settings.has_aws_credentials:
         return DeterministicMockEmbeddings(dimension=settings.embedding_dimension)
 
-    return BedrockEmbeddings(
-        model_id=settings.bedrock_embedding_model_id,
-        region_name=settings.aws_region,
-    )
+    try:
+        from langchain_aws import BedrockEmbeddings
+
+        return BedrockEmbeddings(
+            model_id=settings.bedrock_embedding_model_id,
+            region_name=settings.aws_region,
+        )
+    except Exception as e:
+        import logging
+
+        logging.getLogger(__name__).warning(
+            f"Could not initialize BedrockEmbeddings ({e}); falling back to DeterministicMockEmbeddings."
+        )
+        return DeterministicMockEmbeddings(dimension=settings.embedding_dimension)
+
 
 
 def get_chroma_vector_store(

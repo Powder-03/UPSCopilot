@@ -97,3 +97,28 @@ def test_preprocessor_blank_page_heuristic():
             dark_img.putpixel((x, y), (0, 0, 0))
 
     assert preprocessor.is_page_visually_blank(dark_img) is False
+
+
+def test_clean_question_text_removes_hindi_and_metadata():
+    """Verifies that _clean_question_text strips Devanagari script, numbering, marks, and word limits."""
+    from src.parsing.pipeline import _clean_question_text
+
+    # Bilingual prompt with Hindi first line, English second line, marks and word counts
+    raw_bilingual = (
+        "1. संघ लोक सेवा आयोग की स्वतंत्रता को बनाए रखने के उपायों की विवेचना कीजिए।\n"
+        "Discuss the measures to preserve the independence of the Union Public Service Commission. "
+        "(10 Marks, 150 words)"
+    )
+    cleaned = _clean_question_text(raw_bilingual)
+    assert cleaned == "Discuss the measures to preserve the independence of the Union Public Service Commission."
+
+    # Question with Q2: prefix and trailing marks
+    raw_prefixed = "Q.2: What is judicial review? Discuss its constitutional foundations. (15 Marks)"
+    cleaned_prefixed = _clean_question_text(raw_prefixed)
+    assert cleaned_prefixed == "What is judicial review? Discuss its constitutional foundations."
+
+    # Inline bilingual string
+    raw_inline = "कुछ हिंदी शब्द Evaluate the effectiveness of the Sevottam model. (10 marks)"
+    cleaned_inline = _clean_question_text(raw_inline)
+    assert cleaned_inline == "Evaluate the effectiveness of the Sevottam model."
+

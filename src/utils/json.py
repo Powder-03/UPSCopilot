@@ -6,11 +6,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*\})\s*```", re.DOTALL)
 
 
 def _first_json_candidate(text: str) -> str | None:
-    """Returns the JSON-looking slice of `text`: a fenced block, or everything from the first '{'."""
+    """Returns the JSON-looking slice of `text`: a fenced block, or everything from the first '{' to last '}'."""
     if not text:
         return None
 
@@ -19,7 +19,11 @@ def _first_json_candidate(text: str) -> str | None:
         return fence.group(1).strip()
 
     start = text.find("{")
-    return text[start:] if start != -1 else None
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return text[start : end + 1].strip()
+
+    return text[start:].strip() if start != -1 else None
 
 
 def extract_json_dict(text: str) -> dict[str, Any]:
@@ -31,12 +35,32 @@ def extract_json_dict(text: str) -> dict[str, Any]:
     if candidate is None:
         return {}
 
+    # Attempt 1: standard raw_decode
     try:
         obj, _ = json.JSONDecoder().raw_decode(candidate)
         if isinstance(obj, dict):
             return obj
-    except Exception as e:
-        logger.warning(f"Error parsing JSON from LLM output: {e}")
+    except Exception:
+        pass
+
+    # Attempt 2: json.loads with strict=False (allows unescaped newlines/tabs in string values)
+    try:
+        obj = json.loads(candidate, strict=False)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+
+    # Attempt 3: slice from first { to last }
+    start = candidate.find("{")
+    end = candidate.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            obj = json.loads(candidate[start : end + 1], strict=False)
+            if isinstance(obj, dict):
+                return obj
+        except Exception as e:
+            logger.warning(f"Error parsing JSON from LLM output: {e}")
 
     return {}
 

@@ -14,6 +14,7 @@ class ParsedQuestion(BaseModel):
     diagrams: list[str] = Field(default_factory=list, description="Descriptions of any diagrams, flowcharts, or tables detected")
     is_blank: bool = Field(default=False, description="True if the question space was completely blank / unattempted")
     word_count: int = Field(default=0, description="Approximate transcribed word count")
+    error: str | None = Field(default=None, description="Error message if transcription or parsing failed")
 
     def to_evaluation_dict(self) -> dict[str, Any]:
         """Converts to the exact dict format expected by the UPSC evaluation engine."""

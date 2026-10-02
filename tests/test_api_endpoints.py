@@ -22,8 +22,11 @@ def test_health_check_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
+    assert "llm_provider" in data
     assert "eval_model" in data
     assert "vision_model" in data
+    assert "gcp_configured" in data
+
 
 
 def test_submit_job_valid_pdf():

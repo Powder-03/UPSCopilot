@@ -8,7 +8,10 @@ EXTRACTION RULES:
 1. QUESTION HEADER DETECTION:
    - Identify the printed Question Number (e.g. Q1, Q.2, Question 3).
    - Identify the Allocated Marks (usually 10 Marks for 150 words, or 15 Marks for 250 words). If not explicitly printed, default 10M for Q1-Q10 and 15M for Q11-Q20.
-   - Extract the full verbatim printed Question Text from the top header box.
+   - BILINGUAL QUESTION HEADERS (HINDI & ENGLISH): UPSC/Drishti/Vision QCAB booklets print question prompts in both Hindi and English.
+     You MUST extract ONLY the clean English version of the question text.
+     Do NOT include Hindi Devanagari text in the "question" field.
+     Do NOT include question prefix numbers (e.g., "1.", "Q1:", "Question 1:"), marks indications (e.g., "(10 marks)", "10"), or word count guidelines (e.g., "(150 words)") in the "question" field—extract the clean English sentence prompt only.
 
 2. HANDWRITING TRANSCRIPTION:
    - Accurately transcribe all handwritten English / Hindi technical text written by the candidate below the printed question.

@@ -7,10 +7,12 @@ from src.evaluation.engine import (
     _classify_performance_band,
     _match_enum,
     _parse_citation_status,
+    _parse_diagnostic,
 )
 from src.evaluation.geval_scorer import (
     PILLAR_CONFIGS,
     BedrockGEvalScorer,
+    VertexGEvalScorer,
     calibrate_rating_to_upsc_marks,
 )
 from src.evaluation.prompt_templates import build_geval_scoring_prompt
@@ -23,6 +25,7 @@ from src.models.enums import (
     UPSCPerformanceBand,
 )
 from src.models.evaluation import PillarGEvalScore, PresentationEvaluation
+from src.models.exceptions import ModelInvocationError, RatingExtractionError
 from src.utils.json import clean_json_text, extract_json_dict
 
 
@@ -228,7 +231,8 @@ def test_parse_logprob_pillars_merged_score_token_uses_trailing_digit():
             {"token": "P1: 3", "logprob": math.log(0.1)},
         ],
     }]
-    pillars = scorer._parse_logprob_pillars(tokens, "P1: 4", {}, 10.0)
+    output_text = "P1: 4\nP2: 3\nP3: 4\nP4: 5\nP5: 3\nP6: 4"
+    pillars = scorer._parse_logprob_pillars(tokens, output_text, {}, 10.0)
     p1 = pillars[PillarType.DEMAND_FULFILLMENT.value]
     assert p1.scoring_method == "logprob"
     assert p1.discrete_probabilities == {4: 0.7, 5: 0.2, 3: 0.1}
@@ -251,10 +255,49 @@ def test_parse_logprob_pillars_text_fallback_without_logprobs():
     assert pillars[PillarType.INTRODUCTION.value].raw_expected_rating == 4.0
 
 
-def test_fallback_pillar_scoring_is_flagged():
-    """The offline heuristic fallback must be labeled and still respect the 45% calibration."""
+def test_missing_pillar_raises_rating_extraction_error():
+    """Missing pillar in output text must raise RatingExtractionError instead of defaulting to 3.0."""
     scorer = BedrockGEvalScorer()
-    pillars = scorer._fallback_pillar_scoring({}, 10.0)
-    assert all(p.scoring_method == "heuristic_fallback" for p in pillars.values())
-    assert all(p.raw_expected_rating == 3.0 for p in pillars.values())
-    assert abs(sum(p.calibrated_score for p in pillars.values()) - 4.5) < 1e-6
+    # P6 is missing from output
+    output_text = "P1: 4\nP2: 3\nP3: 4\nP4: 5\nP5: 3"
+    tokens = [
+        {"token": t, "logprob": 0.0}
+        for t in ["P1: 4", "\n", "P2: 3", "\n", "P3: 4", "\n", "P4: 5", "\n", "P5: 3"]
+    ]
+    with pytest.raises(RatingExtractionError) as exc_info:
+        scorer._parse_logprob_pillars(tokens, output_text, {}, 10.0)
+    assert "P6" in str(exc_info.value)
+
+
+def test_scorer_fails_fast_on_api_error():
+    """Scorer must raise ModelInvocationError on API errors instead of returning fake 45% marks."""
+    from unittest.mock import MagicMock
+
+    # Bedrock failure
+    mock_bedrock = MagicMock()
+    mock_bedrock.invoke_model.side_effect = RuntimeError("AWS Bedrock connection timed out")
+    bedrock_scorer = BedrockGEvalScorer(client=mock_bedrock)
+    with pytest.raises(ModelInvocationError) as exc_info:
+        bedrock_scorer.score_pillars("Q", "A", "CoT", {})
+    assert "Bedrock G-Eval scoring failed" in str(exc_info.value)
+
+    # Vertex failure
+    mock_vertex = MagicMock()
+    mock_vertex.models.generate_content.side_effect = RuntimeError("Vertex AI quota exceeded")
+    vertex_scorer = VertexGEvalScorer(client=mock_vertex)
+    with pytest.raises(ModelInvocationError) as exc_info:
+        vertex_scorer.score_pillars("Q", "A", "CoT", {})
+    assert "Vertex G-Eval scoring failed" in str(exc_info.value)
+
+
+def test_parse_diagnostic_fails_fast_on_invalid_output():
+    """Call 1 diagnostic parser must raise ModelInvocationError if model response is empty or invalid."""
+    with pytest.raises(ModelInvocationError):
+        _parse_diagnostic({})
+
+    with pytest.raises(ModelInvocationError):
+        _parse_diagnostic({"is_off_topic": False})
+
+    with pytest.raises(ModelInvocationError):
+        _parse_diagnostic({"cot_reasoning_trail": "trail without pillar summary"})
+

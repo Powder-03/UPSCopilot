@@ -12,7 +12,11 @@ from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.evaluation.geval_scorer import PILLAR_CONFIGS, BedrockGEvalScorer
+from src.evaluation.geval_scorer import (
+    PILLAR_CONFIGS,
+    BaseGEvalScorer,
+    get_geval_scorer,
+)
 from src.evaluation.model_factory import get_eval_llm
 from src.evaluation.prompt_templates import (
     SYSTEM_PROMPT_UPSC_EXAMINER,
@@ -34,6 +38,7 @@ from src.models.evaluation import (
     PillarGEvalScore,
     PresentationEvaluation,
 )
+from src.models.exceptions import ModelInvocationError
 from src.utils.json import extract_json_dict
 
 logger = logging.getLogger(__name__)
@@ -44,12 +49,6 @@ MIN_SCORE_FLOOR = 0.5           # An on-topic attempt is never awarded a bare ze
 OFF_TOPIC_GATE_DEFAULT = 0.10   # Fallback relevance gate, matching the policy stated in the system prompt
 OFF_TOPIC_MAX_MARKS = 1.0       # Hard cap for an answer that addresses a different question
 MAX_PRESENTATION_BONUS = 0.5    # Capped tie-breaker; Pillar 2 already scores structure
-
-# --- Defaults applied when the LLM omits an optional diagnostic field ---
-DEFAULT_COT_TRAIL = "Chain of thought generated."
-DEFAULT_STRENGTHS = ["Addressed core themes of the question."]
-DEFAULT_WEAKNESSES = ["Expand multi-dimensional governance angles."]
-DEFAULT_ACTION_PLAN = ["Incorporate precise constitutional articles and landmark case ratios."]
 
 
 def _match_enum(enum_cls, raw: Any, default):
@@ -172,10 +171,21 @@ def _parse_presentation(raw_pres: Any) -> PresentationEvaluation:
 
 
 def _parse_diagnostic(diagnostic: dict[str, Any]) -> dict[str, Any]:
-    """Normalizes the raw Call-1 JSON into typed, defensively-defaulted evaluation parts."""
+    """Normalizes the raw Call-1 JSON into typed evaluation parts, failing fast on malformed outputs."""
+    if not diagnostic:
+        raise ModelInvocationError("Call 1 Diagnostic LLM returned empty or unparseable JSON response.")
+
+    cot_trail = str(diagnostic.get("cot_reasoning_trail", "")).strip()
+    if not cot_trail:
+        raise ModelInvocationError("Call 1 Diagnostic LLM omitted 'cot_reasoning_trail'.")
+
+    pillar_summary = diagnostic.get("pillar_summary")
+    if not isinstance(pillar_summary, dict) or not pillar_summary:
+        raise ModelInvocationError("Call 1 Diagnostic LLM omitted or produced invalid 'pillar_summary'.")
+
     is_off_topic = bool(diagnostic.get("is_off_topic", False))
     return {
-        "cot_trail": diagnostic.get("cot_reasoning_trail", DEFAULT_COT_TRAIL),
+        "cot_trail": cot_trail,
         "is_off_topic": is_off_topic,
         "demand_relevance_gate": float(
             diagnostic.get("demand_relevance_gate", 1.0 if not is_off_topic else OFF_TOPIC_GATE_DEFAULT)
@@ -184,10 +194,10 @@ def _parse_diagnostic(diagnostic: dict[str, Any]) -> dict[str, Any]:
         "micro_demands": _parse_micro_demands(diagnostic.get("micro_demands")),
         "citation_audit": _parse_citation_audit(diagnostic.get("citation_audit")),
         "presentation": _parse_presentation(diagnostic.get("presentation")),
-        "strengths": diagnostic.get("strengths", DEFAULT_STRENGTHS),
-        "weaknesses": diagnostic.get("weaknesses", DEFAULT_WEAKNESSES),
-        "topper_action_plan": diagnostic.get("topper_action_plan", DEFAULT_ACTION_PLAN),
-        "pillar_summary": diagnostic.get("pillar_summary", {}),
+        "strengths": [str(s) for s in diagnostic.get("strengths", []) if s],
+        "weaknesses": [str(w) for w in diagnostic.get("weaknesses", []) if w],
+        "topper_action_plan": [str(a) for a in diagnostic.get("topper_action_plan", []) if a],
+        "pillar_summary": pillar_summary,
     }
 
 
@@ -227,13 +237,14 @@ class UPSCEvaluationEngine:
     def __init__(
         self,
         retriever: HybridRetriever | None = None,
-        eval_llm=None,
-        geval_scorer: BedrockGEvalScorer | None = None,
+        eval_llm: Any = None,
+        geval_scorer: BaseGEvalScorer | None = None,
     ):
         self.retriever = retriever or HybridRetriever(top_k=6)
         self.llm = eval_llm or get_eval_llm()
-        self.geval_scorer = geval_scorer or BedrockGEvalScorer()
+        self.geval_scorer = geval_scorer or get_geval_scorer()
         self._kb_cache: dict[str, list[str]] = {}
+
 
     def evaluate_answer(
         self,

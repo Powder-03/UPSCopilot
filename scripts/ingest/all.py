@@ -4,6 +4,7 @@ Ingests real raw sources into Chroma vector store with AWS Bedrock Titan Embeddi
 2. Official Legislative Central Acts, Supreme Court judgments, and Reference PDFs (from data/documents/)
 """
 import logging
+import os
 from langchain_core.documents import Document
 
 from src.config import settings
@@ -20,7 +21,8 @@ def run_master_ingestion(persist_dir: str = None, batch_size: int = 50, reset: b
     """Master ingestion function populating the Chroma vector store in batches."""
     logger.info("=" * 60)
     logger.info("Starting Master UPSC Knowledge Base Ingestion Pipeline (Zero Hardcoding)")
-    logger.info(f"Target Persist Directory: {persist_dir or settings.kb_storage_dir}")
+    target_persist = persist_dir or os.path.join(settings.kb_storage_dir, "chroma_db")
+    logger.info(f"Target Persist Directory: {target_persist}")
     logger.info(f"Embedding Model: {settings.bedrock_embedding_model_id}")
     logger.info(f"AWS Region: {settings.aws_region}")
     logger.info(f"Reset Existing Collection: {reset}")

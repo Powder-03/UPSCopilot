@@ -14,6 +14,7 @@ from src.models.api import (
     StudentSummary,
 )
 from src.models.evaluation import EvaluationResult
+from src.models.exceptions import DocumentParsingError
 from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.parsing.pipeline import DocumentParsingPipeline
 
@@ -109,6 +110,8 @@ class UnifiedEvaluationPipeline:
         total = len(questions)
 
         for idx, q in enumerate(questions, 1):
+            if q.error:
+                raise DocumentParsingError(f"Cannot evaluate Q{q.q_num:02d}: {q.error}")
             progress_callback(
                 JobStatus.EVALUATING,
                 int(30 + 60 * (idx - 1) / total),
@@ -129,6 +132,10 @@ class UnifiedEvaluationPipeline:
         progress_callback: Callable[[JobStatus, int, str], None],
     ) -> list[tuple[ParsedQuestion, EvaluationResult]]:
         """Evaluates questions in parallel worker threads."""
+        for q in questions:
+            if q.error:
+                raise DocumentParsingError(f"Cannot evaluate Q{q.q_num:02d}: {q.error}")
+
         results: list[tuple[ParsedQuestion, EvaluationResult]] = []
         total = len(questions)
         completed = 0

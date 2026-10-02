@@ -40,16 +40,18 @@ async def root() -> dict[str, str]:
 
 @app.get("/api/v1/health", tags=["Health"])
 async def health_check() -> dict[str, object]:
-    """Liveness, readiness, and AWS configuration health check."""
+    """Liveness, readiness, and provider configuration health check."""
     return {
         "status": "healthy",
+        "llm_provider": settings.llm_provider,
+        "eval_model": settings.active_eval_model_id,
+        "vision_model": settings.active_vision_model_id,
+        "gcp_configured": bool(settings.gemini_api_key),
         "aws_credentials_available": settings.has_aws_credentials,
         "aws_region": settings.aws_region,
-        "eval_model": settings.bedrock_eval_model_id,
-        "vision_model": settings.bedrock_vision_model_id,
-        "embedding_model": settings.bedrock_embedding_model_id,
         "email_provider": settings.email_provider,
     }
+
 
 
 @app.post(

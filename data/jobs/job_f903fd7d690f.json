@@ -1,0 +1,16 @@
+{
+  "job_id": "job_f903fd7d690f",
+  "status": "QUEUED",
+  "progress_pct": 0,
+  "current_step": "Job queued for processing",
+  "email": "aspirant@upsc.test",
+  "email_sent": false,
+  "error": null,
+  "result": null,
+  "pdf_path": "data\\uploads\\job_f903fd7d690f_test_answer_booklet.pdf",
+  "filename": "test_answer_booklet.pdf",
+  "start_page": 3,
+  "max_pages": 4,
+  "created_at": "2026-10-02T07:45:59.728688+00:00",
+  "updated_at": "2026-10-02T07:45:59.728688+00:00"
+}

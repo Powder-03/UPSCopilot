@@ -6,6 +6,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # Primary LLM Provider: 'vertex' (Gemini 2.5 Flash via Vertex AI) or 'bedrock' (Moonshot Kimi 2.5)
+    llm_provider: str = Field(default="vertex", alias="LLM_PROVIDER")
+
+    # Vertex AI / Google Cloud Configuration
+    gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
+    gcp_project_id: str = Field(default="project-1b52589d-0827-46ab-9be", alias="GCP_PROJECT_ID")
+    gcp_location: str = Field(default="us-central1", alias="GCP_LOCATION")
+    vertex_eval_model_id: str = Field(default="gemini-2.5-flash", alias="VERTEX_EVAL_MODEL_ID")
+    vertex_vision_model_id: str = Field(default="gemini-2.5-flash", alias="VERTEX_VISION_MODEL_ID")
+
     # AWS Bedrock API Configuration
     bedrock_api_key: str | None = Field(default=None, alias="BEDROCK_API_KEY")
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
@@ -59,6 +69,26 @@ class Settings(BaseSettings):
     )
 
     @property
+    def is_vertex_active(self) -> bool:
+        """Returns True if the primary provider is Google Cloud Vertex AI / Gemini."""
+        return self.llm_provider.strip().lower() in ("vertex", "gemini", "google")
+
+    @property
+    def is_bedrock_active(self) -> bool:
+        """Returns True if the primary provider is AWS Bedrock."""
+        return self.llm_provider.strip().lower() in ("bedrock", "aws")
+
+    @property
+    def active_eval_model_id(self) -> str:
+        """Returns the model ID for evaluation based on the active provider."""
+        return self.vertex_eval_model_id if self.is_vertex_active else self.bedrock_eval_model_id
+
+    @property
+    def active_vision_model_id(self) -> str:
+        """Returns the model ID for vision parsing based on the active provider."""
+        return self.vertex_vision_model_id if self.is_vertex_active else self.bedrock_vision_model_id
+
+    @property
     def has_aws_credentials(self) -> bool:
         """Returns True if Bedrock API key or AWS credentials exist."""
         return bool(
@@ -70,3 +100,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

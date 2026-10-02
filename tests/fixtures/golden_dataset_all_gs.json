@@ -1,0 +1,282 @@
+[
+  {
+    "id": "gold_gs1_01",
+    "paper": "GS1",
+    "category": "Art & Architecture",
+    "query": "Trace the architectural evolution of the Buddhist Stupa and explain the symbolic significance of its canonical components.",
+    "ideal_answer": "Originating as pre-Buddhist earthen funerary mounds, the Stupa transformed under Mauryan and Post-Mauryan patronage into monumental commemorative and relic shrines. The architecture incorporates profound cosmic and metaphysical symbolism: (1) Medhi: The elevated circular plinth representing the earthly foundation. (2) Anda: The semi-circular hemispherical dome symbolizing the celestial dome, the womb of creation, and universal consciousness. (3) Harmika: A square balcony-like balustrade perched directly atop the Anda, serving as the sacred sanctuary containing the physical relics (Dhatu) of the Buddha or Arhats. (4) Yasti: The central axial pillar passing through the center of the Anda, representing the World Axis (Axis Mundi) connecting earth to the heavens. (5) Chhatri: Mounted on the Yasti, the triple-umbrella tier represents the Three Jewels of Buddhism (Triratna: Buddha, Dharma, Sangha). (6) Pradakshina-patha: Circumambulatory walkway enclosed by stone railings (Vedika), facilitating clockwise devotional circumambulation. (7) Toranas: Sculpted ceremonial gateway arches erected at four cardinal points (as seen at Sanchi and Bharhut) decorated with Jataka tales, Salabhanjikas, and Buddhist motifs.",
+    "key_entities": ["Anda", "Harmika", "Yasti", "Chhatri", "Triratna", "Pradakshina-patha", "Torana", "Sanchi Stupa No. 1"]
+  },
+  {
+    "id": "gold_gs1_02",
+    "paper": "GS1",
+    "category": "Modern History & Freedom Struggle",
+    "query": "Compare and contrast the political philosophies and strategic approaches of Mahatma Gandhi and Subhas Chandra Bose towards India's liberation.",
+    "ideal_answer": "Mahatma Gandhi and Subhas Chandra Bose were united in their uncompromising dedication to Purna Swaraj, but diverged fundamentally on ideology, methodology, and post-war reconstruction. Gandhi anchored the national struggle in absolute non-violence (Ahimsa), moral mass mobilization (Satyagraha), and the inseparability of ends and means, maintaining that freedom achieved through violence would result in authoritarianism. Bose, while deeply respectful of Gandhi (calling him 'Father of the Nation' in 1944), adhered to revolutionary pragmatism, believing that British imperialism, entangled in World War II, would only yield to armed force, famously proclaiming 'Give me blood, and I will give you freedom'. In economic vision, Gandhi advocated decentralized rural village republics (Gram Swaraj), traditional handicraft industries (Charkha), and voluntary Trusteeship. Conversely, Bose favored a modern industrialized socialist state, heavy mechanized industries, and centralized state planning (championing the National Planning Committee of 1938 under Jawaharlal Nehru). Strategically, Gandhi opposed seeking Axis power military assistance during WWII, while Bose forged tactical alliances with Germany and Japan to organize the Indian National Army (Azad Hind Fauj) and the Provisional Government of Free India in Singapore.",
+    "key_entities": ["Mahatma Gandhi", "Subhas Chandra Bose", "Ahimsa and Satyagraha", "Azad Hind Fauj (INA)", "Gram Swaraj vs Industrial Planning", "National Planning Committee 1938"]
+  },
+  {
+    "id": "gold_gs1_03",
+    "paper": "GS1",
+    "category": "Physical Geography",
+    "query": "Explain the role of upper-atmospheric jet streams and oceanic teleconnections in governing the onset and variability of the Indian Southwest Monsoon.",
+    "ideal_answer": "The Indian Southwest Monsoon is regulated by complex upper-tropospheric wind dynamics and global oceanic teleconnections. During winter, the Subtropical Westerly Jet Stream (STWJ) blows over North India along 25°N, acting as an atmospheric lid that suppresses convective precipitation. The sudden, abrupt northward migration of the STWJ beyond the Tibetan Plateau in late May creates a low-pressure vacuum over the Indo-Gangetic Plains, triggering the 'Burst of the Monsoon' along the Kerala coast around June 1. Concurrently, intense thermal heating of the elevated Tibetan Plateau acts as a thermal engine, generating the Tropical Easterly Jet (TEJ) at 14-16 km altitude; a robust TEJ steers deep convective monsoon depressions across the Bay of Bengal into central India. Oceanically, the monsoon is governed by the El Niño Southern Oscillation (ENSO) and the Indian Ocean Dipole (IOD). El Niño (abnormal warming of the central-eastern equatorial Pacific) suppresses the Walker circulation, frequently causing monsoon deficits and droughts. However, a Positive Indian Ocean Dipole (positive IOD), characterized by warmer sea surface temperatures in the western Arabian Sea, acts as an atmospheric buffer by fueling localized convection, offsetting the adverse impacts of El Niño as witnessed during the 1997 and 2019 monsoons.",
+    "key_entities": ["Subtropical Westerly Jet Stream (STWJ)", "Tropical Easterly Jet (TEJ)", "Tibetan Plateau heat engine", "Monsoon Burst", "ENSO", "Indian Ocean Dipole (IOD)"]
+  },
+  {
+    "id": "gold_gs1_04",
+    "paper": "GS1",
+    "category": "Resource Geography",
+    "query": "Discuss the strategic significance of Critical and Rare Earth Minerals for India's clean energy transition and map their domestic geological distribution.",
+    "ideal_answer": "Critical and Strategic Minerals (such as Lithium, Cobalt, Nickel, and Rare Earth Elements - REEs) are foundational to India's clean energy transition, electric vehicle (EV) manufacturing, semiconductor chips, and the Net Zero 2070 target. Geologically, India's critical mineral reserves are distributed across specific rock formations: (1) Lithium: Inferred resources of ~5.9 million tonnes discovered in the bauxite-bearing clay deposits of the Salal-Haimana area in Reasi district, Jammu & Kashmir, and pegmatite deposits in Mandya district, Karnataka. (2) Rare Earth Elements (17 elements): Heavily concentrated in the coastal placer Monazite beach sands of Kerala (Chavara), Tamil Nadu (Manavalakurichi), Odisha (Chhatrapur), and Andhra Pradesh, mined and processed by Indian Rare Earths Limited (IREL). Monazite also contains Thorium, which forms the core of Stage-3 of India's Three-Stage Nuclear Power Programme. (3) Copper: Confined to the Khetri copper belt (Rajasthan), Malanjkhand porphyry deposits (Madhya Pradesh), and Singhbhum (Jharkhand). Because India imports >70% of copper and 100% of lithium, domestic extraction, coupled with Khanij Bidesh India Limited (KABIL) securing overseas assets in the Lithium Triangle (Argentina, Chile, Bolivia), is essential for strategic autonomy.",
+    "key_entities": ["Salal-Haimana (Reasi, J&K)", "Monazite beach sands", "Rare Earth Elements (REEs)", "Thorium three-stage nuclear programme", "KABIL", "Clean energy transition"]
+  },
+  {
+    "id": "gold_gs1_05",
+    "paper": "GS1",
+    "category": "Indian Society",
+    "query": "Analyze M.N. Srinivas's concepts of 'Sanskritization' and 'Dominant Caste' and examine their relevance in understanding contemporary rural power dynamics.",
+    "ideal_answer": "Sociologist M.N. Srinivas introduced 'Sanskritization' to explain social mobility within the traditional Hindu caste hierarchy: It is the process by which a low caste or tribal group adopts the customs, dietary practices (vegetarianism), rituals, and dress of high 'twice-born' (Dvija) castes to claim higher social status. Srinivas emphasized that Sanskritization results only in positional change within the caste system, not structural change of the caste system itself. Concurrently, Srinivas conceptualized the 'Dominant Caste' as a community that decisively wields local economic and political power based on three determinants: (1) substantial numerical strength in the village/district, (2) ownership of significant agricultural landholdings, and (3) access to modern political power and government jobs. Post-independence land reforms (abolition of Zamindari) and the Green Revolution empowered intermediate agrarian castes (e.g., Jats in Haryana/UP, Marathas in Maharashtra, Yadavs in Bihar, Vokkaligas/Lingayats in Karnataka, Kammas/Reddys in Andhra). Today, dominant castes act as powerful vote-banks and political pressure groups, shifting the axis of rural power from ritual ritualistic purity to secular political dominance, while often experiencing agrarian distress and demanding OBC reservations in response to agricultural stagnation.",
+    "key_entities": ["M.N. Srinivas", "Sanskritization", "Dominant Caste", "Positional change vs Structural change", "Agrarian land reforms", "Intermediate caste assertion"]
+  },
+  {
+    "id": "gold_gs1_06",
+    "paper": "GS1",
+    "category": "Indian Society & Gender",
+    "query": "Evaluate the factors responsible for the paradox of low Female Labor Force Participation Rate (FLFPR) in India despite rising female educational attainment.",
+    "ideal_answer": "India presents a persistent demographic paradox: Rapid economic expansion and surging female secondary/tertiary education have coexisted with a historically low Female Labor Force Participation Rate (FLFPR), reflecting the classic 'U-shaped hypothesis' of female labor supply. Key structural drivers include: (1) Disproportionate Unpaid Care Work: As documented by MoSPI's Time Use Survey, Indian women spend ~299 minutes/day on unpaid caregiving and household labor compared to only 97 minutes for men, imposing a structural 'motherhood penalty'. (2) Income Effect and Social Status: With rising household incomes during early economic growth, families withdraw women from low-prestige manual labor to signal upward social mobility. (3) Occupational Segregation & Job Deficit: Lack of formal, safe, flexible jobs suited for educated rural and semi-urban women; safety concerns in public transit and patriarchal family restrictions. (4) Mechanization of Agriculture: Modernization has displaced female manual farm labor without compensatory rural non-farm absorption. Recent policy interventions like the Nari Shakti Vandan Adhiniyam (106th Amendment reserving 33% seats in Parliament/Assemblies), expansion of Self-Help Groups (Lakhpati Didi), and Creche rules under the Maternity Benefit Amendment Act 2017 aim to dismantle these barriers.",
+    "key_entities": ["U-shaped hypothesis", "Unpaid care work (MoSPI Time Use Survey)", "Motherhood penalty", "Occupational segregation", "Nari Shakti Vandan Adhiniyam (106th Amendment)"]
+  },
+  {
+    "id": "gold_gs2_01",
+    "paper": "GS2",
+    "category": "Ordinance & Judicial Review",
+    "query": "Examine the constitutional safeguards against executive abuse of the ordinance-making power. How did the Supreme Court curb mechanical re-promulgation in D.C. Wadhwa and Krishna Kumar Singh?",
+    "ideal_answer": "Under Article 123 (for the President) and Article 213 (for the Governor), an ordinance can only be promulgated when both or either House of Parliament/State Legislature is not in session and circumstances exist which render it necessary to take immediate action. The Constitution mandates that an ordinance must be laid before the legislature and ceases to operate after six weeks from the reassembly of the legislature. In D.C. Wadhwa v. State of Bihar (1987), the Supreme Court held that the mechanical and repeated re-promulgation of ordinances without placing them before the legislative assembly is a subversion of the democratic legislative process, a colorable exercise of power, and a fraud on the Constitution. In Krishna Kumar Singh v. State of Bihar (2017), a 7-judge Constitution bench reaffirmed that ordinance-making is an exceptional emergency power, that tabling the ordinance before the legislature is mandatory, and that the executive's satisfaction is not immune from judicial review.",
+    "key_entities": ["Article 123", "Article 213", "D.C. Wadhwa (1987)", "Krishna Kumar Singh (2017)"]
+  },
+  {
+    "id": "gold_gs2_02",
+    "paper": "GS2",
+    "category": "Basic Structure & Constituent Power",
+    "query": "Explain the doctrine of Basic Structure and how the Supreme Court reconciled the balance between Fundamental Rights and Directive Principles in Minerva Mills.",
+    "ideal_answer": "Under Article 368, Parliament has the constituent power to amend the Constitution. In Kesavananda Bharati v. State of Kerala (1973), a 13-judge Constitution bench ruled that Parliament's amending power is not unlimited and cannot be used to damage, alter, or destroy the basic structure or essential framework of the Constitution. In Minerva Mills v. Union of India (1980), the Supreme Court struck down Section 55 of the 42nd Amendment Act (which inserted clauses (4) and (5) into Article 368 claiming unlimited constituent power and barring judicial review). The Court also struck down Section 4 of the 42nd Amendment, holding that giving blanket supremacy to all Directive Principles (Part IV) over Fundamental Rights (Part III) destroyed the basic structure, famously declaring that the Indian Constitution is founded on the bedrock of the balance between Part III and Part IV.",
+    "key_entities": ["Article 368", "Kesavananda Bharati (1973)", "Minerva Mills (1980)", "Part III and Part IV balance"]
+  },
+  {
+    "id": "gold_gs2_03",
+    "paper": "GS2",
+    "category": "Federalism & Emergency Provisions",
+    "query": "How did the landmark S.R. Bommai judgment provide safeguards against the partisan invocation of Article 356 (President's Rule)?",
+    "ideal_answer": "Article 356 empowers the President to impose President's Rule in a State upon receiving a report from the Governor or otherwise if satisfied that the government of the State cannot be carried on in accordance with the provisions of the Constitution. In S.R. Bommai v. Union of India (1994), a 9-judge Constitution bench held that federalism is part of the basic structure of the Constitution. The Court laid down that presidential proclamations under Article 356 are subject to judicial review, and the executive's satisfaction must be based on objective, relevant material. The Court mandated that the floor of the Legislative Assembly is the only constitutional forum to test a Ministry's majority (Floor Test). Crucially, Bommai ruled that the Legislative Assembly cannot be dissolved until both Houses of Parliament approve the proclamation, and the Court has the power to restore a dismissed government and revive a dissolved assembly if the proclamation is found to be malafide or unconstitutional.",
+    "key_entities": ["Article 356", "S.R. Bommai (1994)", "Floor Test", "Federalism as basic structure"]
+  },
+  {
+    "id": "gold_gs2_04",
+    "paper": "GS2",
+    "category": "Anti-Defection & Speaker Jurisdiction",
+    "query": "Critically analyze the adjudicatory power of the Speaker under the Tenth Schedule in light of Kihoto Hollohan and recent constitutional challenges.",
+    "ideal_answer": "The Tenth Schedule, inserted by the 52nd Constitutional Amendment Act (1985), provides for the disqualification of legislators on grounds of defection, including voluntarily giving up party membership or voting contrary to party whip. Under Paragraph 6, all disqualification questions are referred to the Chairman or Speaker of the House. In Kihoto Hollohan v. Zachillhu (1992), a Constitution bench upheld the constitutional validity of the Tenth Schedule but struck down Paragraph 7 (which excluded judicial review). The Court held that the Speaker/Chairman acts as a statutory tribunal while deciding defection petitions, and therefore their decisions are subject to judicial review under Articles 136 and 226 on grounds of jurisdictional error, malafides, or violation of natural justice, though judicial intervention is generally impermissible at an interlocutory pre-decision stage.",
+    "key_entities": ["Tenth Schedule", "Kihoto Hollohan (1992)", "Paragraph 6 and 7", "Speaker as Tribunal"]
+  },
+  {
+    "id": "gold_gs2_05",
+    "paper": "GS2",
+    "category": "Fundamental Rights & Privacy",
+    "query": "Analyze the right to privacy as an intrinsic part of Article 21 and the four-fold proportionality test established in the Puttaswamy judgment.",
+    "ideal_answer": "In Justice K.S. Puttaswamy (Retd.) v. Union of India (2017), a unanimous 9-judge Constitution bench declared the Right to Privacy to be a fundamental right intrinsically protected under Article 21 (Right to Life and Personal Liberty) and as part of the freedoms guaranteed by Part III of the Constitution, explicitly overruling M.P. Sharma (1954) and Kharak Singh (1962). The Court established that privacy encompasses bodily integrity, informational privacy, and decisional autonomy. The Court laid down that any State infringement on privacy must satisfy a four-fold proportionality test: (1) Legality (existence of an enacted law), (2) Legitimate State Aim (ensuring state action serves a pressing public interest), (3) Suitability (a rational nexus between the state action and the objective), and (4) Necessity (employing the least intrusive measure without causing disproportionate harm to the individual).",
+    "key_entities": ["Article 21", "Puttaswamy (2017)", "Four-fold proportionality test", "Informational privacy"]
+  },
+  {
+    "id": "gold_gs2_06",
+    "paper": "GS2",
+    "category": "Freedom of Speech & Digital Rights",
+    "query": "Discuss the constitutional validity of indefinite internet shutdowns and freedom of expression in the digital realm following Anuradha Bhasin v. Union of India.",
+    "ideal_answer": "In Anuradha Bhasin v. Union of India (2020), the Supreme Court ruled that the freedom of speech and expression and the freedom to practice any profession or carry on any trade, business, or occupation through the medium of the internet are constitutionally protected under Article 19(1)(a) and Article 19(1)(g) respectively. The Court held that suspension of telecom and internet services cannot be indefinite, as an indefinite suspension is impermissible under the Temporary Suspension of Telecom Services (Public Emergency or Public Safety) Rules, 2017. Any restriction on internet access must satisfy the principles of necessity and proportionality under Article 19(2) and 19(6), and all suspension orders must be published proactively and subjected to mandatory periodic review by the statutory Review Committee.",
+    "key_entities": ["Article 19(1)(a)", "Article 19(1)(g)", "Anuradha Bhasin (2020)", "Telecom Suspension Rules 2017"]
+  },
+  {
+    "id": "gold_gs2_07",
+    "paper": "GS2",
+    "category": "Substantive Due Process & Personal Liberty",
+    "query": "How did Maneka Gandhi v. Union of India transform the interpretation of 'procedure established by law' into substantive 'due process' under Article 21?",
+    "ideal_answer": "In Maneka Gandhi v. Union of India (1978), a 7-judge Constitution bench decisively expanded the scope of Article 21, overruling the restrictive, positivist interpretation in A.K. Gopalan (1950). The Supreme Court held that the 'procedure established by law' depriving a person of life or personal liberty cannot be an arbitrary, whimsical, or oppressive procedure; it must be 'just, fair, and reasonable', effectively assimilating the American doctrine of substantive due process into Indian constitutional jurisprudence. Furthermore, the Court established the doctrine of inter-relationship between Fundamental Rights, ruling that Articles 14, 19, and 21 form a 'Golden Triangle' and must be read together, meaning any procedure under Article 21 must also be non-arbitrary under Article 14 and reasonable under Article 19.",
+    "key_entities": ["Article 21", "Maneka Gandhi (1978)", "Just fair and reasonable", "Golden Triangle (Articles 14, 19, 21)"]
+  },
+  {
+    "id": "gold_gs2_08",
+    "paper": "GS2",
+    "category": "Fiscal Federalism & Taxation",
+    "query": "Explain the nature of cooperative federalism in India's indirect tax regime and the legal status of GST Council recommendations under Mohit Minerals.",
+    "ideal_answer": "The Goods and Services Tax (GST) framework was established by the 101st Constitutional Amendment Act (2016), introducing Article 246A (which gives simultaneous, non-obstante power to Parliament and State Legislatures to legislate on GST) and Article 279A (constituting the GST Council). In Union of India v. Mohit Minerals (2022), a 3-judge bench of the Supreme Court held that recommendations made by the GST Council are not statutorily binding on Parliament or the State Legislatures, but possess persuasive value. The Court emphasized that Indian federalism represents a continuous dialogue between two equal sovereign tiers (cooperative and uncooperative federalism), and treating GST Council decisions as binding mandates would erode the legislative sovereignty of State Assemblies contrary to the simultaneous power conferred by Article 246A.",
+    "key_entities": ["Article 246A", "Article 279A", "Mohit Minerals (2022)", "GST Council recommendations"]
+  },
+  {
+    "id": "gold_gs2_09",
+    "paper": "GS2",
+    "category": "Right to Information & Transparency",
+    "query": "Discuss the statutory exemptions under Section 8 of the RTI Act 2005 and how Section 8(2) acts as a public interest override.",
+    "ideal_answer": "The Right to Information Act, 2005 codifies the citizen's right to know under Article 19(1)(a). Section 8(1) sets out specific grounds exempting public authorities from disclosing information, including matters prejudicing national sovereignty, security, strategic interests, or foreign relations (8(1)(a)), contempt of court (8(1)(b)), breach of parliamentary privilege (8(1)(c)), commercial confidence and trade secrets (8(1)(d)), fiduciary relationships (8(1)(e)), and personal information with no relationship to public activity (8(1)(j)). However, Section 8(2) introduces the crucial 'Public Interest Override', mandating that a public authority may disclose information even if it falls within the Section 8(1) exemptions if the public interest in disclosure outweighs the harm to protected interests. Section 8(2) explicitly overrides the Official Secrets Act, 1923.",
+    "key_entities": ["RTI Act 2005", "Section 8(1)", "Section 8(2)", "Public Interest Override", "Official Secrets Act 1923"]
+  },
+  {
+    "id": "gold_gs2_10",
+    "paper": "GS2",
+    "category": "Digital Data Protection",
+    "query": "What are the core obligations of Data Fiduciaries and rights of Data Principals under the Digital Personal Data Protection Act, 2023?",
+    "ideal_answer": "The Digital Personal Data Protection Act (DPDP Act), 2023 regulates the processing of digital personal data. It defines the 'Data Principal' as the individual to whom data relates (Sec 2(j)) and 'Data Fiduciary' as the entity determining the purpose and means of processing (Sec 2(i)). Under Section 6, data can only be processed on the basis of free, specific, informed, and unambiguous consent, or for specified legitimate uses (Sec 7). Section 8 mandates that Data Fiduciaries must maintain data accuracy, implement reasonable technical and organizational security safeguards, notify the Data Protection Board of India and affected individuals in case of a data breach, and delete data once its purpose is fulfilled. Section 9 strictly prohibits tracking, behavioral monitoring, or targeted advertising for children. Significant Data Fiduciaries (Sec 10) must appoint an India-based Data Protection Officer (DPO), conduct Data Protection Impact Assessments (DPIA), and carry out periodic independent audits.",
+    "key_entities": ["DPDP Act 2023", "Data Principal", "Data Fiduciary", "Significant Data Fiduciary", "Sections 6, 8, 9, 10"]
+  },
+  {
+    "id": "gold_gs2_11",
+    "paper": "GS2",
+    "category": "Economic Crimes & Bail Standards",
+    "query": "Examine the stringent bail conditions under Section 45 and the reverse burden of proof under Section 24 of the Prevention of Money-Laundering Act, 2002.",
+    "ideal_answer": "The Prevention of Money-Laundering Act (PMLA), 2002 was enacted to fulfill India's commitments under the Vienna Convention and FATF standards. Section 3 defines money-laundering as involvement in any process or activity connected with 'proceeds of crime' derived from a scheduled predicate offence. Section 45(1) establishes the rigorous 'twin conditions' for granting bail to an accused: (1) the Public Prosecutor must be given an opportunity to oppose bail, and (2) where opposed, the Court must be satisfied that there are reasonable grounds for believing the accused is not guilty of the offence and is not likely to commit any offence while on bail. Section 24 reverses the customary presumption of innocence by placing the burden of proof on the accused to prove that alleged proceeds of crime are untainted. In Vijay Madanlal Choudhary v. Union of India (2022), the Supreme Court upheld the constitutionality of Section 45 twin conditions and Section 24 reverse burden, recognizing money laundering as an aggravated economic offence.",
+    "key_entities": ["PMLA 2002", "Section 24", "Section 45", "Twin conditions for bail", "Vijay Madanlal Choudhary (2022)"]
+  },
+  {
+    "id": "gold_gs2_12",
+    "paper": "GS2",
+    "category": "Disaster Management & Crisis Governance",
+    "query": "Describe the three-tier institutional and financial architecture under the Disaster Management Act, 2005, and its invocation during the COVID-19 pandemic.",
+    "ideal_answer": "The Disaster Management Act, 2005 established a shift from reactive relief to proactive disaster risk reduction. It creates a three-tier institutional structure: (1) National Level: National Disaster Management Authority (NDMA) headed by the Prime Minister (Sec 3) with an executive arm in the National Executive Committee (NEC) headed by the Union Home Secretary (Sec 8); (2) State Level: State Disaster Management Authority (SDMA) headed by the Chief Minister (Sec 14); and (3) District Level: District Disaster Management Authority (DDMA) headed by the District Magistrate/Collector (Sec 25) as the primary field operational unit. The Act creates specialized response via the National Disaster Response Force (NDRF, Sec 44) and sets up designated Response and Mitigation Funds (NDRF/NDMF and SDRF/SDMF). On 24 March 2020, the Act was invoked nationwide for the first time by the NEC under Section 6 and 10 to issue binding pandemic lockdown guidelines across all States.",
+    "key_entities": ["Disaster Management Act 2005", "NDMA (Prime Minister)", "SDMA (Chief Minister)", "DDMA (District Magistrate)", "NDRF", "COVID-19 invocation"]
+  },
+  {
+    "id": "gold_gs2_13",
+    "paper": "GS2",
+    "category": "Electoral Law & Disqualification",
+    "query": "How did the Supreme Court's ruling in Lily Thomas v. Union of India transform the disqualification regime for convicted lawmakers under the RPA 1951?",
+    "ideal_answer": "Under Section 8 of the Representation of the People Act (RPA), 1951, lawmakers face disqualification upon conviction for criminal offences. While Section 8(1) and 8(2) specify particular offences, Section 8(3) lays down that a person convicted of any offence and sentenced to imprisonment for not less than two years stands disqualified from the date of conviction and for a further six years post-release. Previously, Section 8(4) carved out a protective window for sitting MPs and MLAs, stating that disqualification would not take effect for three months or until an appeal/revision was disposed of by a court. In Lily Thomas v. Union of India (2013), the Supreme Court struck down Section 8(4) as ultra vires Articles 102(1)(e) and 191(1)(e) of the Constitution, holding that Parliament lacked the legislative competence to create a distinction between candidates seeking election and sitting legislators, making disqualification instantaneous upon sentencing.",
+    "key_entities": ["RPA 1951", "Section 8(3)", "Section 8(4)", "Lily Thomas (2013)", "Articles 102 and 191"]
+  },
+  {
+    "id": "gold_gs2_14",
+    "paper": "GS2",
+    "category": "Constitutional Bodies & Electoral Integrity",
+    "query": "Discuss the constitutional issues surrounding the appointment and independence of Election Commissioners as addressed in Anoop Baranwal v. Union of India.",
+    "ideal_answer": "Article 324(2) of the Constitution provides that the appointment of the Chief Election Commissioner (CEC) and other Election Commissioners (ECs) shall be made by the President, subject to the provisions of any law made in that behalf by Parliament. For over seven decades, no specific parliamentary enactment existed, leaving appointments exclusively to the executive discretion of the Union Government. In Anoop Baranwal v. Union of India (2023), a 5-judge Constitution bench held that free and fair elections and institutional independence of the Election Commission form part of the basic structure of the Constitution. To eliminate executive dominance and preserve public trust, the Court directed that the appointment of the CEC and ECs must be made on the advice of a broad-based Committee comprising the Prime Minister, the Leader of the Opposition in the Lok Sabha (or the leader of the single largest opposition party), and the Chief Justice of India until Parliament enacted a statutory law.",
+    "key_entities": ["Article 324(2)", "Anoop Baranwal (2023)", "Chief Election Commissioner", "Basic structure of free and fair elections"]
+  },
+  {
+    "id": "gold_gs2_15",
+    "paper": "GS2",
+    "category": "Anti-Corruption & Ombudsman Architecture",
+    "query": "Explain the composition, jurisdiction, and investigative powers of the Lokpal under the Lokpal and Lokayuktas Act, 2013.",
+    "ideal_answer": "Enacted following recommendations of the First Administrative Reforms Commission (1966) and Second ARC (2007), the Lokpal and Lokayuktas Act, 2013 established an independent anti-corruption ombudsman. Under Section 3, the Lokpal consists of a Chairperson (a former CJI, former Supreme Court judge, or eminent jurist) and up to eight members, with 50% being judicial members and 50% selected from SC, ST, OBC, minorities, and women. Under Section 4, appointments are made by a Selection Committee consisting of the Prime Minister, Speaker of Lok Sabha, Leader of Opposition, CJI or nominee judge, and an eminent jurist. Section 14 extends Lokpal's jurisdiction over the Prime Minister (with subject-matter exceptions and mandatory in-camera proceedings approved by two-thirds of the full bench), Union Ministers, Members of Parliament, and Central Government Group A, B, C, and D officers. Crucially, under Section 25, the Lokpal possesses statutory powers of superintendence over the CBI for cases referred by it, and CBI investigating officers handling such cases cannot be transferred without Lokpal's prior approval.",
+    "key_entities": ["Lokpal and Lokayuktas Act 2013", "Section 3 (Composition)", "Section 4 (Selection Committee)", "Section 14 (Jurisdiction)", "Section 25 (Superintendence over CBI)"]
+  },
+  {
+    "id": "gold_gs3_01",
+    "paper": "GS3",
+    "category": "Fiscal Policy & Macroeconomics",
+    "query": "Analyze the recommendations of the N.K. Singh Committee on the FRBM Act and the statutory grounds for invoking the escape clause.",
+    "ideal_answer": "The N.K. Singh Committee (2017) reviewed the FRBM Act 2003 and recommended shifting the fiscal anchor from the annual fiscal deficit to the general government Debt-to-GDP ratio: 60% of GDP by FY2023 (40% for the Centre and 20% for all States combined). It recommended a 3.0% fiscal deficit target for the Centre and the creation of an independent Fiscal Council. Section 4(2) of the amended FRBM Act provides a statutory 'Escape Clause' allowing the Centre to breach the fiscal deficit target by up to 0.5% of GDP under exceptional circumstances: (1) national security, acts of war, (2) national calamity of severe nature, collapse of agriculture, (3) structural reforms with unanticipated fiscal impact (e.g. GST), or (4) a sharp decline in real GDP growth of at least 3 percentage points below the average of the previous four quarters.",
+    "key_entities": ["N.K. Singh Committee (2017)", "60% Debt-to-GDP target (40:20)", "Section 4(2) Escape Clause", "3.0% Fiscal Deficit target"]
+  },
+  {
+    "id": "gold_gs3_02",
+    "paper": "GS3",
+    "category": "Agriculture & Farm Economics",
+    "query": "Evaluate the demands for legalizing the Minimum Support Price (MSP) based on the Swaminathan Commission's C2+50% formula.",
+    "ideal_answer": "The National Commission on Farmers chaired by Dr. M.S. Swaminathan (2004-2006) recommended that the Minimum Support Price (MSP) should be fixed at least 50% above the comprehensive cost of production (C2 + 50%). While the government currently fixes MSP at 1.5 times the A2+FL cost (paid-out cash costs + imputed family labor), farmers demand C2+50%, which includes imputed rent on owned land and imputed interest on owned fixed capital. Making MSP a legally guaranteed entitlement would protect farmers from distress sales during bumper harvests. However, economic challenges include a massive fiscal procurement burden, risks of runaway food inflation, WTO Agreement on Agriculture subsidy ceilings, and crop distortions disfavoring water-efficient millets and pulses in favor of paddy and wheat.",
+    "key_entities": ["Swaminathan Commission (2004-2006)", "C2 + 50% formula", "A2+FL cost", "CACP", "Statutory guarantee challenges"]
+  },
+  {
+    "id": "gold_gs3_03",
+    "paper": "GS3",
+    "category": "Environment & Ecology Legislation",
+    "query": "Examine the salient features of the Wildlife (Protection) Amendment Act, 2022, with particular reference to the rationalization of schedules and CITES compliance.",
+    "ideal_answer": "The Wildlife (Protection) Amendment Act, 2022 overhauled the 1972 statute to integrate India's international obligations under the Convention on International Trade in Endangered Species of Wild Fauna and Flora (CITES). Key changes: (1) Rationalization of Schedules from 6 down to 4: Schedule I grants highest statutory protection to endangered wild animals (Tiger, Lion, Great Indian Bustard) with strict hunting ban under Section 9; Schedule II covers species with lesser protection; Schedule III protects endangered flora; and Schedule IV specifically regulates specimens listed under CITES Appendices I, II, and III. (2) Abolition of the Vermin Schedule: Schedule V was completely deleted, requiring the Centre to formally notify vermin for specific periods and areas. (3) Live Captive Elephants: Section 43 was amended to permit transfer of live captive elephants for religious or other purposes under central rules. (4) Management and Scientific Authorities designated for CITES trade permits.",
+    "key_entities": ["Wildlife (Protection) Amendment Act 2022", "CITES Schedule IV", "Schedule rationalization (6 to 4)", "Section 9 hunting ban", "Abolition of Schedule V vermin"]
+  },
+  {
+    "id": "gold_gs3_04",
+    "paper": "GS3",
+    "category": "Climate Change & Clean Energy",
+    "query": "Discuss India's updated 'Panchamrit' climate pledges announced at COP26 and the roadmap to achieving Net Zero by 2070.",
+    "ideal_answer": "At UNFCCC COP26 in Glasgow, India presented its enhanced climate targets termed 'Panchamrit': (1) Reach 500 GW of non-fossil fuel electricity capacity by 2030, (2) Meet 50% of energy requirements from renewable energy by 2030, (3) Reduce total projected carbon emissions by one billion tonnes by 2030, (4) Reduce the carbon intensity of GDP by 45% by 2030 from 2005 levels, and (5) Achieve Net Zero greenhouse gas emissions by 2070. The roadmap integrates Mission LiFE (Lifestyle for Environment) for demand-side behavioral change, the National Green Hydrogen Mission (producing 5 MMT/year by 2030), the Production Linked Incentive (PLI) scheme for high-efficiency solar PV modules and Advanced Chemistry Cell (ACC) batteries, and the Energy Conservation (Amendment) Act 2022 establishing a domestic Carbon Credit Trading Scheme (CCTS).",
+    "key_entities": ["Panchamrit (COP26 Glasgow)", "Net Zero by 2070", "500 GW non-fossil capacity", "45% carbon intensity reduction", "Mission LiFE", "National Green Hydrogen Mission"]
+  },
+  {
+    "id": "gold_gs3_05",
+    "paper": "GS3",
+    "category": "Space Technology & Policy",
+    "query": "How does the Indian Space Policy 2023 unbundle the roles of ISRO, IN-SPACe, and NSIL to foster a commercial space economy?",
+    "ideal_answer": "The Indian Space Policy 2023 structurally reformed India's space ecosystem by demarcating distinct operational domains: (1) ISRO: Exits routine commercial manufacturing and operational launches to refocus purely on advanced R&D, space exploration (Chandrayaan-3, Aditya-L1, Gaganyaan), planetary science, and national security applications. (2) IN-SPACe (Indian National Space Promotion and Authorization Centre): Serves as an autonomous, single-window nodal authorization and regulatory body for Non-Government Entities (NGEs / private startups), providing non-discriminatory access to ISRO infrastructure and testing facilities. (3) NSIL (NewSpace India Limited): Serves as the sole commercial CPSE arm to commercialize space technologies developed by ISRO, manufacture launch vehicles (PSLV, SSLV) through private industry consortia, and market satellite launch services internationally.",
+    "key_entities": ["Indian Space Policy 2023", "ISRO (Advanced R&D)", "IN-SPACe (Single-window authorization)", "NSIL (Commercialization)", "Private space startups"]
+  },
+  {
+    "id": "gold_gs3_06",
+    "paper": "GS3",
+    "category": "Science & Emerging Technologies",
+    "query": "Explain the objectives of the National Quantum Mission and the IndiaAI Mission in establishing sovereign technological capabilities.",
+    "ideal_answer": "The National Quantum Mission (NQM, 2023-2031, ₹6,003 crore) and the IndiaAI Mission (2024, ₹10,372 crore) represent India's flagship deep-tech initiatives to build sovereign computational infrastructure. NQM establishes four Thematic Hubs (T-Hubs) focused on developing intermediate-scale quantum computers (50-1,000 physical qubits), satellite-based quantum communications over 2,000 km, quantum sensing magnetometers, and quantum materials. The IndiaAI Mission addresses computational deficits by establishing a subsidized centralized supercomputing capacity of 10,000+ GPUs, developing sovereign Indian foundational Multimodal AI models, building the IndiaAI Datasets Platform, and deploying Bhashini for open-source translation across all 22 scheduled languages, ensuring technological sovereignty and data governance.",
+    "key_entities": ["National Quantum Mission (NQM)", "IndiaAI Mission (10,000+ GPUs)", "Quantum Thematic Hubs", "Bhashini", "Technological sovereignty"]
+  },
+  {
+    "id": "gold_gs3_07",
+    "paper": "GS3",
+    "category": "Internal Security & Counter-Terrorism",
+    "query": "Analyze the constitutional and human rights concerns surrounding the 2019 amendment to the Unlawful Activities (Prevention) Act and its stringent bail threshold.",
+    "ideal_answer": "The 2019 amendment to the Unlawful Activities (Prevention) Act (UAPA), 1967 introduced Section 35(1)(a), empowering the Central Government to designate an individual as a terrorist by adding their name to the Fourth Schedule, whereas previously only organizations could be proscribed. Critics argue that designating an individual prior to judicial conviction infringes the right to reputation and dignity under Article 21 and the presumption of innocence. Furthermore, Section 43D(5) inverts the standard bail jurisprudence by barring bail if the court, perusing the police case diary, finds the accusation to be 'prima facie true' (NIA v. Zahoor Watali, 2019). However, in Union of India v. K.A. Najeeb (2021), the Supreme Court reconciled this tension, ruling that statutory bail bars under Section 43D(5) cannot extinguish the constitutional power of High Courts and the Supreme Court to grant bail where prolonged, indefinite pre-trial incarceration violates the Fundamental Right to a Speedy Trial under Article 21.",
+    "key_entities": ["UAPA 1967", "Section 35 individual terrorist designation", "Section 43D(5) bail bar", "NIA v. Zahoor Watali (2019)", "Union of India v. K.A. Najeeb (2021)"]
+  },
+  {
+    "id": "gold_gs3_08",
+    "paper": "GS3",
+    "category": "Internal Security & Extremism",
+    "query": "Discuss the multi-pronged strategy to eliminate Left-Wing Extremism (LWE) under the government's SAMADHAN framework.",
+    "ideal_answer": "Left-Wing Extremism (LWE) in the Red Corridor (Dandakaranya belt, Bastar, Sukma) stems from historical tribal alienation, land dispossession, and governance deficits. The Ministry of Home Affairs operationalized the comprehensive 'SAMADHAN' doctrine in 2017: S-Smart Leadership, A-Aggressive Strategy, M-Motivation and Training, A-Actionable Intelligence, D-Dashboard-based KPIs, H-Harnessing Technology (UAVs, GPS tracking, night-vision devices), A-Action plan for each theatre, and N-No access to financing (disrupting extortion through ED/NIA attachments). The security push by specialized units (CoBRA, Greyhounds, DRG) is paired with developmental saturation: Eklavya Model Residential Schools (EMRS), Road Requirement Plan (RRP-II), 4G telecom connectivity in shadow zones, and strict enforcement of the Forest Rights Act (FRA 2006) and PESA 1996 to win tribal hearts and minds.",
+    "key_entities": ["SAMADHAN doctrine", "Red Corridor (Dandakaranya)", "Security and Development dual approach", "PESA 1996 & Forest Rights Act 2006", "CoBRA and Greyhounds"]
+  },
+  {
+    "id": "gold_gs4_01",
+    "paper": "GS4",
+    "category": "Normative Ethical Theories",
+    "query": "Distinguish between Deontological and Teleological ethical systems. How does Immanuel Kant's Categorical Imperative guide administrative decision-making?",
+    "ideal_answer": "Deontology (Duty-based ethics) and Teleology (Consequentialism/Utilitarianism) represent contrasting approaches to moral evaluation: (1) Teleology (Bentham, Mill) judges the morality of an action solely by its outcomes—the 'greatest happiness of the greatest number'. (2) Deontology (Immanuel Kant) posits that actions are intrinsically right or wrong based on duty and moral law, regardless of consequences. In public administration, Kant's Categorical Imperative provides two vital tests: First, the 'Formula of Universal Law' requires administrators to act only on maxims that could be universalized without logical contradiction (e.g., if bribery were universalized, public trust and law would collapse, making corruption categorically wrong). Second, the 'Formula of Humanity as an End in Itself' mandates that civil servants must never treat citizens merely as instruments or statistics to achieve policy targets, but as autonomous moral ends in themselves, preventing the violation of human rights in the name of administrative convenience or developmental majoritarianism.",
+    "key_entities": ["Deontology vs Teleology", "Immanuel Kant", "Categorical Imperative (Universal Law)", "Humanity as an End in Itself", "Duty for Duty's sake"]
+  },
+  {
+    "id": "gold_gs4_02",
+    "paper": "GS4",
+    "category": "Foundational Values in Civil Services",
+    "query": "Examine the relevance of the Lord Nolan Committee's Seven Principles of Public Life in preventing bureaucratic corruption and policy paralysis.",
+    "ideal_answer": "The Seven Principles of Public Life formulated by the Lord Nolan Committee (1995) establish universal ethical benchmarks for governance: Selflessness, Integrity, Objectivity, Accountability, Openness, Honesty, and Leadership. In preventing bureaucratic corruption, 'Selflessness' ensures civil servants act solely in public interest without personal financial gain; 'Integrity' demands avoidance of obligations to outside interests (preventing conflicts of interest and regulatory capture); and 'Objectivity' requires public decisions (contract tenders, civil appointments) to be based strictly on merit, evidence, and impartial rules. Conversely, in preventing policy paralysis, 'Leadership' inspires officers to take principled, courageous decisions under uncertainty; while 'Openness' and 'Accountability' provide transparency through digital documentation (e-Office), protecting honest decision-making from retrospective, malicious allegations under Section 17A of the Prevention of Corruption Act.",
+    "key_entities": ["Nolan Committee (1995)", "Seven Principles of Public Life (Selflessness, Integrity, Objectivity, Accountability, Openness, Honesty, Leadership)", "Conflict of interest prevention", "Section 17A POCA"]
+  },
+  {
+    "id": "gold_gs4_03",
+    "paper": "GS4",
+    "category": "Moral Thinkers & Indian Ethics",
+    "query": "How can an administrator utilize Mahatma Gandhi's 'Talisman' and doctrine of 'Trusteeship' to resolve ethical dilemmas in welfare administration?",
+    "ideal_answer": "Mahatma Gandhi's 'Talisman' (August 1947) serves as the ultimate moral compass for public administrators facing difficult choices: When in doubt, an officer must recall the face of the poorest, weakest person they have seen and examine whether the contemplated decision will restore that person to control over their life and destiny. In welfare administration, where rigid bureaucratic protocols often risk excluding destitute citizens (e.g., biometric authentication failure denying rations under NFSA), the Talisman directs the administrator to exercise compassionate, lawful discretion to prevent starvation, treating human dignity as supreme. Gandhi's doctrine of 'Trusteeship' complements this by re-imagining power and public office: A civil servant is not a ruler or owner of bureaucratic authority, but a moral trustee holding power in sacred trust for society. This eliminates arrogance, curbs rent-seeking corruption, and fosters humility and selfless public service (Nishkama Karma).",
+    "key_entities": ["Gandhi's Talisman (1947)", "Poorest and weakest person", "Trusteeship doctrine", "Compassionate discretion vs Bureaucratic rigidity", "Moral trustee of public power"]
+  },
+  {
+    "id": "gold_gs4_04",
+    "paper": "GS4",
+    "category": "Administrative Ethics & Conduct",
+    "query": "Differentiate between a 'Code of Ethics' and a 'Code of Conduct'. Why did the 2nd Administrative Reforms Commission advocate enacting a statutory Code of Ethics?",
+    "ideal_answer": "A 'Code of Ethics' and a 'Code of Conduct' serve distinct regulatory functions in public service: (1) Code of Ethics is a broad, values-based aspirational charter articulating fundamental moral ideals (Integrity, Compassion, Empathy, Impartiality, Dedication to public service, Constitutional commitment); it inspires moral consciousness and guides discretion in grey areas. (2) Code of Conduct is a narrow, rule-based prescriptive list of concrete 'dos and don'ts' backed by departmental penalties (e.g. Central Civil Services Conduct Rules 1964, regulating gifts, investments, and political neutrality). The 2nd ARC (4th Report, 'Ethics in Governance') argued that relying solely on negative conduct rules creates a culture of minimal compliance, defensive decision-making, and risk-aversion, without instilling positive public service values. The Commission recommended enacting a comprehensive Public Services Bill with a statutory Code of Ethics to create an inspiring ethical culture that actively champions the public good.",
+    "key_entities": ["Code of Ethics vs Code of Conduct", "2nd ARC 4th Report (Ethics in Governance)", "Public Services Bill", "Values-driven vs Rules-driven compliance", "CCS (Conduct) Rules 1964"]
+  },
+  {
+    "id": "gold_gs4_05",
+    "paper": "GS4",
+    "category": "Anti-Corruption Legislation",
+    "query": "Discuss the significance of Section 17A of the Prevention of Corruption Act (as amended in 2018) in balancing administrative efficiency with anti-corruption accountability.",
+    "ideal_answer": "Section 17A, inserted by the Prevention of Corruption (Amendment) Act 2018, mandates that no police officer shall conduct an enquiry, inquiry, or investigation into any offence alleged to have been committed by a public servant relatable to 'any recommendation made or decision taken by such public servant in the discharge of official functions or duties', without the previous approval of the competent authority. Significance: (1) Shields Honest Bureaucrats: Protects civil servants from malicious, vexatious criminal complaints filed by disgruntled parties or political rivals, thereby eliminating fear and overcoming policy paralysis in commercial procurement and infrastructure clearances. (2) Not a Blanket Immunity: Section 17A explicitly excludes 'trap cases' where a public servant is caught red-handed accepting an illegal gratification, ensuring corrupt officers cannot claim administrative cover. (3) Balances Accountability with Autonomy: By introducing a pre-investigation filter, it ensures public servants can take bold, innovative policy decisions in good faith without the specter of retrospective criminal harassment.",
+    "key_entities": ["Prevention of Corruption Act (POCA 1988/2018)", "Section 17A mandatory prior approval", "Policy paralysis mitigation", "Trap case exception", "Good faith administrative decisions"]
+  },
+  {
+    "id": "gold_gs4_06",
+    "paper": "GS4",
+    "category": "Case Study & Ethical Decision Making",
+    "query": "A major industrial plant in your district employs 5,000 local workers but is found discharging toxic untreated effluent into the river, contaminating drinking water for downstream villages. As the District Magistrate, outline your structured course of action.",
+    "ideal_answer": "As District Magistrate, I will employ a structured 6-step ethical resolution: (1) Stakeholder Mapping: Downstream villagers (vulnerable, right to clean water and health under Article 21), 5,000 factory workers (livelihoods), industrial management, local healthcare system, and the State Pollution Control Board (SPCB). (2) Core Ethical Dilemma: Right to Life and Public Health (Article 21) vs Economic Livelihoods of 5,000 families and industrial output. (3) Evaluation of Options: Option A (Immediate permanent closure of factory) protects water but causes severe economic distress to 5,000 families. Option B (Ignoring pollution) sacrifices public health for economic gain, violating the Precautionary Principle and Article 21. Option C (Immediate sealing of discharge outlets + mandated Effluent Treatment Plant upgrade + emergency medical relief). (4) Ethical Justification: Applying Kantian deontology (villagers' health cannot be an instrument for industrial profit) and the Polluter Pays Principle, human life takes absolute priority. (5) Immediate Action Plan: Order immediate sealing of illegal discharge pipes under Section 133 CrPC and Section 33A Water Act; mobilize mobile medical camps and provide municipal tanker drinking water to affected villages; direct factory to deposit environmental compensation under NGT guidelines. (6) Long-term Institutional Resolution: Grant factory a time-bound 30-day window to install and operationalize an automated Zero Liquid Discharge (ZLD) plant with real-time online monitoring connected to SPCB; conduct third-party water quality audits before revoking conditional suspension.",
+    "key_entities": ["District Magistrate case study", "Article 21 (Right to Clean Water)", "Polluter Pays Principle & Precautionary Principle", "Section 133 CrPC public nuisance", "Zero Liquid Discharge (ZLD)", "Balancing livelihoods with public health"]
+  }
+]

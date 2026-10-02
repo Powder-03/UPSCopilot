@@ -8,16 +8,26 @@
 
 ---
 
-## 2. Core Model & AWS Bedrock Architecture
-- **Evaluation & Core LLM**: Moonshot Kimi 2.5 (`moonshotai.kimi-k2.5`)
-- **Embeddings**: Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`, 1024-dim)
-- **Gateway**: AWS Bedrock Converse API via `langchain_aws.ChatBedrockConverse`
-- **Region**: `us-east-1` (configurable in `.env`)
-- **Authentication Pattern**:
-  - Uses standard `boto3.client("bedrock-runtime", region_name=settings.aws_region)` with AWS credentials.
-  - **Important**: Do NOT pass `bedrock_api_key` directly to `ChatBedrockConverse` for third-party marketplace models like Kimi 2.5, as Bedrock rejects HTTP bearer tokens with `ValidationException: Operation not allowed`. Always pass the authenticated `client=boto3.client(...)`.
-- **Model Factory**: `src.evaluation.model_factory.get_eval_llm()`
-- **Test Script**: `scripts/dev/test_llm.py` (`uv run python scripts/dev/test_llm.py` verified working)
+## 2. Core Model & Multi-Provider Architecture (Vertex AI & AWS Bedrock)
+- **Dual-Provider Plug-and-Play**: Toggled via `LLM_PROVIDER` in `.env` (`"vertex"` or `"bedrock"`).
+  - **Vertex AI (Default / Active)**:
+    - Primary Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `ChatVertexExpress` in `src.evaluation.vertex_chat`.
+    - Vision Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `VertexVisionClient` in `src.parsing.vision_client`.
+    - G-Eval Scorer: `VertexGEvalScorer` in `src.evaluation.geval_scorer` using Gemini token logprobs (`responseLogprobs: True`, `logprobs: 5`, `thinkingBudget: 0`).
+    - Authentication: `GEMINI_API_KEY` with Google Cloud Vertex AI Model Garden endpoints (`https://us-central1-aiplatform.googleapis.com/...`).
+  - **AWS Bedrock (Plug-and-Play on Account Activation)**:
+    - Evaluation & Core LLM: Moonshot Kimi 2.5 (`moonshotai.kimi-k2.5`) via `langchain_aws.ChatBedrockConverse`.
+    - Vision Model: Moonshot Kimi 2.5 via `BedrockVisionClient`.
+    - G-Eval Scorer: `BedrockGEvalScorer` using native Kimi 2.5 token logprobs.
+    - Embeddings: Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`, 1024-dim).
+    - Authentication: Standard `boto3.client("bedrock-runtime", region_name=settings.aws_region)` with AWS credentials. (Lazy client instantiation ensures no crashes when Bedrock is inactive).
+- **Factories**:
+  - `src.evaluation.model_factory.get_eval_llm()`
+  - `src.evaluation.geval_scorer.get_geval_scorer()`
+  - `src.parsing.vision_client.get_vision_client()`
+  - `src.kb.vector_store.get_embedding_function()` (falls back to `DeterministicMockEmbeddings(1024)` in offline / Vertex mode).
+- **Test Script**: `scripts/dev/test_llm.py` (`uv run python scripts/dev/test_llm.py` verified working on Vertex AI Gemini 2.5 Flash).
+
 
 ---
 
@@ -135,6 +145,53 @@ evaluator/
   - `scripts/evaluate/evaluate_pdf.py`: CLI tool with terminal table rendering, JSON scorecard output, and email delivery.
   - Unit test suite expanded to 32 passing tests (including `test_api_schemas.py`, `test_email_service.py`, `test_job_manager.py`, `test_api_endpoints.py`, `test_pipeline_distiller.py`).
   - Verified 100% clean with `uv run ruff check .` and `uv run pytest`.
-- [ ] Active: Ready for User Acceptance & Testing.
+- [x] Multi-Paper GS Knowledge Base & NCERT Conceptual Anchors Generated (`data/documents/`):
+  - Generated 15 substantive authentic dossiers across GS-1, GS-2, GS-3, GS-4 and Class 11-12 NCERTs.
+  - GS-1: Class 11 Physical Geography, Class 11 Indian Art, Class 12 Indian Society, Freedom Struggle Historiography, Geography & Critical Minerals, Social Issues & Demographic Transition.
+  - GS-2: International Relations (UNCLOS, Quad, I2U2, BRICS+, G20, WTO), Governance Reforms (2nd ARC Reports, Sevottam IS 15700, MGNREGA Social Audit, NITI Aspirational Districts).
+  - GS-3: Class 12 Macroeconomics, Macroeconomics & FRBM, Agriculture & NFSA/MSP, Environment & Wildlife/Biodiversity Acts, Science/Space/Quantum Missions, Internal Security (UAPA, NIA, AFSPA, LWE).
+  - GS-4: Moral Thinkers (Kant, Utilitarians, Aristotle, Rawls, Gandhi, Kautilya), Ethics in Governance (Nolan Principles, 2nd ARC 4th Report, POCA 1988/2018), Case Study Frameworks & Emotional Intelligence.
+  - Updated `src/kb/corpus_loader.py` with multi-paper metadata tags (`gs_paper`, `doc_type`), verified 1,036 total document chunks.
+  - Created 35-item Golden Multi-GS Validation Benchmark (`tests/fixtures/golden_dataset_all_gs.json`).
+- [x] Adopted Official `google-genai` SDK & Purged Manual Glue Code:
+  - Added `"google-genai>=1.0.0"` dependency; replaced manual `requests.post` and `base64` boilerplate across `ChatVertexExpress`, `VertexVisionClient`, and `VertexGEvalScorer`.
+  - Configured `genai.Client(vertexai=True, project=..., location=..., api_key=...)` for native Vertex AI Model Garden endpoints.
+  - Used native `types.Part.from_bytes` for vision OCR and `types.GenerateContentConfig(response_logprobs=True, logprobs=5, thinking_config=types.ThinkingConfig(thinking_budget=0))` for fast (<2.4s) logprob retrieval.
+- [x] Completely Purged Hardcoded Fallback Scoring & Silent Error Masking:
+  - Deleted `_fallback_pillar_scoring` (which fabricated 3.0 rating / 45% marks) from `geval_scorer.py`.
+  - Replaced `_extract_digit_fallback` with strict parsing raising `RatingExtractionError` if any pillar score is missing.
+  - Removed canned defaults (`DEFAULT_COT_TRAIL`, `DEFAULT_STRENGTHS`, `DEFAULT_WEAKNESSES`, `DEFAULT_ACTION_PLAN`) from `engine.py`; Call 1 failures now raise `ModelInvocationError` immediately.
+  - Fixed OCR failure masking in `src/parsing/pipeline.py` and `src/pipeline.py` so transcription exceptions set `error` and raise `DocumentParsingError` instead of falsely recording `is_blank=True` (which erroneously gave 0 marks).
+  - Defined standard domain exceptions in `src/models/exceptions.py`.
+  - Full test suite passing (41 passed, 7 Bedrock credential-skipped, 0 failures), 100% clean `ruff` check.
+- [x] Fixed Vision Parsing Harness & Evaluated Complete 20-Question GS-2 Copy (`GS-II.pdf`):
+  - Diagnosed root causes: confirmed 100% harness issue (not a vision model limitation). Bilingual header was caused by unconstrained verbatim prompt instruction; blank answers were caused by cross-thread `httpx` socket collisions on Windows.
+  - Refined Vision Prompt (`src/parsing/prompts.py`): Explicitly instructed vision OCR to extract ONLY clean English questions from bilingual UPSC QCAB headers, excluding Devanagari text, numbering prefixes, and marks indications.
+  - Added Regex Sanitizer (`src/parsing/pipeline.py`): Implemented `_clean_question_text` to filter Devanagari lines and strip question numbers ("Q1.") and trailing metadata ("(10 Marks, 150 words)").
+  - Thread-Safe Vision & Scoring Clients (`src/parsing/vision_client.py`, `src/evaluation/geval_scorer.py`, `src/evaluation/vertex_chat.py`): Converted `VertexVisionClient` and `VertexGEvalScorer` to `threading.local()` isolated clients with retry logic for Windows `WinError 10053` socket resets.
+  - Robust JSON Extraction (`src/utils/json.py`): Fixed premature regex truncation (changed non-greedy `.*?` to greedy `.*`) and added `json.loads(..., strict=False)` fallback.
+  - ChatVertexExpress Tuning (`src/evaluation/vertex_chat.py`): Set `thinking_budget=0` and `max_output_tokens=8192` to eliminate token exhaustion truncation in Gemini 2.5 Flash Call 1 diagnostics.
+  - Successfully Parsed `GS-II.pdf` (`tests/fixtures/gs2_copy_parsed.json`): 20/20 questions parsed with 0 Hindi characters, 0 blank attempts, and 160-300 words transcribed per question.
+  - Executed Whole-Copy Evaluation (`scripts/evaluate/topper_copy_evaluation.py`): Evaluated all 20 questions concurrently across 4 workers; scored 138.33 / 250.00 (55.3%, TOPPER LEVEL / Rank 1-50 Trajectory), 0 hallucinated citations, and 71.4% mandatory KB anchor hit rate.
+
+
+
+<!-- BEGIN AWS Agent Toolkit rules -->
+# AWS Guidance
+
+- Where these AWS rules conflict with the project's own instructions, the
+  project's instructions take precedence.
+- Prefer the AWS MCP Server for AWS interactions — it provides sandboxed
+  execution, observability, and audit logging. If unavailable, use the
+  AWS CLI directly.
+- Before starting a task, check whether a relevant AWS skill is available.
+  Load the skill with `retrieve_skill` and prefer its guidance over
+  general knowledge.
+- When uncertain about specific AWS details (API parameters, permissions,
+  limits, error codes), verify against documentation rather than guessing.
+  State uncertainty explicitly if you cannot confirm.
+- When creating infrastructure, prefer infrastructure-as-code (AWS CDK or
+  CloudFormation) over direct CLI commands.
+<!-- END AWS Agent Toolkit rules -->
 
 

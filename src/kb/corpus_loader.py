@@ -84,6 +84,11 @@ def load_pdf_file(pdf_path: str) -> list[Document]:
             if not text:
                 continue
 
+            norm_name = file_name.lower()
+            gs_paper = "GS2"
+            if "disaster" in norm_name or "environment" in norm_name:
+                gs_paper = "GS3"
+
             docs.append(
                 Document(
                     page_content=text,
@@ -93,6 +98,7 @@ def load_pdf_file(pdf_path: str) -> list[Document]:
                         "page": page_num + 1,
                         "total_pages": len(doc),
                         "doc_type": "reference_document",
+                        "gs_paper": gs_paper,
                     },
                 )
             )
@@ -110,12 +116,25 @@ def load_text_file(text_path: str) -> list[Document]:
         with open(text_path, encoding="utf-8") as f:
             content = f.read().strip()
         if content:
-            # Determine document type based on subfolder
+            # Determine document type and GS paper based on subfolder path
             doc_type = "reference_document"
-            if "sc_cases" in text_path:
+            norm_path = text_path.replace("\\", "/").lower()
+            if "sc_cases" in norm_path:
                 doc_type = "landmark_case"
-            elif "central_acts" in text_path:
+            elif "central_acts" in norm_path:
                 doc_type = "central_act"
+            elif "ncert" in norm_path:
+                doc_type = "ncert_core"
+
+            gs_paper = "GS2"
+            if "/gs1/" in norm_path or "\\gs1\\" in text_path:
+                gs_paper = "GS1"
+            elif "/gs3/" in norm_path or "\\gs3\\" in text_path:
+                gs_paper = "GS3"
+            elif "/gs4/" in norm_path or "\\gs4\\" in text_path:
+                gs_paper = "GS4"
+            elif "/gs2/" in norm_path or "\\gs2\\" in text_path:
+                gs_paper = "GS2"
 
             return [
                 Document(
@@ -124,7 +143,8 @@ def load_text_file(text_path: str) -> list[Document]:
                         "source": file_name,
                         "file_path": text_path,
                         "doc_type": doc_type,
-                        "title": file_name.replace(".md", "").replace("case_", "").replace("act_", "").replace("_", " ").title(),
+                        "gs_paper": gs_paper,
+                        "title": file_name.replace(".md", "").replace("case_", "").replace("act_", "").replace("ncert_", "").replace("_", " ").title(),
                     },
                 )
             ]

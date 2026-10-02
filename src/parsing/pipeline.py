@@ -1,6 +1,7 @@
 """Master Document Parsing Pipeline: converts any scanned UPSC answer booklet PDF into clean, evaluated JSON."""
 import json
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -9,9 +10,62 @@ from src.config import settings
 from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.parsing.preprocessor import PDFPreprocessor
 from src.parsing.segmenter import QCABSegmenter
-from src.parsing.vision_client import BedrockVisionClient
+from src.parsing.vision_client import BaseVisionClient, get_vision_client
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_question_text(raw_text: str) -> str:
+    """Strips residual Devanagari script, question numbering prefixes, and trailing marks/word limit metadata."""
+    if not raw_text:
+        return ""
+    text = raw_text.strip()
+
+    # If text has multiple lines, filter out lines that are exclusively or primarily Devanagari
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    english_lines: list[str] = []
+    for line in lines:
+        devanagari_count = len(re.findall(r"[\u0900-\u097F]", line))
+        latin_count = len(re.findall(r"[A-Za-z]", line))
+        if latin_count >= 5 and latin_count >= devanagari_count:
+            cleaned_line = re.sub(r"[\u0900-\u097F]+", " ", line)
+            cleaned_line = " ".join(cleaned_line.split())
+            if cleaned_line:
+                english_lines.append(cleaned_line)
+        elif latin_count >= 15:
+            cleaned_line = re.sub(r"[\u0900-\u097F]+", " ", line)
+            cleaned_line = " ".join(cleaned_line.split())
+            if cleaned_line:
+                english_lines.append(cleaned_line)
+
+    if english_lines:
+        text = " ".join(english_lines)
+    else:
+        # Fallback if single line had both or no lines passed filter: strip Devanagari if latin exists
+        if re.search(r"[A-Za-z]{4,}", text):
+            text = re.sub(r"[\u0900-\u097F]+", " ", text)
+            text = " ".join(text.split())
+
+    # Strip leading question numbering (e.g. "Q1.", "Q.1:", "Question 1:", "1.", "1 -", "1)")
+    text = re.sub(
+        r"^(?:(?:Question|Q)\.?\s*\d+[\s.:\-\)]*|\d+[\s.:\-\)]+)\s*",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    # Strip trailing marks/word limits like "(10 Marks, 150 words)", "(15 marks)", "(150 Words)", "(10M)", "(15M)"
+    text = re.sub(
+        r"\s*\(\s*(?:\d+\s*(?:Marks?|marks?|M|m)?(?:\s*[,/]\s*)?)?(?:\d+\s*(?:words?|Words?)?)?\s*\)\s*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    # Strip standalone trailing marks / word counts
+    text = re.sub(r"\s+\d+\s*(?:Marks?|marks?)\s*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+\d+\s*(?:words?|Words?)\s*$", "", text, flags=re.IGNORECASE)
+
+    return text.strip()
 
 
 class DocumentParsingPipeline:
@@ -20,13 +74,15 @@ class DocumentParsingPipeline:
     def __init__(
         self,
         vision_model_id: str | None = None,
+        vision_client: BaseVisionClient | None = None,
         dpi: int | None = None,
         max_workers: int | None = None,
     ):
         self.preprocessor = PDFPreprocessor(dpi=dpi)
-        self.vision_client = BedrockVisionClient(model_id=vision_model_id)
+        self.vision_client = vision_client or get_vision_client(model_id=vision_model_id)
         self.segmenter = QCABSegmenter()
         self.max_workers = max_workers or settings.parsing_max_workers
+
 
     def _process_question_slice(
         self,
@@ -79,7 +135,8 @@ class DocumentParsingPipeline:
             )
 
             resolved_q_num = int(extracted.get("q_num", q_num))
-            resolved_question = extracted.get("question") or master_question or f"Question {q_num}"
+            raw_q = extracted.get("question") or master_question or f"Question {q_num}"
+            resolved_question = master_question if master_question else (_clean_question_text(raw_q) or f"Question {q_num}")
             candidate_answer = extracted.get("candidate_answer", "")
             diagrams = extracted.get("diagrams_found", [])
             is_blank = bool(extracted.get("is_blank", not candidate_answer.strip()))
@@ -96,15 +153,16 @@ class DocumentParsingPipeline:
             )
         except Exception as e:
             logger.error(f"Error transcribing Q{q_num:02d}: {e}")
-            # Fallback to an empty / failed question entry rather than crashing entire document
+            # Record transcription error rather than fraudulently marking the page as an unattempted blank
             return ParsedQuestion(
                 q_num=q_num,
                 max_marks=max_marks,
                 question=master_question or f"Question {q_num}",
                 candidate_answer="",
                 page_numbers=pages,
-                is_blank=True,
+                is_blank=False,
                 word_count=0,
+                error=f"Transcription failed: {e}",
             )
 
     def parse_pdf(

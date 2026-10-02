@@ -1,16 +1,16 @@
-"""G-Eval probability-weighted continuous scoring engine using Bedrock Kimi 2.5 logprobs."""
+"""G-Eval probability-weighted continuous scoring engine supporting Bedrock Kimi 2.5 and Vertex AI Gemini 2.5 Flash."""
 import json
 import logging
 import math
 import re
+import threading
 from typing import Any
-
-import boto3
 
 from src.config import settings
 from src.evaluation.prompt_templates import build_geval_scoring_prompt
 from src.models.enums import PillarType
 from src.models.evaluation import PillarGEvalScore
+from src.models.exceptions import ModelInvocationError, RatingExtractionError
 
 logger = logging.getLogger(__name__)
 
@@ -63,54 +63,8 @@ def calibrate_rating_to_upsc_marks(expected_rating: float, max_marks: float) -> 
     return round(upsc_pct * max_marks, 3)
 
 
-class BedrockGEvalScorer:
-    """Extracts authentic token logprobs from Moonshot Kimi 2.5 and computes G-Eval scores."""
-
-    def __init__(self, model_id: str | None = None, region: str | None = None):
-        self.model_id = model_id or settings.bedrock_eval_model_id
-        self.region = region or settings.aws_region
-        self.client = boto3.client("bedrock-runtime", region_name=self.region)
-
-    def score_pillars(
-        self,
-        question: str,
-        candidate_answer: str,
-        cot_reasoning_trail: str,
-        pillar_summary: dict[str, str],
-        max_marks: float = 10.0,
-    ) -> dict[str, PillarGEvalScore]:
-        """Runs Call 2: Single-pass G-Eval multi-pillar scoring with authentic token logprobs."""
-        prompt = build_geval_scoring_prompt(
-            question=question,
-            candidate_answer=candidate_answer,
-            cot_reasoning_trail=cot_reasoning_trail,
-            pillar_summary=pillar_summary,
-        )
-
-        body = {
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 64,
-            "temperature": 0.0,
-            "logprobs": True,
-            "top_logprobs": 5,
-        }
-
-        try:
-            res = self.client.invoke_model(
-                modelId=self.model_id,
-                body=json.dumps(body),
-                contentType="application/json",
-                accept="application/json",
-            )
-            res_body = json.loads(res["body"].read().decode("utf-8"))
-            first_choice = res_body["choices"][0]
-            content_tokens = first_choice.get("logprobs", {}).get("content", [])
-            output_text = first_choice.get("message", {}).get("content", "")
-            logger.info(f"G-Eval raw score tokens output: {output_text.strip()}")
-            return self._parse_logprob_pillars(content_tokens, output_text, pillar_summary, max_marks)
-        except Exception as e:
-            logger.warning(f"Error in Bedrock G-Eval logprob call, falling back to heuristic scoring: {e}")
-            return self._fallback_pillar_scoring(pillar_summary, max_marks)
+class BaseGEvalScorer:
+    """Base class providing shared token logprob mapping and UPSC rubric scoring logic."""
 
     def _parse_logprob_pillars(
         self,
@@ -216,29 +170,189 @@ class BedrockGEvalScorer:
         return prob_map
 
     def _extract_digit_fallback(self, text: str, key: str) -> float:
-        """Fallback digit extractor from raw text."""
+        """Extract digit rating from raw text if token logprobs are unavailable.
+
+        Raises RatingExtractionError if the pillar key rating is missing or invalid.
+        """
         m = re.search(rf"{key}\s*:\s*([1-5])", text)
         if m:
             return float(m.group(1))
-        return 3.0
+        raise RatingExtractionError(
+            f"G-Eval scoring failed: could not extract rating for pillar {key} from output: {text!r}"
+        )
 
-    def _fallback_pillar_scoring(
-        self, pillar_summary: dict[str, str], total_max_marks: float
+
+class BedrockGEvalScorer(BaseGEvalScorer):
+    """Extracts authentic token logprobs from Moonshot Kimi 2.5 on AWS Bedrock."""
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        region: str | None = None,
+        client: Any = None,
+    ):
+        self.model_id = model_id or settings.bedrock_eval_model_id
+        self.region = region or settings.aws_region
+        self._client = client
+
+    @property
+    def client(self):
+        if self._client is None:
+            import boto3
+            self._client = boto3.client("bedrock-runtime", region_name=self.region)
+        return self._client
+
+    def score_pillars(
+        self,
+        question: str,
+        candidate_answer: str,
+        cot_reasoning_trail: str,
+        pillar_summary: dict[str, str],
+        max_marks: float = 10.0,
     ) -> dict[str, PillarGEvalScore]:
-        """Safe heuristic fallback if Bedrock API call encounters transient network error."""
-        results = {}
-        for pillar_type, cfg in PILLAR_CONFIGS.items():
-            weight = cfg["weight"]
-            max_pillar_marks = total_max_marks * weight
-            results[pillar_type.value] = PillarGEvalScore(
-                pillar=pillar_type,
-                pillar_name=cfg["name"],
-                weight_pct=weight,
-                max_marks=round(max_pillar_marks, 2),
-                discrete_probabilities={3: 1.0},
-                raw_expected_rating=3.0,
-                calibrated_score=round(0.45 * max_pillar_marks, 3),
-                feedback=pillar_summary.get(pillar_type.value, "Standard baseline evaluated."),
-                scoring_method="heuristic_fallback",
+        """Runs Call 2: Single-pass G-Eval multi-pillar scoring with authentic token logprobs."""
+        prompt = build_geval_scoring_prompt(
+            question=question,
+            candidate_answer=candidate_answer,
+            cot_reasoning_trail=cot_reasoning_trail,
+            pillar_summary=pillar_summary,
+        )
+
+        body = {
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 64,
+            "temperature": 0.0,
+            "logprobs": True,
+            "top_logprobs": 5,
+        }
+
+        try:
+            res = self.client.invoke_model(
+                modelId=self.model_id,
+                body=json.dumps(body),
+                contentType="application/json",
+                accept="application/json",
             )
-        return results
+            res_body = json.loads(res["body"].read().decode("utf-8"))
+            first_choice = res_body["choices"][0]
+            content_tokens = first_choice.get("logprobs", {}).get("content", [])
+            output_text = first_choice.get("message", {}).get("content", "")
+            logger.info(f"Bedrock G-Eval raw score tokens output: {output_text.strip()}")
+            return self._parse_logprob_pillars(content_tokens, output_text, pillar_summary, max_marks)
+        except Exception as e:
+            logger.error(f"Error in Bedrock G-Eval call: {e}")
+            raise ModelInvocationError(f"Bedrock G-Eval scoring failed: {e}") from e
+
+
+class VertexGEvalScorer(BaseGEvalScorer):
+    """Extracts authentic token logprobs from Gemini 2.5 Flash on Google Cloud Vertex AI via google-genai SDK."""
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        project_id: str | None = None,
+        location: str | None = None,
+        api_key: str | None = None,
+        client: Any = None,
+    ):
+        self.model_id = model_id or settings.vertex_eval_model_id
+        self.project_id = project_id or settings.gcp_project_id
+        self.location = location or settings.gcp_location
+        self.api_key = api_key or settings.gemini_api_key or ""
+        self._explicit_client = client
+        self._thread_local = threading.local()
+
+    @property
+    def client(self):
+        if self._explicit_client is not None:
+            return self._explicit_client
+        if not hasattr(self._thread_local, "client") or self._thread_local.client is None:
+            from google import genai
+            self._thread_local.client = genai.Client(
+                vertexai=True,
+                project=self.project_id,
+                location=self.location,
+                api_key=self.api_key,
+            )
+        return self._thread_local.client
+
+    def _reset_thread_client(self) -> None:
+        if hasattr(self._thread_local, "client"):
+            self._thread_local.client = None
+
+    def score_pillars(
+        self,
+        question: str,
+        candidate_answer: str,
+        cot_reasoning_trail: str,
+        pillar_summary: dict[str, str],
+        max_marks: float = 10.0,
+    ) -> dict[str, PillarGEvalScore]:
+        """Runs Call 2: Single-pass G-Eval multi-pillar scoring with Gemini token logprobs."""
+        prompt = build_geval_scoring_prompt(
+            question=question,
+            candidate_answer=candidate_answer,
+            cot_reasoning_trail=cot_reasoning_trail,
+            pillar_summary=pillar_summary,
+        )
+
+        from google.genai import types
+
+        for attempt in range(3):
+            try:
+                res = self.client.models.generate_content(
+                    model=self.model_id,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=0.0,
+                        max_output_tokens=512,
+                        response_logprobs=True,
+                        logprobs=5,
+                        thinking_config=types.ThinkingConfig(thinking_budget=0),
+                    ),
+                )
+                output_text = res.text or ""
+                logger.info(f"Vertex G-Eval raw score tokens output: {output_text.strip()}")
+
+                candidates = res.candidates or []
+                if not candidates:
+                    raise ModelInvocationError("Vertex AI G-Eval returned no candidates.")
+
+                first_cand = candidates[0]
+                logprobs_result = first_cand.logprobs_result
+                content_tokens = []
+                if logprobs_result and logprobs_result.chosen_candidates:
+                    chosen = logprobs_result.chosen_candidates
+                    top = logprobs_result.top_candidates or []
+                    for i, c in enumerate(chosen):
+                        top_items = []
+                        if i < len(top) and top[i].candidates:
+                            top_items = [
+                                {"token": cand.token or "", "logprob": cand.log_probability or 0.0}
+                                for cand in top[i].candidates
+                            ]
+                        content_tokens.append({
+                            "token": c.token or "",
+                            "logprob": c.log_probability or 0.0,
+                            "top_logprobs": top_items,
+                        })
+
+                return self._parse_logprob_pillars(content_tokens, output_text, pillar_summary, max_marks)
+            except Exception as e:
+                err_str = str(e)
+                if ("closed" in err_str or "10053" in err_str or "connection" in err_str.lower() or "aborted" in err_str.lower()) and attempt < 2:
+                    logger.warning(f"Vertex G-Eval connection issue ({e}); resetting client and retrying attempt {attempt + 1}...")
+                    self._reset_thread_client()
+                    continue
+                logger.error(f"Error in Vertex G-Eval call: {e}")
+                raise ModelInvocationError(f"Vertex G-Eval scoring failed: {e}") from e
+
+
+def get_geval_scorer(provider: str | None = None) -> BaseGEvalScorer:
+    """Returns the appropriate G-Eval scorer based on active provider."""
+    active_provider = (provider or settings.llm_provider).strip().lower()
+    if active_provider in ("vertex", "gemini", "google"):
+        return VertexGEvalScorer()
+    return BedrockGEvalScorer()
+
+

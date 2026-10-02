@@ -1,0 +1,16 @@
+{
+  "job_id": "job_26cc4d1476ee",
+  "status": "QUEUED",
+  "progress_pct": 0,
+  "current_step": "Job queued for processing",
+  "email": "aspirant@upsc.test",
+  "email_sent": false,
+  "error": null,
+  "result": null,
+  "pdf_path": "data\\uploads\\job_26cc4d1476ee_test_answer_booklet.pdf",
+  "filename": "test_answer_booklet.pdf",
+  "start_page": 3,
+  "max_pages": 4,
+  "created_at": "2026-10-02T07:48:08.739475+00:00",
+  "updated_at": "2026-10-02T07:48:08.739475+00:00"
+}
