@@ -17,6 +17,7 @@ from src.pipeline import UnifiedEvaluationPipeline
 from src.services.email_service import EmailService
 from src.services.job_state_service import JobStateService
 from src.services.queue_service import QueueService
+from src.services.scorecard_pdf import generate_scorecard_pdf
 from src.services.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
@@ -163,20 +164,22 @@ class JobManager:
         self,
         job_id: str,
         pdf_path: Path | str,
+        email: str | None = None,
         start_page: int | None = None,
         max_pages: int | None = None,
     ) -> str:
         """
         Dispatches background evaluation for the given job.
-        Uses SQS if configured, or falls back to background worker thread.
+        Uses SQS VisionQueue if configured, or falls back to background worker thread.
         """
         with self._lock:
-            # Prefer the canonical storage_ref (s3:// URI if available) stored in job_data
             storage_ref = self._jobs.get(job_id, {}).get("pdf_path", str(pdf_path))
+            job_email = self._jobs.get(job_id, {}).get("email") or email
 
-        return self.queue_service.dispatch(
+        return self.queue_service.dispatch_vision(
             job_id=job_id,
             pdf_path=storage_ref,
+            email=job_email,
             start_page=start_page,
             max_pages=max_pages,
             local_thread_runner=self._run_job_worker,
@@ -205,7 +208,15 @@ class JobManager:
                 progress_callback=callback,
             )
 
-            # Email Delivery
+            # Generate scorecard PDF
+            pdf_bytes: bytes | None = None
+            try:
+                pdf_bytes = generate_scorecard_pdf(report)
+                logger.info("Generated scorecard PDF for %s: %d bytes", job_id, len(pdf_bytes))
+            except Exception as pdf_err:
+                logger.warning("PDF generation failed for %s (email will be sent without attachment): %s", job_id, pdf_err)
+
+            # Email Delivery with PDF attachment
             email_sent = False
             with self._lock:
                 target_email = self._jobs.get(job_id, {}).get("email")
@@ -216,6 +227,7 @@ class JobManager:
                     to_email=target_email,
                     report=report,
                     job_id=job_id,
+                    pdf_bytes=pdf_bytes,
                 )
 
             # Mark completed

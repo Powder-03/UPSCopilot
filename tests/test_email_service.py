@@ -70,14 +70,40 @@ def test_email_html_rendering():
     assert "Needs Foundation" not in html_content
 
 
-def test_mock_email_dispatch(tmp_path: Path):
-    """Verifies that mock email dispatch creates a preview file and returns True."""
+def test_mock_email_dispatch_with_pdf(tmp_path: Path):
+    """Verifies that mock email dispatch saves both HTML preview and PDF attachment."""
     report = _create_sample_report()
     service = EmailService(provider="mock")
+    mock_pdf = b"%PDF-1.4 mock pdf data"
 
     success = service.send_evaluation_email(
         to_email="aspirant@test.com",
         report=report,
         job_id="test_job_preview",
+        pdf_bytes=mock_pdf,
     )
     assert success is True
+
+
+def test_build_mime_message_with_pdf():
+    """Verifies that _build_mime_message creates a multipart/mixed message with PDF attachment."""
+    report = _create_sample_report()
+    service = EmailService(provider="ses", from_email="evaluator@upscopilot.com")
+    mock_pdf = b"%PDF-1.4 fake binary pdf content"
+
+    msg = service._build_mime_message(
+        to_email="student@example.com",
+        subject="Your Scorecard",
+        html_body=service.render_scorecard_html(report),
+        pdf_bytes=mock_pdf,
+    )
+
+    assert msg.get_content_type() == "multipart/mixed"
+    assert msg["To"] == "student@example.com"
+    assert msg["From"] == "evaluator@upscopilot.com"
+    assert msg["Subject"] == "Your Scorecard"
+
+    parts = list(msg.walk())
+    payloads = [p.get_content_type() for p in parts]
+    assert "text/html" in payloads
+    assert "application/pdf" in payloads

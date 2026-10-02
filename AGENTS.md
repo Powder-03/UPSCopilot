@@ -186,7 +186,16 @@ evaluator/
   - Lambda Worker Entrypoint: `src/lambda_worker.py` processing SQS batches with partial batch failure reporting, S3 download to `/tmp`, evaluation execution, and SES delivery.
   - Multi-Purpose Lambda Container: `Dockerfile` on `public.ecr.aws/lambda/python:3.11` bundling PyMuPDF, onnxruntime, ChromaDB, and application code.
   - Infrastructure-as-Code: `template.yaml` AWS SAM template defining S3 bucket, DynamoDB table, SQS queue + DLQ, API Lambda (29s timeout), Worker Lambda (15-minute timeout, 4GB RAM, 2GB `/tmp`), and IAM policies.
-  - Fully tested: 48 offline unit tests passing (including `test_serverless_services.py` and `test_lambda_handlers.py`), 100% clean `ruff` check.
+- [x] Implemented Decoupled Two-Stage Serverless Assembly Line Architecture (Zero Breaking Changes):
+  - **Stage 1 (Vision OCR Worker)**: `src/lambda_vision.py` downloads PDF from S3 to `/tmp`, parses answer booklet via multimodal Vision OCR (`DocumentParsingPipeline`), saves transcribed JSON into DynamoDB, and dispatches job to `EvalQueue`.
+  - **Stage 2 (Evaluation Engine Worker)**: `src/lambda_eval.py` retrieves parsed document from DynamoDB, performs RAG retrieval, runs 2-call CoT + G-Eval evaluation, compiles high-resolution Scorecard PDF via `pymupdf.Story`, and dispatches email via Amazon SES `send_raw_email` with PDF attached.
+  - **Scorecard PDF Engine**: `src/services/scorecard_pdf.py` renders multi-page, executive evaluation scorecards directly to raw bytes or disk with zero external binaries (wkhtmltopdf/Puppeteer).
+  - **Email Service Upgrade**: `src/services/email_service.py` upgraded to `MIMEMultipart('mixed')` supporting PDF attachment delivery via Amazon SES (`send_raw_email`), SMTP, and dev mock disk preview.
+  - **Pluggable Dual-Queue Dispatcher**: `src/services/queue_service.py` upgraded with `dispatch_vision` and `dispatch_eval`, maintaining full backward compatibility for `dispatch` and `queue_url`.
+  - **Instant Web UI Confirmation**: `src/static/index.html` updated with immediate visual confirmation ("You can safely close this page now!") and live polling fallback.
+  - **Decoupled SAM Infrastructure as Code**: `template.yaml` updated with `VisionQueue` + DLQ, `EvaluationQueue` + DLQ, `JobStateTable`, `ParsedBookletsTable`, `ApiFunction`, `VisionWorkerFunction` (10m timeout, 3GB RAM), and `EvalWorkerFunction` (15m timeout, 4GB RAM).
+  - **Test Suite**: 57 passing tests (including `test_scorecard_pdf.py`, `test_decoupled_workers.py`, `test_serverless_services.py`), 100% clean `ruff` check.
+
 
 
 

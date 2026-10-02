@@ -41,5 +41,7 @@ COPY src/ ./src/
 COPY data/ ./data/
 
 # Default handler: API Gateway Lambda entrypoint
-# Can be overridden to 'src.lambda_worker.handler' for the SQS background worker Lambda
+# Overridden via ImageConfig.Command in template.yaml for decoupled workers:
+# - Stage 1 Vision OCR: src.lambda_vision.handler
+# - Stage 2 Evaluation: src.lambda_eval.handler
 CMD [ "src.lambda_api.handler" ]

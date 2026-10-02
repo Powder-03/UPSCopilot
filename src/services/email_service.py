@@ -1,11 +1,14 @@
 """Email delivery service for UPSC evaluation scorecards.
 
-Supports Amazon SES (boto3), standard SMTP, and mock/console preview for local testing.
+Supports Amazon SES (boto3 send_raw_email with PDF attachment), standard SMTP,
+and mock/console preview for local testing.
 Generates responsive, student-centric HTML scorecards with zero performance bands.
 """
 import html
 import logging
 import smtplib
+from email import encoders
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -146,6 +149,7 @@ class EmailService:
         <!-- Footer -->
         <div style="background-color: #f9fafb; padding: 16px 24px; text-align: center; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;">
             Evaluated by UPSC Evaluator Engine • Calibrated against UPSC Civil Services Mains standard.
+            <br>Your full scorecard PDF is attached to this email.
         </div>
     </div>
 </body>
@@ -153,14 +157,20 @@ class EmailService:
 """
         return html_body
 
+    # ------------------------------------------------------------------
+    # Public API: Send with optional PDF attachment
+    # ------------------------------------------------------------------
+
     def send_evaluation_email(
         self,
         to_email: str,
         report: StudentEvaluationReport,
         job_id: str | None = None,
+        pdf_bytes: bytes | None = None,
     ) -> bool:
         """
         Dispatches the evaluation report email to the student.
+        If ``pdf_bytes`` is provided, attaches the scorecard PDF to the email.
         Returns True if successful, False otherwise.
         """
         subject = f"[UPSCopilot] Your Evaluation Report - {report.document} (Score: {report.summary.total_score:g}/{report.summary.max_marks:g})"
@@ -168,7 +178,7 @@ class EmailService:
 
         if self.provider == "mock" or not self.from_email:
             logger.info("Mock EmailService: Dispatched email to %s (Subject: %s)", to_email, subject)
-            # Write a local preview artifact for localhost review
+            # Write local preview artifacts for localhost review
             if job_id:
                 try:
                     preview_dir = Path(settings.job_dir)
@@ -176,48 +186,103 @@ class EmailService:
                     preview_path = preview_dir / f"email_preview_{job_id}.html"
                     preview_path.write_text(html_content, encoding="utf-8")
                     logger.info("Saved local email preview to %s", preview_path)
+                    if pdf_bytes:
+                        pdf_path = preview_dir / f"scorecard_{job_id}.pdf"
+                        pdf_path.write_bytes(pdf_bytes)
+                        logger.info("Saved local scorecard PDF to %s", pdf_path)
                 except Exception as e:
                     logger.warning("Failed to save email preview: %s", e)
             return True
 
         if self.provider == "ses":
-            return self._send_via_ses(to_email, subject, html_content)
+            return self._send_via_ses(to_email, subject, html_content, pdf_bytes)
         elif self.provider == "smtp":
-            return self._send_via_smtp(to_email, subject, html_content)
+            return self._send_via_smtp(to_email, subject, html_content, pdf_bytes)
         else:
             logger.warning("Unknown email provider '%s'; falling back to mock logging.", self.provider)
             return True
 
-    def _send_via_ses(self, to_email: str, subject: str, html_body: str) -> bool:
-        """Sends email using AWS Amazon SES."""
+    def _build_mime_message(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        pdf_bytes: bytes | None = None,
+    ) -> MIMEMultipart:
+        """Constructs a MIMEMultipart message with HTML body and optional PDF attachment."""
+        if pdf_bytes:
+            msg = MIMEMultipart("mixed")
+        else:
+            msg = MIMEMultipart("alternative")
+
+        msg["Subject"] = subject
+        msg["From"] = self.from_email
+        msg["To"] = to_email
+
+        msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+        if pdf_bytes:
+            pdf_part = MIMEApplication(pdf_bytes, _subtype="pdf")
+            pdf_part.add_header(
+                "Content-Disposition",
+                "attachment",
+                filename="UPSC_Evaluation_Scorecard.pdf",
+            )
+            encoders.encode_base64(pdf_part)
+            msg.attach(pdf_part)
+
+        return msg
+
+    def _send_via_ses(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        pdf_bytes: bytes | None = None,
+    ) -> bool:
+        """Sends email using AWS Amazon SES send_raw_email with optional PDF attachment."""
         try:
             client = boto3.client("ses", region_name=settings.aws_region)
-            response = client.send_email(
-                Source=self.from_email,
-                Destination={"ToAddresses": [to_email]},
-                Message={
-                    "Subject": {"Data": subject, "Charset": "UTF-8"},
-                    "Body": {"Html": {"Data": html_body, "Charset": "UTF-8"}},
-                },
-            )
+
+            if pdf_bytes:
+                # send_raw_email for MIME attachment
+                msg = self._build_mime_message(to_email, subject, html_body, pdf_bytes)
+                response = client.send_raw_email(
+                    Source=self.from_email,
+                    Destinations=[to_email],
+                    RawMessage={"Data": msg.as_string()},
+                )
+            else:
+                # Simple HTML-only email
+                response = client.send_email(
+                    Source=self.from_email,
+                    Destination={"ToAddresses": [to_email]},
+                    Message={
+                        "Subject": {"Data": subject, "Charset": "UTF-8"},
+                        "Body": {"Html": {"Data": html_body, "Charset": "UTF-8"}},
+                    },
+                )
+
             logger.info("Amazon SES email sent successfully to %s. MessageId: %s", to_email, response.get("MessageId"))
             return True
         except (BotoCoreError, ClientError) as e:
             logger.error("Amazon SES failed to send email to %s: %s", to_email, e)
             return False
 
-    def _send_via_smtp(self, to_email: str, subject: str, html_body: str) -> bool:
-        """Sends email using standard SMTP (e.g. Gmail / Resend)."""
+    def _send_via_smtp(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        pdf_bytes: bytes | None = None,
+    ) -> bool:
+        """Sends email using standard SMTP (e.g. Gmail / Resend) with optional PDF attachment."""
         if not settings.smtp_host:
             logger.warning("SMTP host not configured. Falling back to log.")
             return False
 
         try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = self.from_email
-            msg["To"] = to_email
-            msg.attach(MIMEText(html_body, "html", "utf-8"))
+            msg = self._build_mime_message(to_email, subject, html_body, pdf_bytes)
 
             with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as server:
                 server.starttls()

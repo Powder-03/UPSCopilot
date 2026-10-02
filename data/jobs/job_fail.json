@@ -1,0 +1,7 @@
+{
+  "job_id": "job_fail",
+  "status": "PARSING",
+  "progress_pct": 10,
+  "current_step": "Downloading PDF and starting Vision OCR...",
+  "updated_at": "2026-10-02T10:33:23.328818+00:00"
+}

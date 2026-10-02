@@ -1,15 +1,22 @@
-"""FastAPI application for UPSC answer booklet evaluation with asynchronous job submission and email delivery."""
 import logging
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from src.config import settings
 from src.models.api import JobStatusResponse, JobSubmitResponse
 from src.services.job_manager import job_manager
 
 logger = logging.getLogger(__name__)
+
+INDEX_HTML_PATH = Path(__file__).resolve().parents[1] / "static" / "index.html"
+if not INDEX_HTML_PATH.exists():
+    INDEX_HTML_PATH = Path(__file__).resolve().parent / "static" / "index.html"
+if not INDEX_HTML_PATH.exists():
+    INDEX_HTML_PATH = Path(__file__).resolve().parents[2] / "index.html"
 
 app = FastAPI(
     title="UPSCopilot Answer Evaluation API",
@@ -28,14 +35,31 @@ app.add_middleware(
 
 
 @app.get("/", tags=["General"])
-async def root() -> dict[str, str]:
-    """Root landing endpoint."""
+async def root(request: Request):
+    """
+    Root landing endpoint. Serves the upload portal for browser visitors,
+    and JSON service metadata for API clients.
+    """
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept and INDEX_HTML_PATH.exists():
+        return HTMLResponse(content=INDEX_HTML_PATH.read_text(encoding="utf-8"))
+
     return {
         "service": "UPSCopilot Evaluation API",
         "status": "online",
         "docs_url": "/docs",
+        "portal_url": "/portal",
         "submit_endpoint": "/api/v1/jobs/submit",
     }
+
+
+@app.get("/portal", tags=["General"], response_class=HTMLResponse)
+async def portal_page():
+    """Dedicated web portal endpoint for answer booklet upload and email delivery."""
+    if INDEX_HTML_PATH.exists():
+        return HTMLResponse(content=INDEX_HTML_PATH.read_text(encoding="utf-8"))
+    raise HTTPException(status_code=404, detail="Upload portal HTML template not found.")
+
 
 
 @app.get("/api/v1/health", tags=["Health"])

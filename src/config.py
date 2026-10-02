@@ -54,7 +54,9 @@ class Settings(BaseSettings):
     # AWS Serverless & Cloud Storage Configuration (Lambda, S3, DynamoDB, SQS)
     s3_bucket: str | None = Field(default=None, alias="S3_BUCKET")
     dynamodb_table: str | None = Field(default=None, alias="DYNAMODB_TABLE")
-    sqs_queue_url: str | None = Field(default=None, alias="SQS_QUEUE_URL")
+    vision_queue_url: str | None = Field(default=None, alias="VISION_QUEUE_URL")
+    eval_queue_url: str | None = Field(default=None, alias="EVAL_QUEUE_URL")
+    parsed_booklets_table: str | None = Field(default=None, alias="PARSED_BOOKLETS_TABLE")
 
     # Email Delivery Configuration (SES, SMTP, or Mock)
     email_provider: str = Field(default="mock", alias="EMAIL_PROVIDER")

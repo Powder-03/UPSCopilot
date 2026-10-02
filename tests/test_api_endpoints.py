@@ -16,6 +16,16 @@ def test_root_endpoint():
     assert "UPSCopilot" in data["service"]
 
 
+def test_portal_endpoint():
+    """Verifies GET /portal returns 200 with HTML portal content."""
+    response = client.get("/portal")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    assert "UPSCopilot" in response.text
+    assert "Answer Booklet PDF" in response.text
+    assert "Recipient Email Address" in response.text
+
+
 def test_health_check_endpoint():
     """Verifies GET /api/v1/health returns 200 and system health indicators."""
     response = client.get("/api/v1/health")
