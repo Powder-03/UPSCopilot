@@ -8,7 +8,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
-from src.models.api import JobStatusResponse, JobSubmitResponse
+from src.models.api import (
+    DirectJobSubmitRequest,
+    JobStatusResponse,
+    JobSubmitResponse,
+    UploadUrlResponse,
+)
 from src.services.job_manager import job_manager
 
 logger = logging.getLogger(__name__)
@@ -84,6 +89,68 @@ async def health_check() -> dict[str, object]:
         "email_provider": settings.email_provider,
     }
 
+
+
+@app.get(
+    "/api/v1/jobs/upload-url",
+    response_model=UploadUrlResponse,
+    tags=["Evaluation Jobs"],
+    summary="Get presigned S3 upload URL for direct large file upload",
+)
+async def get_upload_url(filename: str = "booklet.pdf") -> UploadUrlResponse:
+    """
+    Returns a presigned S3 PUT URL allowing direct browser-to-S3 upload,
+    bypassing API Gateway's 10 MB payload limit for large answer booklet PDFs (up to 500 MB+).
+    """
+    if not filename.lower().endswith(".pdf"):
+        filename = f"{filename}.pdf"
+
+    info = job_manager.get_presigned_upload_url(filename=filename)
+    return UploadUrlResponse(
+        job_id=info["job_id"],
+        upload_url=info["upload_url"],
+        storage_ref=info["storage_ref"],
+        s3_enabled=info["s3_enabled"],
+    )
+
+
+@app.post(
+    "/api/v1/jobs/submit-direct",
+    response_model=JobSubmitResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["Evaluation Jobs"],
+    summary="Trigger evaluation for an answer booklet already uploaded to S3",
+)
+async def submit_direct_job(payload: DirectJobSubmitRequest) -> JobSubmitResponse:
+    """
+    Queues background evaluation for a PDF uploaded directly to Amazon S3.
+    """
+    try:
+        submit_resp = job_manager.create_job_from_storage_ref(
+            job_id=payload.job_id,
+            storage_ref=payload.storage_ref,
+            filename=payload.filename,
+            email=payload.email,
+            start_page=payload.start_page,
+            max_pages=payload.max_pages,
+        )
+
+        job_manager.dispatch_job(
+            job_id=payload.job_id,
+            pdf_path=payload.storage_ref,
+            email=payload.email,
+            start_page=payload.start_page,
+            max_pages=payload.max_pages,
+        )
+
+        return submit_resp
+
+    except Exception as e:
+        logger.exception("Failed to queue direct evaluation job: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to queue evaluation job: {str(e)}",
+        ) from e
 
 
 @app.post(

@@ -111,6 +111,59 @@ class JobManager:
         )
         return response, local_pdf_path
 
+    def get_presigned_upload_url(self, filename: str) -> dict[str, Any]:
+        """Generates a unique job_id and presigned S3 upload URL."""
+        job_id = f"job_{uuid.uuid4().hex[:12]}"
+        return self.storage_service.generate_presigned_upload_url(filename=filename, job_id=job_id)
+
+    def create_job_from_storage_ref(
+        self,
+        job_id: str,
+        storage_ref: str,
+        filename: str,
+        email: str | None = None,
+        start_page: int | None = None,
+        max_pages: int | None = None,
+    ) -> JobSubmitResponse:
+        """
+        Creates a new asynchronous job using an already uploaded S3 storage reference.
+        """
+        now = datetime.datetime.now(datetime.UTC).isoformat()
+        job_data: dict[str, Any] = {
+            "job_id": job_id,
+            "status": JobStatus.QUEUED.value,
+            "progress_pct": 0,
+            "current_step": "Job queued for processing",
+            "email": email.strip() if email else None,
+            "email_sent": False,
+            "error": None,
+            "result": None,
+            "pdf_path": storage_ref,
+            "filename": filename,
+            "start_page": start_page,
+            "max_pages": max_pages,
+            "created_at": now,
+            "updated_at": now,
+        }
+
+        with self._lock:
+            self._jobs[job_id] = job_data
+            self._persist_job_to_disk(job_id)
+
+        submit_msg = (
+            f"Evaluation queued! A full scorecard will be emailed to {email} upon completion."
+            if email
+            else "Evaluation queued! Poll check_status_url for progress and final scorecard."
+        )
+
+        return JobSubmitResponse(
+            job_id=job_id,
+            status=JobStatus.QUEUED,
+            check_status_url=f"/api/v1/jobs/{job_id}",
+            email=job_data["email"],
+            message=submit_msg,
+        )
+
     def get_job(self, job_id: str) -> JobStatusResponse | None:
         """Retrieves current job status from in-memory cache, DynamoDB, or local disk."""
         with self._lock:

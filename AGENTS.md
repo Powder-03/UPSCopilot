@@ -208,6 +208,12 @@ evaluator/
   - Right column: Elevated white submission card with drag & drop PDF dropzone, recipient email input, QCAB page slicing accordion, forest green CTA button, and bottom trust badges (`Grounded Case Law Citations | Calibrated UPSC CSE Standards`).
   - Mounted `/static` in FastAPI `src/api/app.py` for high-resolution static asset serving.
   - Preserved full asynchronous job dispatching to `POST /api/v1/jobs/submit`, immediate HTTP 202 leave confirmation modal, and real-time live status polling fallback.
+- [x] Direct S3 Presigned Upload Architecture (Bypassing API Gateway 10MB Limit):
+  - Solved HTTP 413 Payload Too Large error when uploading large scanned answer booklets (e.g. 230 MB).
+  - Implemented `generate_presigned_upload_url` in `src/services/storage_service.py` generating secure, short-lived S3 PUT URLs.
+  - Implemented `create_job_from_storage_ref` in `src/services/job_manager.py` allowing job creation from existing S3 objects.
+  - Added `GET /api/v1/jobs/upload-url` and `POST /api/v1/jobs/submit-direct` in `src/api/app.py`.
+  - Upgraded frontend in `src/static/index.html` and `index.html` to stream large PDFs directly to Amazon S3 with real-time percentage progress bar before triggering background evaluation (< 1 KB payload).
 
 
 

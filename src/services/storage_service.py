@@ -37,6 +37,39 @@ class StorageService:
             self._s3_client = boto3.client("s3", region_name=self.region_name)
         return self._s3_client
 
+    def generate_presigned_upload_url(
+        self, filename: str, job_id: str, expires_in: int = 3600
+    ) -> dict[str, Any]:
+        """
+        Generates a presigned S3 PUT URL allowing the client browser to upload
+        large files directly to S3, bypassing API Gateway's 10 MB payload ceiling.
+        """
+        clean_filename = Path(filename).name
+        if self.is_s3_enabled:
+            s3_key = f"uploads/{job_id}_{clean_filename}"
+            url = self.s3_client.generate_presigned_url(
+                ClientMethod="put_object",
+                Params={
+                    "Bucket": self.s3_bucket,
+                    "Key": s3_key,
+                    "ContentType": "application/pdf",
+                },
+                ExpiresIn=expires_in,
+            )
+            return {
+                "job_id": job_id,
+                "upload_url": url,
+                "storage_ref": f"s3://{self.s3_bucket}/{s3_key}",
+                "s3_enabled": True,
+            }
+
+        return {
+            "job_id": job_id,
+            "upload_url": "",
+            "storage_ref": "",
+            "s3_enabled": False,
+        }
+
     def save_file(self, file_bytes: bytes, filename: str, job_id: str) -> str:
         """
         Saves uploaded file bytes.

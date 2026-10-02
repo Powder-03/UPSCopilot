@@ -85,3 +85,7 @@ Thumbs.db
 logs/
 tmp/
 scratch/
+
+# AWS SAM local configuration (contains secrets)
+samconfig.toml
+.aws-sam/

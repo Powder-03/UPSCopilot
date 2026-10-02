@@ -45,7 +45,6 @@ Globals:
         PINECONE_API_KEY: !Ref PineconeApiKey
         PINECONE_INDEX_NAME: !Ref PineconeIndexName
         EMBEDDING_DIMENSION: "768"
-        AWS_REGION: !Ref "AWS::Region"
         S3_BUCKET: !Ref UploadsBucket
         DYNAMODB_TABLE: !Ref JobStateTable
         PARSED_BOOKLETS_TABLE: !Ref ParsedBookletsTable
@@ -180,7 +179,7 @@ Resources:
       ImageConfig:
         Command: ["src.lambda_vision.handler"]
       Timeout: 600 # 10 minutes for multi-page OCR transcription
-      MemorySize: 3072 # 3 GB RAM
+      MemorySize: 3008 # Max allowable within standard 3008 MB account tier
       EphemeralStorage:
         Size: 2048 # 2 GB /tmp storage for downloading and parsing PDFs
       Policies:
@@ -223,7 +222,7 @@ Resources:
       ImageConfig:
         Command: ["src.lambda_eval.handler"]
       Timeout: 900 # 15 minutes max execution
-      MemorySize: 4096 # 4 GB RAM for PyMuPDF, OCR processing & Chroma
+      MemorySize: 3008 # Max allowable within standard 3008 MB account tier
       EphemeralStorage:
         Size: 2048 # 2 GB /tmp storage for PDF rendering
       Policies:

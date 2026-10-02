@@ -12,6 +12,10 @@ RUN yum install -y \
     libXrender \
     tar \
     gzip \
+    zlib-devel \
+    libjpeg-turbo-devel \
+    freetype-devel \
+    libpng-devel \
     && yum clean all
 
 # Set environment variables
@@ -33,8 +37,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 # Copy dependency files
 COPY pyproject.toml README.md ./
 
-# Install dependencies into system Python using uv pip
-RUN uv pip install --system -r pyproject.toml
+# Install dependencies into system Python using uv pip (strictly binary wheels, no source compilation)
+RUN uv pip install --system --only-binary :all: -r pyproject.toml
 
 # Copy application source code and constitution raw corpus
 COPY src/ ./src/

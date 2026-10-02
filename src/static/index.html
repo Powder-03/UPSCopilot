@@ -1329,11 +1329,11 @@
 
       // UI Loading state
       submitBtn.disabled = true;
-      btnText.textContent = "Uploading Booklet...";
+      btnText.textContent = "Initializing upload...";
       btnIcon.style.display = "none";
       btnSpinner.style.display = "block";
       progressContainer.style.display = "block";
-      uploadProgressBar.style.width = "10%";
+      uploadProgressBar.style.width = "5%";
 
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -1341,43 +1341,117 @@
       if (startPage) formData.append("start_page", startPage);
       if (maxPages) formData.append("max_pages", maxPages);
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/v1/jobs/submit", true);
+      function fallbackMultipartUpload() {
+        btnText.textContent = "Uploading Booklet...";
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/jobs/submit", true);
 
-      xhr.upload.onprogress = function(event) {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 90);
-          uploadProgressBar.style.width = Math.max(10, percent) + "%";
-        }
-      };
-
-      xhr.onload = function() {
-        if (xhr.status === 202) {
-          uploadProgressBar.style.width = "100%";
-          try {
-            const data = JSON.parse(xhr.responseText);
-            currentJobId = data.job_id;
-            transitionToSuccess(email, data.job_id);
-          } catch (err) {
-            transitionToSuccess(email, "job_submitted");
+        xhr.upload.onprogress = function(event) {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 90);
+            uploadProgressBar.style.width = Math.max(10, percent) + "%";
           }
-        } else {
+        };
+
+        xhr.onload = function() {
+          if (xhr.status === 202) {
+            uploadProgressBar.style.width = "100%";
+            try {
+              const data = JSON.parse(xhr.responseText);
+              currentJobId = data.job_id;
+              transitionToSuccess(email, data.job_id);
+            } catch (err) {
+              transitionToSuccess(email, "job_submitted");
+            }
+          } else {
+            resetSubmitButton();
+            try {
+              const err = JSON.parse(xhr.responseText);
+              showError(err.detail || "Upload failed with status " + xhr.status);
+            } catch (e) {
+              showError("Failed to submit booklet. Server status: " + xhr.status);
+            }
+          }
+        };
+
+        xhr.onerror = function() {
           resetSubmitButton();
-          try {
-            const err = JSON.parse(xhr.responseText);
-            showError(err.detail || "Upload failed with status " + xhr.status);
-          } catch (e) {
-            showError("Failed to submit booklet. Server status: " + xhr.status);
+          showError("Network connection error. Please verify the evaluation server is online.");
+        };
+
+        xhr.send(formData);
+      }
+
+      // Step 1: Request presigned S3 upload URL for direct streaming (handles up to 500 MB+)
+      fetch("/api/v1/jobs/upload-url?filename=" + encodeURIComponent(selectedFile.name))
+        .then(function(res) {
+          if (!res.ok) throw new Error("Could not initialize upload: " + res.status);
+          return res.json();
+        })
+        .then(function(uploadData) {
+          if (uploadData.s3_enabled && uploadData.upload_url) {
+            btnText.textContent = "Uploading to S3 (0%)...";
+            const s3Xhr = new XMLHttpRequest();
+            s3Xhr.open("PUT", uploadData.upload_url, true);
+            s3Xhr.setRequestHeader("Content-Type", "application/pdf");
+
+            s3Xhr.upload.onprogress = function(event) {
+              if (event.lengthComputable) {
+                const percent = Math.round((event.loaded / event.total) * 100);
+                uploadProgressBar.style.width = percent + "%";
+                btnText.textContent = "Uploading (" + percent + "%)...";
+              }
+            };
+
+            s3Xhr.onload = function() {
+              if (s3Xhr.status >= 200 && s3Xhr.status < 300) {
+                btnText.textContent = "Queuing evaluation...";
+                uploadProgressBar.style.width = "100%";
+
+                // Step 2: Trigger background job with S3 storage reference
+                fetch("/api/v1/jobs/submit-direct", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    job_id: uploadData.job_id,
+                    storage_ref: uploadData.storage_ref,
+                    filename: selectedFile.name,
+                    email: email,
+                    start_page: startPage ? parseInt(startPage, 10) : null,
+                    max_pages: maxPages ? parseInt(maxPages, 10) : null
+                  })
+                })
+                .then(function(subRes) {
+                  if (!subRes.ok) throw new Error("Server returned status " + subRes.status);
+                  return subRes.json();
+                })
+                .then(function(jobData) {
+                  currentJobId = jobData.job_id;
+                  transitionToSuccess(email, jobData.job_id);
+                })
+                .catch(function(err) {
+                  resetSubmitButton();
+                  showError("Failed to register evaluation job: " + err.message);
+                });
+              } else {
+                resetSubmitButton();
+                showError("Direct S3 upload failed with status " + s3Xhr.status);
+              }
+            };
+
+            s3Xhr.onerror = function() {
+              resetSubmitButton();
+              showError("Direct S3 upload network error. Please check your connection.");
+            };
+
+            s3Xhr.send(selectedFile);
+          } else {
+            fallbackMultipartUpload();
           }
-        }
-      };
-
-      xhr.onerror = function() {
-        resetSubmitButton();
-        showError("Network connection error. Please verify the evaluation server is online.");
-      };
-
-      xhr.send(formData);
+        })
+        .catch(function(err) {
+          fallbackMultipartUpload();
+        });
     }
 
     function resetSubmitButton() {

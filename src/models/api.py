@@ -104,3 +104,23 @@ class JobStatusResponse(BaseModel):
     result: StudentEvaluationReport | None = Field(
         default=None, description="Complete student scorecard when status is COMPLETED"
     )
+
+
+class UploadUrlResponse(BaseModel):
+    """Presigned S3 upload URL metadata for direct client-to-storage upload."""
+
+    job_id: str = Field(description="Generated unique job ID")
+    upload_url: str = Field(description="Presigned S3 PUT URL")
+    storage_ref: str = Field(description="Target storage URI (s3://...)")
+    s3_enabled: bool = Field(default=True, description="Whether direct S3 upload is active")
+
+
+class DirectJobSubmitRequest(BaseModel):
+    """Payload to trigger background evaluation after direct S3 upload."""
+
+    job_id: str = Field(description="Job ID obtained from upload-url")
+    storage_ref: str = Field(description="Storage reference returned by upload-url")
+    filename: str = Field(description="Original PDF filename")
+    email: str | None = Field(default=None, description="Student email address for scorecard delivery")
+    start_page: int | None = Field(default=None, description="1-indexed starting page for Question 1")
+    max_pages: int | None = Field(default=None, description="Maximum pages to process")
