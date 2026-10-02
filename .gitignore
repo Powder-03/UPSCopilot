@@ -54,15 +54,19 @@ coverage.xml
 # Vector Store, Embeddings & Large Local Data
 data/storage/
 data/raw/*.json
+data/uploads/
+data/jobs/
 *.parquet
 *.sqlite3
 chroma/
+.aws-sam/
 
 # Large scanned PDFs (question papers, topper answer sheets, downloaded Act PDFs)
 # Kept local only: bulky binaries that must never be committed or pushed.
 *.pdf
 /GS-II.pdf
-/VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf
+/VIKAS*
+
 
 # Generated evaluation artifacts
 tests/outputs/

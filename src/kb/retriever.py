@@ -1,34 +1,79 @@
-"""Hybrid Ensemble Retriever combining BM25 and Chroma Vector Store with Bedrock Titan Embeddings."""
+"""Self-Query Cloud-Native Retriever using Pinecone and Vertex AI Embeddings."""
 import logging
 import re
+from typing import Any
 
 from langchain_core.documents import Document
-from rank_bm25 import BM25Okapi
 
-from src.kb.corpus_loader import load_all_corpus_documents
-from src.kb.vector_store import get_chroma_vector_store
+from src.kb.vector_store import get_vector_store
 
 logger = logging.getLogger(__name__)
 
 # --- Retrieval tuning constants ---
-RRF_K = 60                    # Standard Reciprocal Rank Fusion smoothing constant
-CHANNEL_DEPTH = 30            # Candidates pulled from each channel (BM25 / dense) before fusion
-RERANK_POOL_MIN = 40          # Floor for the cross-encoder candidate pool
-RERANK_POOL_MULTIPLIER = 4    # Pool scales with requested top_k: max(RERANK_POOL_MIN, k * multiplier)
-MAX_CHUNKS_PER_SOURCE = 5     # Diversity ceiling: chunks per source document in the final selection
+CHANNEL_DEPTH = 20            # Candidate pool pulled from Pinecone before diversity filtering
+MAX_CHUNKS_PER_SOURCE = 4     # Diversity ceiling: chunks per source document in final context
 
 
 def tokenize(text: str) -> list[str]:
-    """Simple alphanumeric tokenizer for BM25 search."""
+    """Simple alphanumeric tokenizer helper."""
     return re.findall(r"\w+", text.lower())
 
 
-class HybridRetriever:
+def extract_self_query_filter(query: str) -> dict[str, Any] | None:
     """
-    Standard LangChain Hybrid Retriever combining:
-    1. Sparse Lexical Search (BM25 for exact Article numbers, act sections, case titles)
-    2. Dense Semantic Search (Chroma vector store with Amazon Titan Bedrock embeddings)
-    3. Reciprocal Rank Fusion (RRF)
+    Analyzes UPSC question/query to extract structured Pinecone metadata filters.
+    Detects GS paper focus and statutory/case law document types.
+    """
+    q_lower = query.lower()
+    conditions: list[dict[str, Any]] = []
+
+    # 1. GS Paper classification
+    if any(w in q_lower for w in [
+        "geography", "monsoon", "plate tectonics", "earthquake", "volcano",
+        "mineral", "indus valley", "freedom struggle", "gandhian phase", "swadeshi",
+        "population", "urbanization", "secularism", "regionalism"
+    ]):
+        conditions.append({"gs_paper": {"$eq": "gs1"}})
+    elif any(w in q_lower for w in [
+        "constitution", "article", "amendment", "fundamental rights", "dpsp",
+        "governor", "president", "parliament", "tribunal", "rti", "dpdp",
+        "lokpal", "cvc", "pmla", "electoral bonds", "quad", "i2u2", "brics",
+        "unclos", "wto", "civil services", "governance", "sevottam"
+    ]):
+        conditions.append({"gs_paper": {"$eq": "gs2"}})
+    elif any(w in q_lower for w in [
+        "fiscal", "inflation", "gdp", "frbm", "monetary policy", "msp",
+        "agriculture", "public distribution", "food security", "climate change",
+        "biodiversity", "wildlife", "quantum mission", "space", "isro",
+        "uapa", "nia", "cyber security", "afspa", "internal security"
+    ]):
+        conditions.append({"gs_paper": {"$eq": "gs3"}})
+    elif any(w in q_lower for w in [
+        "ethics", "morality", "probity in governance", "integrity", "nolan",
+        "kant", "utilitarian", "rawls", "emotional intelligence", "case study",
+        "moral dilemma", "code of conduct"
+    ]):
+        conditions.append({"gs_paper": {"$eq": "gs4"}})
+
+    # 2. Document type preference
+    if any(w in q_lower for w in ["case", "judgement", "judgment", "verdict", "doctrine", "bench", "vs ", "v. ", "sc held"]):
+        conditions.append({"doc_type": {"$in": ["case_law", "constitution"]}})
+    elif any(w in q_lower for w in ["act", "statute", "section", "legislation", "ordinance", "bill"]):
+        conditions.append({"doc_type": {"$in": ["statute", "governance"]}})
+
+    if not conditions:
+        return None
+    if len(conditions) == 1:
+        return conditions[0]
+    return {"$and": conditions}
+
+
+class SelfQueryRetriever:
+    """
+    Cloud-native Self-Query Retriever powered by Pinecone & Vertex AI text-embedding-004.
+    1. Extracts query intent & syllabus metadata filter (GS1-GS4, doc_type).
+    2. Performs single-pass semantic vector search directly in Pinecone cloud.
+    3. Applies Source Diversity Filter to prevent single-document monopoly.
     """
 
     def __init__(
@@ -38,126 +83,82 @@ class HybridRetriever:
         force_mock: bool = False,
         top_k: int = 5,
     ):
-        self.persist_dir = persist_dir
-        self.force_mock = force_mock
         self.top_k = top_k
-        self.documents: list[Document] = documents if documents is not None else load_all_corpus_documents()
-        self.id_to_idx: dict[str, int] = {
-            doc.metadata["id"]: i for i, doc in enumerate(self.documents) if doc.metadata.get("id")
-        }
-        self.doc_by_id: dict[str, Document] = {
-            doc.metadata.get("id", f"doc_{i}"): doc for i, doc in enumerate(self.documents)
-        }
+        self.force_mock = force_mock
+        self.vector_store = get_vector_store(persist_dir, force_mock=force_mock)
 
-        # Initialize BM25 over the real documents
-        self.corpus = [f"{doc.metadata.get('title', '')} {doc.page_content}" for doc in self.documents]
-        self.tokenized_corpus = [tokenize(t) for t in self.corpus]
-        self.bm25 = BM25Okapi(self.tokenized_corpus) if self.tokenized_corpus else None
-
-        # Chroma vector store
-        self.vector_store = get_chroma_vector_store(persist_dir, force_mock=force_mock)
-
-        # FlashRank Cross-Encoder Reranker
-        try:
-            from flashrank import Ranker
-            self.ranker = Ranker()
-            logger.info("FlashRank cross-encoder reranker initialized successfully.")
-        except Exception as e:
-            logger.warning(f"FlashRank initialization skipped: {e}")
-            self.ranker = None
-
-    def retrieve(self, query: str, top_k: int | None = None, use_reranker: bool = True) -> list[Document]:
-        """Hybrid search with Reciprocal Rank Fusion (RRF) and FlashRank cross-encoder reranking."""
+    def retrieve(
+        self,
+        query: str,
+        top_k: int | None = None,
+        use_reranker: bool = False,
+        filter: dict[str, Any] | None = None,
+    ) -> list[Document]:
+        """
+        Retrieves grounded knowledge documents for a UPSC answer evaluation query.
+        Applies self-query metadata filtering and source diversity preservation.
+        """
         k = top_k or self.top_k
-        query_tokens = tokenize(query)
-        rrf_scores: dict[int, float] = {}
+        active_filter = filter
 
-        # 1. BM25 scoring
-        if self.bm25 and query_tokens:
-            bm25_scores = self.bm25.get_scores(query_tokens)
-            sorted_bm25 = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)
-            for rank, idx in enumerate(sorted_bm25[:CHANNEL_DEPTH]):
-                if bm25_scores[idx] > 0.0:
-                    rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (RRF_K + rank + 1))
+        # 1. Query Pinecone with semantic embeddings
+        candidates = self.vector_store.similarity_search(
+            query=query,
+            k=CHANNEL_DEPTH,
+            filter=active_filter,
+        )
 
-        # 2. Dense vector search
-        dense_direct_docs: list[Document] = []
-        try:
-            dense_docs = self.vector_store.similarity_search(query, k=CHANNEL_DEPTH)
-            for rank, doc in enumerate(dense_docs):
-                doc_id = doc.metadata.get("id")
-                if doc_id and doc_id in self.id_to_idx:
-                    idx = self.id_to_idx[doc_id]
-                    rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (RRF_K + rank + 1))
-                else:
-                    dense_direct_docs.append(doc)
-        except Exception as e:
-            logger.warning(f"Error in dense similarity search: {e}")
+        # 2. Backfill fallback if filtered query returned fewer than k candidates
+        if len(candidates) < k and active_filter is not None:
+            unfiltered_candidates = self.vector_store.similarity_search(
+                query=query,
+                k=CHANNEL_DEPTH,
+                filter=None,
+            )
+            seen_texts = {c.page_content[:80] for c in candidates}
+            for doc in unfiltered_candidates:
+                if doc.page_content[:80] not in seen_texts:
+                    candidates.append(doc)
+                    seen_texts.add(doc.page_content[:80])
+                if len(candidates) >= CHANNEL_DEPTH:
+                    break
 
-        # Gather an expanded candidate pool for cross-encoder reranking
-        candidate_pool_size = max(RERANK_POOL_MIN, k * RERANK_POOL_MULTIPLIER)
-        sorted_indices = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-        candidate_docs = [self.documents[idx] for idx, _ in sorted_indices[:candidate_pool_size]]
-
-        # Augment from direct dense results if needed
-        seen_texts = {d.page_content[:80] for d in candidate_docs}
-        for d in dense_direct_docs:
-            if d.page_content[:80] not in seen_texts:
-                candidate_docs.append(d)
-                seen_texts.add(d.page_content[:80])
-            if len(candidate_docs) >= candidate_pool_size:
-                break
-
-        if not candidate_docs:
+        if not candidates:
             return []
 
-        # 3. Cross-Encoder Reranking via FlashRank with Diversity Filter
-        if use_reranker and self.ranker and len(candidate_docs) > 1:
-            try:
-                from flashrank import RerankRequest
-                passages = [
-                    {"id": i, "text": f"{d.metadata.get('title', '')}\n{d.page_content}"}
-                    for i, d in enumerate(candidate_docs)
-                ]
-                rerank_request = RerankRequest(query=query, passages=passages)
-                reranked = self.ranker.rerank(rerank_request)
+        # 3. Source Diversity Filtering: allow up to MAX_CHUNKS_PER_SOURCE chunks per source
+        # Prevents a single large statute (e.g. RTI Act) from monopolizing evaluation context.
+        selected_docs: list[Document] = []
+        source_counts: dict[str, int] = {}
+        for doc in candidates:
+            src = doc.metadata.get("source", doc.metadata.get("title", "unknown"))
+            if source_counts.get(src, 0) < MAX_CHUNKS_PER_SOURCE:
+                selected_docs.append(doc)
+                source_counts[src] = source_counts.get(src, 0) + 1
+            if len(selected_docs) >= k:
+                break
 
-                # Diversity filtering: allow up to MAX_CHUNKS_PER_SOURCE chunks per source document
-                # so deep statutory or case dossiers are not prematurely truncated, while still
-                # preventing total single-doc monopoly.
-                selected_docs: list[Document] = []
-                source_counts: dict[str, int] = {}
-                for r in reranked:
-                    doc = candidate_docs[r["id"]]
-                    src = doc.metadata.get("source", doc.metadata.get("title", "unknown"))
-                    if source_counts.get(src, 0) < MAX_CHUNKS_PER_SOURCE:
-                        selected_docs.append(doc)
-                        source_counts[src] = source_counts.get(src, 0) + 1
-                    if len(selected_docs) >= k:
-                        break
+        # Backfill if k slots not yet filled
+        if len(selected_docs) < k:
+            for doc in candidates:
+                if doc not in selected_docs:
+                    selected_docs.append(doc)
+                if len(selected_docs) >= k:
+                    break
 
-                # If k slots not filled, backfill from remaining
-                if len(selected_docs) < k:
-                    for r in reranked:
-                        doc = candidate_docs[r["id"]]
-                        if doc not in selected_docs:
-                            selected_docs.append(doc)
-                        if len(selected_docs) >= k:
-                            break
+        return selected_docs[:k]
 
-                return selected_docs
-            except Exception as e:
-                logger.warning(f"FlashRank reranking error, falling back to RRF: {e}")
-
-        return candidate_docs[:k]
-
-    def get_retrieval_context(self, query: str, top_k: int = 8, use_reranker: bool = True) -> list[str]:
+    def get_retrieval_context(self, query: str, top_k: int = 8, use_reranker: bool = False) -> list[str]:
         """Formats retrieved documents into clean context blocks for LLM evaluators."""
         docs = self.retrieve(query, top_k=top_k, use_reranker=use_reranker)
-        contexts = []
+        contexts: list[str] = []
         for d in docs:
             title = d.metadata.get("title", "Document")
             citation = d.metadata.get("citation", "")
             cite_str = f"\nCitation: {citation}" if citation else ""
             contexts.append(f"[{title}]\n{d.page_content}{cite_str}")
         return contexts
+
+
+# Backward-compatible alias for existing imports across the project
+HybridRetriever = SelfQueryRetriever

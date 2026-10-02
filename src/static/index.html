@@ -3,29 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UPSCopilot | Answer Booklet Evaluation Engine</title>
-  <meta name="description" content="AI-Powered, grounded UPSC Civil Services Mains answer evaluation engine. Submit your handwritten answer booklet and receive your scorecard via email." />
+  <title>UPSCopilot | Evaluation - Calibrated UPSC Mains Answer Evaluation</title>
+  <meta name="description" content="Calibrated UPSC CSE scoring, grounded statutory citations, and deep diagnostic diagnostics delivered directly to your inbox." />
+  
+  <!-- Preconnect & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg-dark: #07090e;
-      --card-bg: rgba(15, 20, 32, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-border-glow: rgba(99, 102, 241, 0.4);
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-      --accent-cyan: #06b6d4;
-      --accent-emerald: #10b981;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --danger: #ef4444;
-      --radius-lg: 20px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
+      --bg-cream: #FCFBF6;
+      --card-bg: #FFFFFF;
+      --card-border: #E8E5DD;
+      --text-navy: #0F1E36;
+      --text-forest: #0F5132;
+      --text-forest-hover: #0B4226;
+      --text-slate: #475569;
+      --text-muted: #64748B;
+      --amber-gold: #D97706;
+      --amber-light: #FFFBEB;
+      --amber-border: #FDE68A;
+      --emerald-light: #F0FDF4;
+      --emerald-border: #BBF7D0;
+      --danger: #DC2626;
+      --danger-light: #FEF2F2;
+      --radius-xl: 18px;
+      --radius-lg: 12px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-card: 0 20px 45px -12px rgba(15, 30, 54, 0.08), 0 4px 14px rgba(15, 30, 54, 0.04);
+      --shadow-hover: 0 25px 50px -12px rgba(15, 30, 54, 0.12), 0 8px 20px rgba(15, 30, 54, 0.06);
     }
 
     * {
@@ -34,338 +42,488 @@
       padding: 0;
     }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    html, body {
+      background-color: var(--bg-cream);
+      color: var(--text-navy);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-      position: relative;
-      overflow-x: hidden;
       line-height: 1.5;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    /* Ambient background glowing orbs */
-    .bg-glow-1 {
-      position: fixed;
-      top: -150px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 700px;
-      height: 450px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(139, 92, 246, 0.08) 45%, transparent 70%);
-      filter: blur(80px);
-      z-index: 0;
+    /* Botanical watercolor corner branch */
+    .botanical-corner {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: clamp(200px, 22vw, 320px);
+      height: auto;
       pointer-events: none;
-    }
-
-    .bg-glow-2 {
-      position: fixed;
-      bottom: -150px;
-      right: 10%;
-      width: 500px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 70%);
-      filter: blur(90px);
       z-index: 0;
-      pointer-events: none;
+      user-select: none;
+      opacity: 0.95;
     }
 
-    .container {
-      width: 100%;
-      max-width: 580px;
+    /* Main Page Wrapper */
+    .page-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 32px 48px;
       position: relative;
       z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
-    /* Header & Branding */
-    .header {
-      text-align: center;
-      margin-bottom: 28px;
+    /* Top Brand Navigation */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 24px;
     }
 
-    .badge-pill {
+    .brand-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #a5b4fc;
-      margin-bottom: 16px;
-      backdrop-filter: blur(10px);
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
     }
 
-    .badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent-emerald);
-      box-shadow: 0 0 10px var(--accent-emerald);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+    .brand-logo-svg {
+      width: 30px;
+      height: 30px;
+      display: block;
     }
 
     .brand-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 2.25rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 8px;
-      background: linear-gradient(180deg, #ffffff 30%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 700;
+      font-size: 1.45rem;
+      letter-spacing: -0.01em;
+      color: var(--text-navy);
     }
 
-    .brand-title span {
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .brand-sep {
+      color: #CBD5E1;
+      font-size: 1.3rem;
+      font-weight: 300;
+      margin: 0 1px;
     }
 
-    .brand-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      max-width: 440px;
-      margin: 0 auto;
+    .brand-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #334155;
     }
 
-    /* Glass Card */
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 32px 28px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
+    /* Two-Column Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 535px 1fr;
+      gap: 40px;
+      align-items: flex-start;
+      flex: 1;
+      position: relative;
     }
 
-    /* Form Elements */
-    .form-group {
+    /* Left Hero Column with Authentic Artwork Integration */
+    .hero-col {
+      position: relative;
+      width: 535px;
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    /* Background illustration: Parliament, Ashoka Lion, Booklet, Pen */
+    .hero-bg-art {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 535px;
+      height: 640px;
+      object-fit: cover;
+      object-position: top left;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Hero Text Content (sits in the top-left open canvas of the illustration) */
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 355px;
+      padding-top: 15px;
+    }
+
+    .hero-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 22px;
     }
 
-    .form-label {
+    .tagline-bar {
+      width: 32px;
+      height: 2.5px;
+      background: var(--amber-gold);
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .tagline-text {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #334155;
+    }
+
+    .hero-heading {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3.5rem;
+      line-height: 1.05;
+      font-weight: 800;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-heading .line-brand {
+      color: var(--text-navy);
       display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #e2e8f0;
+    }
+
+    .hero-heading .line-eval {
+      color: var(--text-forest);
+      display: block;
+    }
+
+    .hero-subtitle {
+      font-size: 0.98rem;
+      line-height: 1.6;
+      color: var(--text-slate);
+      max-width: 340px;
+    }
+
+    /* Right Column: Floating White Submission Card */
+    .card-col {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      width: 100%;
+      padding-top: 4px;
+    }
+
+    .eval-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      padding: 36px 36px 30px;
+      width: 100%;
+      max-width: 490px;
+      position: relative;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .eval-card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Card Header */
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .card-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--amber-light);
+      border: 1px solid var(--amber-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--amber-gold);
+    }
+
+    .card-header-text {
+      flex: 1;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-navy);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 8px;
-      letter-spacing: -0.01em;
     }
 
-    .form-label .required {
-      color: #f43f5e;
-      margin-left: 2px;
+    .form-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-navy);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    /* Drag and Drop Zone */
+    .form-label .req {
+      color: var(--danger);
+      font-size: 0.95rem;
+    }
+
+    .pdf-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--amber-light);
+      border: 1px solid var(--amber-border);
+      color: var(--amber-gold);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Dropzone */
     .dropzone {
-      border: 2px dashed rgba(255, 255, 255, 0.14);
-      border-radius: var(--radius-md);
-      padding: 32px 20px;
+      border: 1.5px dashed #CBD5E1;
+      border-radius: var(--radius-lg);
+      background: #FAFAFA;
+      padding: 30px 20px;
       text-align: center;
       cursor: pointer;
-      background: rgba(255, 255, 255, 0.02);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s ease;
       position: relative;
     }
 
     .dropzone:hover, .dropzone.drag-over {
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.06);
-      box-shadow: 0 0 25px rgba(99, 102, 241, 0.15);
-      transform: translateY(-1px);
+      border-color: var(--text-forest);
+      background: var(--emerald-light);
     }
 
-    .dropzone input[type="file"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .dropzone-icon {
-      width: 52px;
-      height: 52px;
-      margin: 0 auto 12px;
-      border-radius: 14px;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
+    .dropzone-icon-wrap {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #a5b4fc;
-      transition: transform 0.2s ease;
-    }
-
-    .dropzone:hover .dropzone-icon {
-      transform: scale(1.08);
-      background: rgba(99, 102, 241, 0.2);
+      color: var(--text-forest);
     }
 
     .dropzone-title {
       font-size: 0.95rem;
-      font-weight: 600;
-      color: #f1f5f9;
+      color: var(--text-navy);
       margin-bottom: 4px;
     }
 
-    .dropzone-desc {
-      font-size: 0.8rem;
-      color: var(--text-dim);
+    .dropzone-title strong {
+      color: var(--text-navy);
+      font-weight: 700;
     }
 
-    /* Selected File Card */
+    .dropzone-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* File preview state */
     .file-preview {
       display: none;
       align-items: center;
       justify-content: space-between;
       padding: 14px 16px;
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: var(--radius-md);
-      margin-top: 10px;
+      background: var(--emerald-light);
+      border: 1px solid var(--emerald-border);
+      border-radius: var(--radius-lg);
+      margin-top: 4px;
     }
 
     .file-info {
       display: flex;
       align-items: center;
       gap: 12px;
-      overflow: hidden;
+      min-width: 0;
     }
 
     .file-icon {
-      color: #ef4444;
+      color: var(--text-forest);
       flex-shrink: 0;
     }
 
-    .file-meta {
-      overflow: hidden;
+    .file-details {
+      min-width: 0;
     }
 
     .file-name {
       font-size: 0.88rem;
       font-weight: 600;
-      color: #f8fafc;
+      color: var(--text-navy);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 320px;
+      max-width: 250px;
     }
 
     .file-size {
-      font-size: 0.75rem;
-      color: var(--text-dim);
+      font-size: 0.76rem;
+      color: var(--text-muted);
     }
 
-    .file-remove-btn {
+    .remove-file-btn {
       background: transparent;
       border: none;
-      color: var(--text-dim);
+      color: var(--text-muted);
       cursor: pointer;
       padding: 6px;
       border-radius: 6px;
       display: flex;
       align-items: center;
-      transition: all 0.2s;
+      justify-content: center;
+      transition: all 0.15s ease;
     }
 
-    .file-remove-btn:hover {
-      color: #f43f5e;
-      background: rgba(244, 63, 94, 0.1);
+    .remove-file-btn:hover {
+      color: var(--danger);
+      background: var(--danger-light);
     }
 
     /* Email Input */
     .input-wrapper {
       position: relative;
+      display: flex;
+      align-items: center;
     }
 
-    .input-icon {
+    .input-icon-left {
       position: absolute;
       left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-dim);
+      color: var(--text-forest);
+      display: flex;
+      align-items: center;
       pointer-events: none;
     }
 
-    .text-input {
+    .form-input {
       width: 100%;
-      padding: 13px 14px 13px 42px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-md);
-      color: #ffffff;
-      font-size: 0.92rem;
+      height: 48px;
+      padding: 12px 14px 12px 44px;
+      font-size: 0.95rem;
       font-family: inherit;
-      outline: none;
+      color: var(--text-navy);
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-md);
       transition: all 0.2s ease;
+      outline: none;
     }
 
-    .text-input::placeholder {
-      color: var(--text-dim);
+    .form-input::placeholder {
+      color: #94A3B8;
     }
 
-    .text-input:focus {
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.04);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    .form-input:focus {
+      border-color: var(--text-forest);
+      box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.12);
     }
 
-    .helper-text {
+    .input-helper {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 6px;
-      font-size: 0.76rem;
+      font-size: 0.77rem;
       color: var(--text-muted);
       margin-top: 6px;
+      line-height: 1.4;
     }
 
-    /* Advanced Options Accordion */
+    .input-helper svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: #64748B;
+    }
+
+    /* Accordion */
     .accordion {
-      margin-bottom: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid #E2E8F0;
       border-radius: var(--radius-md);
+      background: #FAFAFA;
+      margin-bottom: 22px;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.015);
+      transition: border-color 0.2s ease;
     }
 
-    .accordion-header {
+    .accordion.open {
+      border-color: #CBD5E1;
+      background: #FFFFFF;
+    }
+
+    .accordion-trigger {
+      width: 100%;
       padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: transparent;
+      border: none;
       cursor: pointer;
-      user-select: none;
-      font-size: 0.82rem;
-      color: var(--text-muted);
+      font-family: inherit;
+      color: #334155;
+      font-size: 0.85rem;
       font-weight: 500;
-      transition: color 0.2s;
+      transition: background 0.15s ease;
     }
 
-    .accordion-header:hover {
-      color: #ffffff;
+    .accordion-trigger:hover {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .accordion-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .accordion-header-left svg {
+      color: var(--text-forest);
     }
 
     .accordion-chevron {
-      transition: transform 0.2s ease;
+      color: #64748B;
+      transition: transform 0.25s ease;
     }
 
     .accordion.open .accordion-chevron {
@@ -375,56 +533,69 @@
     .accordion-body {
       display: none;
       padding: 14px 16px 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      border-top: 1px solid #E2E8F0;
+      background: #FFFFFF;
     }
 
     .accordion.open .accordion-body {
+      display: block;
+    }
+
+    .grid-settings {
       display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
 
-    .number-input {
+    .sub-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .sub-input {
       width: 100%;
-      padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-sm);
-      color: #ffffff;
-      font-size: 0.85rem;
-      outline: none;
+      height: 38px;
+      padding: 8px 12px;
+      font-size: 0.88rem;
       font-family: inherit;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.2s ease;
     }
 
-    .number-input:focus {
-      border-color: var(--primary);
+    .sub-input:focus {
+      border-color: var(--text-forest);
     }
 
-    /* CTA Button */
+    /* Submit Button */
     .submit-btn {
       width: 100%;
-      padding: 15px 24px;
+      height: 50px;
+      background: var(--text-forest);
+      color: #FFFFFF;
       border: none;
       border-radius: var(--radius-md);
-      background: var(--primary-gradient);
-      color: #ffffff;
-      font-size: 0.98rem;
-      font-weight: 700;
-      font-family: inherit;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.5);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(15, 81, 50, 0.24);
+      transition: all 0.2s ease;
+      margin-bottom: 22px;
     }
 
     .submit-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.7);
+      background: var(--text-forest-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(15, 81, 50, 0.32);
     }
 
     .submit-btn:active:not(:disabled) {
@@ -432,210 +603,223 @@
     }
 
     .submit-btn:disabled {
-      opacity: 0.6;
+      opacity: 0.75;
       cursor: not-allowed;
-      transform: none;
     }
 
-    /* Upload progress bar */
+    /* Progress bar */
     .progress-bar-container {
       display: none;
-      margin-top: 14px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
+      width: 100%;
+      height: 4px;
+      background: #E2E8F0;
+      border-radius: 9999px;
       overflow: hidden;
+      margin-top: -12px;
+      margin-bottom: 18px;
     }
 
     .progress-bar {
       height: 100%;
       width: 0%;
-      background: var(--primary-gradient);
-      border-radius: 999px;
-      transition: width 0.2s ease;
+      background: var(--text-forest);
+      transition: width 0.3s ease;
     }
 
-    /* Success / Leave Page View */
-    .success-panel {
-      display: none;
-      text-align: center;
-      padding: 10px 0;
-      animation: fadeIn 0.4s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.96); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .success-icon-box {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      background: rgba(16, 185, 129, 0.12);
-      border: 2px solid rgba(16, 185, 129, 0.3);
+    /* Trust Footer inside Card */
+    .card-trust-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--accent-emerald);
-      box-shadow: 0 0 35px rgba(16, 185, 129, 0.25);
+      gap: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #F1F5F9;
     }
 
-    .leave-notice {
+    .trust-badge-item {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #334155;
+    }
+
+    .trust-badge-item svg {
+      color: var(--amber-gold);
+      flex-shrink: 0;
+    }
+
+    .trust-divider {
+      width: 1px;
+      height: 16px;
+      background: #E2E8F0;
+    }
+
+    /* Error Message */
+    .error-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--danger-light);
+      border: 1px solid #FECACA;
+      border-radius: var(--radius-md);
+      color: var(--danger);
+      font-size: 0.84rem;
+      margin-bottom: 18px;
+    }
+
+    /* Success / Queued State Screen */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .success-icon-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--emerald-light);
+      border: 2px solid var(--emerald-border);
+      color: var(--text-forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+    }
+
+    .safe-to-close-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: #FEF3C7;
+      border: 1px solid #FDE68A;
+      color: #92400E;
+      font-size: 0.82rem;
       font-weight: 600;
-      color: #6ee7b7;
+      border-radius: 20px;
       margin-bottom: 16px;
     }
 
     .success-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 1.65rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 8px;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-navy);
+      margin-bottom: 10px;
     }
 
-    .success-desc {
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
+    .success-message {
+      font-size: 0.9rem;
+      color: var(--text-slate);
       line-height: 1.6;
+      margin-bottom: 22px;
     }
 
     .email-highlight {
-      color: #ffffff;
       font-weight: 600;
-      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-forest);
+      background: var(--emerald-light);
       padding: 2px 8px;
       border-radius: 4px;
-      word-break: break-all;
+      display: inline-block;
     }
 
-    /* Live Job Card */
-    .job-card {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: var(--radius-md);
+    /* Live Job Status Card (if aspirant stays) */
+    .status-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-lg);
       padding: 16px;
-      margin-bottom: 24px;
       text-align: left;
+      margin-bottom: 20px;
     }
 
-    .job-card-header {
+    .status-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
     }
 
-    .job-label {
-      font-size: 0.75rem;
+    .status-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text-dim);
-      font-weight: 600;
     }
 
-    .job-id-tag {
-      font-family: 'JetBrains Mono', monospace;
+    .job-id-copy {
+      font-family: monospace;
       font-size: 0.82rem;
-      color: #cbd5e1;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 4px 8px;
-      border-radius: 4px;
+      color: #1E293B;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      cursor: pointer;
+      gap: 5px;
     }
 
-    .job-id-tag:hover {
-      background: rgba(255, 255, 255, 0.1);
+    .job-id-copy:hover {
+      background: #F1F5F9;
     }
 
-    .live-status-row {
+    .status-step-desc {
+      font-size: 0.82rem;
+      color: var(--text-slate);
+      margin-top: 8px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      margin-bottom: 8px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
       gap: 6px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
+    }
+
+    .pulsing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-forest);
+      animation: pulse 1.6s infinite ease-in-out;
+      display: inline-block;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn-secondary {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      color: var(--text-navy);
+      font-size: 0.9rem;
       font-weight: 600;
-      background: rgba(99, 102, 241, 0.15);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-    }
-
-    .status-badge.completed {
-      background: rgba(16, 185, 129, 0.15);
-      color: #6ee7b7;
-      border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .status-step-text {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .action-btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e2e8f0;
-      padding: 11px 20px;
+      padding: 10px 18px;
       border-radius: var(--radius-md);
-      font-size: 0.88rem;
-      font-weight: 600;
-      font-family: inherit;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
 
-    .action-btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-    }
-
-    /* Error Toast */
-    .error-banner {
-      display: none;
-      padding: 12px 16px;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: var(--radius-sm);
-      color: #fca5a5;
-      font-size: 0.84rem;
-      margin-bottom: 18px;
-      align-items: center;
-      gap: 10px;
+    .btn-secondary:hover {
+      background: #F8FAFC;
+      border-color: #94A3B8;
     }
 
     /* Spinner */
     .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: #ffffff;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #FFFFFF;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -644,250 +828,387 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Trust metrics footer */
-    .trust-row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      margin-top: 24px;
-      color: var(--text-dim);
-      font-size: 0.78rem;
+    /* Responsive Media Queries */
+    @media (max-width: 1080px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .hero-col {
+        width: 100%;
+        max-width: 535px;
+        min-height: auto;
+        margin: 0 auto;
+      }
+
+      .hero-bg-art {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-width: 500px;
+        margin: 12px auto 0;
+      }
+
+      .hero-content {
+        max-width: 100%;
+        text-align: center;
+      }
+
+      .hero-tagline {
+        justify-content: center;
+      }
+
+      .hero-subtitle {
+        max-width: 100%;
+      }
+
+      .card-col {
+        justify-content: center;
+      }
+
+      .botanical-corner {
+        width: 160px;
+      }
     }
 
-    .trust-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    @media (max-width: 600px) {
+      .page-wrapper {
+        padding: 20px 16px 36px;
+      }
 
-    /* Responsive */
-    @media (max-width: 640px) {
-      .card {
+      .eval-card {
         padding: 24px 18px;
+        border-radius: 16px;
       }
-      .brand-title {
-        font-size: 1.85rem;
+
+      .hero-heading {
+        font-size: 2.6rem;
       }
-      .dropzone {
-        padding: 24px 16px;
+
+      .card-trust-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .trust-divider {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Ambient background glow -->
-  <div class="bg-glow-1"></div>
-  <div class="bg-glow-2"></div>
 
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <div class="badge-pill">
-        <span class="badge-dot"></span>
-        <span>UPSC Civil Services Mains Evaluator</span>
-      </div>
-      <h1 class="brand-title">UPSCopilot <span>Evaluation</span></h1>
-      <p class="brand-subtitle">
-        Calibrated UPSC scoring, grounded case citations, and deep diagnostic diagnostics delivered directly to your inbox.
-      </p>
+  <!-- Top-Right Botanical Eucalyptus Corner Branch -->
+  <img 
+    src="/static/botanical_corner.png" 
+    onerror="this.onerror=null; this.src='static/botanical_corner.png'"
+    alt="Botanical Leaf Accent" 
+    class="botanical-corner" 
+  />
+
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <a href="/" class="brand-link">
+        <!-- Stylized Open Book / Leaves Vector Logo -->
+        <svg class="brand-logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left page wing (amber) -->
+          <path d="M17 9.2C11.8 7.3 6.6 8 3.5 9.5V26.5C6.6 25 11.8 24.5 17 26.5V9.2Z" fill="#D97706"/>
+          <!-- Left page base trim (forest green) -->
+          <path d="M3.5 26.5C6.6 25 11.8 24.5 17 26.5C17 28.5 11.8 28 3.5 29.5V26.5Z" fill="#0F5132"/>
+          <!-- Right page wing (forest green) -->
+          <path d="M19 9.2C24.2 7.3 29.4 8 32.5 9.5V26.5C29.4 25 24.2 24.5 19 26.5V9.2Z" fill="#0F5132"/>
+          <!-- Spine accent -->
+          <path d="M19 9.2C24.2 7.3 29.4 8 32.5 9.5C29.4 8 24.2 7.6 19 7.9V9.2Z" fill="#B45309"/>
+        </svg>
+        <span class="brand-title">UPSCopilot</span>
+        <span class="brand-sep">|</span>
+        <span class="brand-sub">Evaluation</span>
+      </a>
     </header>
 
-    <!-- Main Card -->
-    <main class="card">
-      <!-- Error Notification Banner -->
-      <div id="errorBanner" class="error-banner">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span id="errorMessage">Something went wrong. Please check your submission.</span>
-      </div>
+    <!-- Main Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Editorial & Authentic UPSC Artwork Integration -->
+      <section class="hero-col">
+        <!-- Authentic Background Artwork: Parliament, Ashoka Lion, Booklet, Pen -->
+        <img 
+          src="/static/hero_illustration_smooth.png" 
+          onerror="this.onerror=null; this.src='static/hero_illustration_smooth.png'"
+          alt="UPSC Answer Booklet, Fountain Pen, Indian Parliament Samvidhan Sadan and Ashoka Lion Capital" 
+          class="hero-bg-art"
+        />
 
-      <!-- Upload Form View -->
-      <form id="evaluationForm" onsubmit="handleFormSubmit(event)">
-        <!-- 1. PDF Upload Zone -->
-        <div class="form-group">
-          <label class="form-label" for="pdfInput">
-            Answer Booklet PDF <span class="required">*</span>
-          </label>
-          <div id="dropzone" class="dropzone">
-            <input type="file" id="pdfInput" accept="application/pdf" onchange="handleFileSelected(this.files)" required />
-            <div class="dropzone-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="hero-content">
+          <div class="hero-tagline">
+            <span class="tagline-bar"></span>
+            <span class="tagline-text">ANSWER BETTER. PREPARE SMARTER.</span>
+          </div>
+
+          <h1 class="hero-heading">
+            <span class="line-brand">UPSCopilot</span>
+            <span class="line-eval">Evaluation</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Calibrated UPSC scoring, grounded case citations, and deep diagnostic diagnostics delivered directly to your inbox.
+          </p>
+        </div>
+      </section>
+
+      <!-- Right Column: Elevated White Submission Card -->
+      <section class="card-col">
+        <div class="eval-card">
+          <!-- Submission Form State -->
+          <form id="evaluationForm" onsubmit="handleFormSubmit(event)">
+            <!-- Card Header -->
+            <div class="card-header">
+              <div class="card-icon-box">
+                <!-- Warm Amber Document Outline Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div class="card-header-text">
+                <h2 class="card-title">Submit for Evaluation</h2>
+                <p class="card-subtitle">Upload your answer booklet and receive a calibrated evaluation report on your email.</p>
+              </div>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="errorBanner" class="error-banner">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span id="errorMessage">Please provide a valid PDF file.</span>
+            </div>
+
+            <!-- Form Group 1: Answer Booklet PDF -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="pdfInput" class="form-label">
+                  Answer Booklet PDF <span class="req">*</span>
+                </label>
+                <div class="pdf-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  <span>PDF ONLY</span>
+                </div>
+              </div>
+
+              <!-- Interactive Dropzone -->
+              <div id="dropzone" class="dropzone" onclick="document.getElementById('pdfInput').click()">
+                <input 
+                  type="file" 
+                  id="pdfInput" 
+                  accept=".pdf" 
+                  style="display: none;" 
+                  onchange="handleFileSelected(this.files)" 
+                />
+                <div class="dropzone-icon-wrap">
+                  <!-- Green Document Upload Icon -->
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <polyline points="9 15 12 12 15 15"></polyline>
+                  </svg>
+                </div>
+                <div class="dropzone-title">
+                  <strong>Click to upload</strong> or drag &amp; drop
+                </div>
+                <div class="dropzone-desc">UPSC QCAB or scanned handwritten booklet (.pdf)</div>
+              </div>
+
+              <!-- Selected File Preview -->
+              <div id="filePreview" class="file-preview">
+                <div class="file-info">
+                  <div class="file-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                  </div>
+                  <div class="file-details">
+                    <div id="previewFileName" class="file-name">answer_copy.pdf</div>
+                    <div id="previewFileSize" class="file-size">2.4 MB</div>
+                  </div>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="clearSelectedFile()" title="Remove file">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Form Group 2: Recipient Email Address -->
+            <div class="form-group">
+              <label for="emailInput" class="form-label">
+                Recipient Email Address <span class="req">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                  </svg>
+                </span>
+                <input 
+                  type="email" 
+                  id="emailInput" 
+                  class="form-input" 
+                  placeholder="aspirant@upsc.gov.in" 
+                  required 
+                  autocomplete="email"
+                />
+              </div>
+              <div class="input-helper">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>You will receive your complete calibrated scorecard &amp; diagnostic PDF here.</span>
+              </div>
+            </div>
+
+            <!-- Optional Settings Accordion (QCAB Page Slicing) -->
+            <div id="advancedAccordion" class="accordion">
+              <button type="button" class="accordion-trigger" onclick="toggleAccordion()">
+                <div class="accordion-header-left">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                  <span>Optional Settings (QCAB Page Slicing)</span>
+                </div>
+                <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="accordion-body">
+                <div class="grid-settings">
+                  <div>
+                    <label for="startPageInput" class="sub-label">Start Page (1-indexed)</label>
+                    <input type="number" id="startPageInput" class="sub-input" placeholder="e.g. 1" min="1" />
+                  </div>
+                  <div>
+                    <label for="maxPagesInput" class="sub-label">Max Pages to Evaluate</label>
+                    <input type="number" id="maxPagesInput" class="sub-input" placeholder="e.g. 20" min="1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="submit-btn">
+              <span id="btnText">Submit for Evaluation</span>
+              <svg id="btnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              <div id="btnSpinner" class="spinner" style="display: none;"></div>
+            </button>
+
+            <!-- Upload Progress Bar -->
+            <div id="progressContainer" class="progress-bar-container">
+              <div id="uploadProgressBar" class="progress-bar"></div>
+            </div>
+
+            <!-- Card Bottom Trust Badges -->
+            <div class="card-trust-row">
+              <div class="trust-badge-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v17"></path>
+                  <path d="M5 21h14"></path>
+                  <path d="M4 7h16"></path>
+                  <path d="M4 7l-2 5a3 3 0 0 0 6 0L6 7"></path>
+                  <path d="M20 7l-2 5a3 3 0 0 0 6 0L22 7"></path>
+                </svg>
+                <span>Grounded Case Law Citations</span>
+              </div>
+              <div class="trust-divider"></div>
+              <div class="trust-badge-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+                <span>Calibrated UPSC CSE Standards</span>
+              </div>
+            </div>
+          </form>
+
+          <!-- Success / Queued State Screen -->
+          <div id="successScreen" class="success-screen">
+            <div class="success-icon-badge">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
+            <div class="safe-to-close-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+              <span>You can safely close this page now!</span>
+            </div>
+
+            <h2 class="success-title">Answer Booklet Submitted</h2>
+            <p class="success-message">
+              Your booklet is being processed by our multi-pillar evaluation engine. The complete calibrated scorecard and diagnostic report will be emailed directly to:
+              <br><br>
+              <span id="targetEmailDisplay" class="email-highlight">aspirant@upsc.gov.in</span>
+            </p>
+
+            <!-- Live Status Tracker (for users who choose to stay) -->
+            <div class="status-card">
+              <div class="status-row">
+                <span class="status-label">Job Reference</span>
+                <span id="jobIdTag" class="job-id-copy" title="Click to copy ID" onclick="copyJobId()">
+                  <span id="jobIdText">job_abc123</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Engine Status</span>
+                <span id="statusBadgeText" style="font-size: 0.85rem; font-weight: 600; color: var(--text-forest);">Queued</span>
+              </div>
+              <div class="progress-bar-container" style="display: block; margin-top: 8px; margin-bottom: 8px;">
+                <div id="evalProgressBar" class="progress-bar" style="width: 5%;"></div>
+              </div>
+              <div id="statusStepText" class="status-step-desc">
+                <span class="pulsing-dot"></span>
+                <span>Job queued for OCR transcription and evaluation...</span>
+              </div>
+            </div>
+
+            <button type="button" class="btn-secondary" onclick="resetForm()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-            </div>
-            <div class="dropzone-title">Click to upload or drag & drop</div>
-            <div class="dropzone-desc">UPSC QCAB or scanned handwritten booklet (.pdf)</div>
-          </div>
-
-          <!-- Selected File Card -->
-          <div id="filePreview" class="file-preview">
-            <div class="file-info">
-              <svg class="file-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <div class="file-meta">
-                <div id="previewFileName" class="file-name">my_answer_copy.pdf</div>
-                <div id="previewFileSize" class="file-size">14.2 MB</div>
-              </div>
-            </div>
-            <button type="button" class="file-remove-btn" title="Remove file" onclick="clearSelectedFile()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <span>Submit Another Booklet</span>
             </button>
           </div>
         </div>
-
-        <!-- 2. Email Address Input -->
-        <div class="form-group">
-          <label class="form-label" for="emailInput">
-            Recipient Email Address <span class="required">*</span>
-          </label>
-          <div class="input-wrapper">
-            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <input
-              type="email"
-              id="emailInput"
-              class="text-input"
-              placeholder="aspirant@upsc.gov.in"
-              required
-              autocomplete="email"
-            />
-          </div>
-          <div class="helper-text">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
-            <span>You will receive your complete calibrated scorecard & diagnostic PDF here.</span>
-          </div>
-        </div>
-
-        <!-- 3. Optional Settings (Collapsed by default) -->
-        <div class="accordion" id="advancedAccordion">
-          <div class="accordion-header" onclick="toggleAccordion()">
-            <span>Optional Settings (QCAB Page Slicing)</span>
-            <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-          <div class="accordion-body">
-            <div>
-              <label class="form-label" style="font-size: 0.78rem;">Start Page (Q1)</label>
-              <input type="number" id="startPageInput" class="number-input" placeholder="e.g. 3 (Default: Auto)" min="1" />
-            </div>
-            <div>
-              <label class="form-label" style="font-size: 0.78rem;">Max Pages</label>
-              <input type="number" id="maxPagesInput" class="number-input" placeholder="e.g. 50 (Default: All)" min="1" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. Submit Button -->
-        <button type="submit" id="submitBtn" class="submit-btn">
-          <span id="btnText">Submit for Evaluation</span>
-          <svg id="btnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-          <div id="btnSpinner" class="spinner" style="display: none;"></div>
-        </button>
-
-        <!-- Upload Progress Bar -->
-        <div id="progressContainer" class="progress-bar-container">
-          <div id="uploadProgressBar" class="progress-bar"></div>
-        </div>
-      </form>
-
-      <!-- Success Screen (Shown once submitted) -->
-      <div id="successPanel" class="success-panel">
-        <div class="success-icon-box">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </div>
-
-        <div class="leave-notice">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 14 14"></polyline>
-          </svg>
-          <span>You can safely close this page now!</span>
-        </div>
-
-        <h2 class="success-title">Answer Copy Submitted</h2>
-        <p class="success-desc">
-          Your booklet is being processed by our multi-pillar evaluation engine. The complete evaluation scorecard and feedback report will be emailed directly to:
-          <br><br>
-          <span id="targetEmailDisplay" class="email-highlight">user@example.com</span>
-        </p>
-
-        <!-- Live Status Card (for users who choose to stay) -->
-        <div class="job-card">
-          <div class="job-card-header">
-            <span class="job-label">Job Reference</span>
-            <span id="jobIdTag" class="job-id-tag" title="Click to copy ID" onclick="copyJobId()">
-              <span id="jobIdText">job_abc123</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </span>
-          </div>
-
-          <div class="live-status-row">
-            <span>Status:</span>
-            <span id="statusBadge" class="status-badge">
-              <span class="badge-dot"></span>
-              <span id="statusBadgeText">Queued</span>
-            </span>
-          </div>
-
-          <div class="progress-bar-container" style="display: block; margin-top: 8px;">
-            <div id="evalProgressBar" class="progress-bar" style="width: 5%;"></div>
-          </div>
-          <div id="statusStepText" class="status-step-text">Job queued for OCR transcription and evaluation...</div>
-        </div>
-
-        <button type="button" class="action-btn-secondary" onclick="resetForm()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          <span>Submit Another Copy</span>
-        </button>
-      </div>
+      </section>
     </main>
-
-    <!-- Trust Footer -->
-    <footer class="trust-row">
-      <div class="trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        </svg>
-        <span>Grounded Case Law Citations</span>
-      </div>
-      <div class="trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span>Calibrated UPSC CSE Standards</span>
-      </div>
-    </footer>
   </div>
 
   <script>
@@ -911,10 +1232,9 @@
     const progressContainer = document.getElementById("progressContainer");
     const uploadProgressBar = document.getElementById("uploadProgressBar");
     const evaluationForm = document.getElementById("evaluationForm");
-    const successPanel = document.getElementById("successPanel");
+    const successScreen = document.getElementById("successScreen");
     const targetEmailDisplay = document.getElementById("targetEmailDisplay");
     const jobIdText = document.getElementById("jobIdText");
-    const statusBadge = document.getElementById("statusBadge");
     const statusBadgeText = document.getElementById("statusBadgeText");
     const evalProgressBar = document.getElementById("evalProgressBar");
     const statusStepText = document.getElementById("statusStepText");
@@ -950,7 +1270,7 @@
       if (!files || files.length === 0) return;
       const file = files[0];
       if (!file.name.toLowerCase().endsWith('.pdf')) {
-        showError("Invalid format. Please upload an answer copy PDF (.pdf).");
+        showError("Invalid format. Please upload an answer booklet in PDF format (.pdf).");
         return;
       }
       selectedFile = file;
@@ -1009,7 +1329,7 @@
 
       // UI Loading state
       submitBtn.disabled = true;
-      btnText.textContent = "Uploading Copy...";
+      btnText.textContent = "Uploading Booklet...";
       btnIcon.style.display = "none";
       btnSpinner.style.display = "block";
       progressContainer.style.display = "block";
@@ -1071,7 +1391,7 @@
 
     function transitionToSuccess(email, jobId) {
       evaluationForm.style.display = "none";
-      successPanel.style.display = "block";
+      successScreen.style.display = "block";
       targetEmailDisplay.textContent = email;
       jobIdText.textContent = jobId;
 
@@ -1104,19 +1424,18 @@
       evalProgressBar.style.width = Math.max(5, pct) + "%";
 
       if (job.current_step) {
-        statusStepText.textContent = job.current_step;
+        statusStepText.innerHTML = '<span class="pulsing-dot"></span><span>' + job.current_step + '</span>';
       }
 
       const status = (job.status || "queued").toLowerCase();
       statusBadgeText.textContent = status.charAt(0).toUpperCase() + status.slice(1);
 
       if (status === "completed") {
-        statusBadge.classList.add("completed");
-        statusStepText.textContent = "Scorecard emailed successfully!";
+        statusBadgeText.style.color = "#0F5132";
+        statusStepText.innerHTML = '<span>Evaluation completed! Scorecard sent to your inbox.</span>';
       } else if (status === "failed") {
         statusBadgeText.textContent = "Failed";
-        statusBadge.style.color = "#ef4444";
-        statusBadge.style.borderColor = "rgba(239, 68, 68, 0.4)";
+        statusBadgeText.style.color = "#ef4444";
       }
     }
 
@@ -1136,10 +1455,9 @@
       clearSelectedFile();
       evaluationForm.reset();
       resetSubmitButton();
-      successPanel.style.display = "none";
+      successScreen.style.display = "none";
       evaluationForm.style.display = "block";
       evalProgressBar.style.width = "5%";
-      statusBadge.classList.remove("completed");
       statusBadgeText.textContent = "Queued";
     }
   </script>

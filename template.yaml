@@ -3,6 +3,35 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   UPSC Evaluator - Production Decoupled Serverless Architecture on AWS Lambda, S3, DynamoDB, and SQS.
 
+Parameters:
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+    Description: "Google Gemini API Key for Vertex AI LLM and Vision OCR"
+  GcpProjectId:
+    Type: String
+    Description: "Google Cloud Project ID where Vertex AI is enabled"
+    Default: "project-1b52589d-0827-46ab-9be"
+  EmailProvider:
+    Type: String
+    Description: "Email delivery provider: 'ses' or 'mock'"
+    Default: "ses"
+    AllowedValues:
+      - "ses"
+      - "mock"
+  SesFromEmail:
+    Type: String
+    Description: "Verified Amazon SES Sender Email"
+    Default: "yujitodoyuta@gmail.com"
+  PineconeApiKey:
+    Type: String
+    NoEcho: true
+    Description: "Pinecone API Key for Cloud Knowledge Base Retrieval"
+  PineconeIndexName:
+    Type: String
+    Description: "Pinecone Index Name"
+    Default: "upsc-kb"
+
 Globals:
   Function:
     Timeout: 30
@@ -11,14 +40,19 @@ Globals:
     Environment:
       Variables:
         LLM_PROVIDER: "vertex"
+        GEMINI_API_KEY: !Ref GeminiApiKey
+        GCP_PROJECT_ID: !Ref GcpProjectId
+        PINECONE_API_KEY: !Ref PineconeApiKey
+        PINECONE_INDEX_NAME: !Ref PineconeIndexName
+        EMBEDDING_DIMENSION: "768"
         AWS_REGION: !Ref "AWS::Region"
         S3_BUCKET: !Ref UploadsBucket
         DYNAMODB_TABLE: !Ref JobStateTable
         PARSED_BOOKLETS_TABLE: !Ref ParsedBookletsTable
         VISION_QUEUE_URL: !Ref VisionQueue
         EVAL_QUEUE_URL: !Ref EvaluationQueue
-        EMAIL_PROVIDER: "ses"
-        SES_FROM_EMAIL: "evaluator@upscopilot.com"
+        EMAIL_PROVIDER: !Ref EmailProvider
+        SES_FROM_EMAIL: !Ref SesFromEmail
 
 Resources:
   # =================================================================

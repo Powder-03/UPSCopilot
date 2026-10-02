@@ -3,7 +3,7 @@
 FROM public.ecr.aws/lambda/python:3.11
 
 # Install system dependencies for PyMuPDF, Pillow, and ONNX Runtime
-RUN dnf install -y \
+RUN yum install -y \
     gcc \
     gcc-c++ \
     mesa-libGL \
@@ -12,7 +12,7 @@ RUN dnf install -y \
     libXrender \
     tar \
     gzip \
-    && dnf clean all
+    && yum clean all
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -36,9 +36,12 @@ COPY pyproject.toml README.md ./
 # Install dependencies into system Python using uv pip
 RUN uv pip install --system -r pyproject.toml
 
-# Copy application source code and knowledge base data
+# Copy application source code and constitution raw corpus
 COPY src/ ./src/
-COPY data/ ./data/
+COPY data/raw/ ./data/raw/
+
+# Create ephemeral directories for runtime /tmp usage
+RUN mkdir -p /tmp/uploads /tmp/jobs
 
 # Default handler: API Gateway Lambda entrypoint
 # Overridden via ImageConfig.Command in template.yaml for decoupled workers:

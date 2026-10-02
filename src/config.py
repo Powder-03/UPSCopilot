@@ -34,11 +34,17 @@ class Settings(BaseSettings):
     parsing_dpi: int = Field(default=200, alias="PARSING_DPI")
     parsing_max_workers: int = Field(default=4, alias="PARSING_MAX_WORKERS")
 
-    # Bedrock Embedding Models (for Knowledge Base)
+    # Embedding Configuration (Vertex AI text-embedding-004 = 768, Titan = 1024)
     bedrock_embedding_model_id: str = Field(
         default="amazon.titan-embed-text-v2:0", alias="BEDROCK_EMBEDDING_MODEL_ID"
     )
-    embedding_dimension: int = Field(default=1024, alias="EMBEDDING_DIMENSION")
+    embedding_dimension: int = Field(default=768, alias="EMBEDDING_DIMENSION")
+
+    # Pinecone Vector Store Configuration
+    pinecone_api_key: str | None = Field(default=None, alias="PINECONE_API_KEY")
+    pinecone_index_name: str = Field(default="upsc-kb", alias="PINECONE_INDEX_NAME")
+    pinecone_cloud: str = Field(default="aws", alias="PINECONE_CLOUD")
+    pinecone_region: str = Field(default="us-east-1", alias="PINECONE_REGION")
 
     # Optional IAM fallback if ever needed by embedding client
     aws_access_key_id: str | None = Field(default=None, alias="AWS_ACCESS_KEY_ID")

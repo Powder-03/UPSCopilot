@@ -1,0 +1,30 @@
+# Version control, CI & worktrees
+.git
+.github
+.kilo
+
+# Virtual environment & SAM build cache
+.venv
+.aws-sam
+
+# Python cache & tests
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.ruff_cache
+.deepeval
+tests/
+
+# Large answer booklets, sample copies, and test PDFs
+*.pdf
+*.PDF
+GS-II.pdf
+VIKAS*.pdf
+VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf
+
+# Ignore user uploads, job results, and raw source documents
+data/uploads/
+data/jobs/
+data/documents/

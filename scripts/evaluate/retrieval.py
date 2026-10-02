@@ -25,13 +25,14 @@ from src.utils.json import clean_json_text
 DEFAULT_FIXTURE = Path("tests/fixtures/golden_dataset.json")
 
 
-class BedrockKimiJudge(DeepEvalBaseLLM):
-    """Bridges Moonshot Kimi 2.5 on AWS Bedrock to DeepEval."""
+class UniversalDeepEvalJudge(DeepEvalBaseLLM):
+    """Bridges active evaluation LLM (Vertex AI Gemini 2.5 Flash or Bedrock Kimi 2.5) to DeepEval."""
 
-    def __init__(self, model_name: str = "moonshotai.kimi-k2.5"):
-        self.name = model_name
+    def __init__(self, model_name: str | None = None):
         self.llm = get_eval_llm()
-        super().__init__(model=model_name)
+        name = model_name or (settings.vertex_eval_model_id if settings.is_vertex_active else settings.bedrock_eval_model_id)
+        self.name = name
+        super().__init__(model=name)
 
     def load_model(self):
         return self.llm
@@ -48,6 +49,10 @@ class BedrockKimiJudge(DeepEvalBaseLLM):
         return self.name
 
 
+# Backward compatibility alias
+BedrockKimiJudge = UniversalDeepEvalJudge
+
+
 def run_evaluation(limit: int | None = None, top_k: int = 8, fixture: Path = DEFAULT_FIXTURE):
     """Builds test cases from the golden dataset and runs DeepEval's native benchmark."""
     with open(fixture, encoding="utf-8") as f:
@@ -57,7 +62,7 @@ def run_evaluation(limit: int | None = None, top_k: int = 8, fixture: Path = DEF
         data = data[:limit]
 
     retriever = HybridRetriever(top_k=top_k)
-    judge = BedrockKimiJudge()
+    judge = UniversalDeepEvalJudge()
 
     test_cases = [
         LLMTestCase(

@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
 from src.models.api import JobStatusResponse, JobSubmitResponse
@@ -12,11 +13,14 @@ from src.services.job_manager import job_manager
 
 logger = logging.getLogger(__name__)
 
-INDEX_HTML_PATH = Path(__file__).resolve().parents[1] / "static" / "index.html"
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+if not STATIC_DIR.exists():
+    STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
+
+INDEX_HTML_PATH = STATIC_DIR / "index.html"
 if not INDEX_HTML_PATH.exists():
-    INDEX_HTML_PATH = Path(__file__).resolve().parent / "static" / "index.html"
-if not INDEX_HTML_PATH.exists():
-    INDEX_HTML_PATH = Path(__file__).resolve().parents[2] / "index.html"
+    INDEX_HTML_PATH = Path(__file__).resolve().parents[1] / "index.html"
+
 
 app = FastAPI(
     title="UPSCopilot Answer Evaluation API",
@@ -32,6 +36,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 
 
 @app.get("/", tags=["General"])

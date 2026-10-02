@@ -195,6 +195,20 @@ evaluator/
   - **Instant Web UI Confirmation**: `src/static/index.html` updated with immediate visual confirmation ("You can safely close this page now!") and live polling fallback.
   - **Decoupled SAM Infrastructure as Code**: `template.yaml` updated with `VisionQueue` + DLQ, `EvaluationQueue` + DLQ, `JobStateTable`, `ParsedBookletsTable`, `ApiFunction`, `VisionWorkerFunction` (10m timeout, 3GB RAM), and `EvalWorkerFunction` (15m timeout, 4GB RAM).
   - **Test Suite**: 57 passing tests (including `test_scorecard_pdf.py`, `test_decoupled_workers.py`, `test_serverless_services.py`), 100% clean `ruff` check.
+- [x] Migrated Knowledge Base to Cloud-Native Pinecone Serverless (Zero Heavy C++ Wheels):
+  - Purged `chromadb`, `langchain-chroma`, `scipy`, `flashrank`, and `rank-bm25` from dependencies.
+  - Successfully ingested all 1,036 authentic UPSC knowledge chunks into Pinecone index `upsc-kb` on AWS `us-east-1` (Serverless, dimension 768, cosine metric) using Vertex AI `text-embedding-004`.
+  - Built pure-cloud `SelfQueryRetriever` in `src/kb/retriever.py` with multi-paper metadata filters and diversity ceilings.
+  - Verified retrieval benchmark using DeepEval: Contextual Recall = 1.00, Contextual Precision = 0.84.
+- [x] Regal Institutional Landing Page Redesign:
+  - Pixel-perfect implementation of the provided design mockup in `src/static/index.html` and `index.html`.
+  - Color palette: Alabaster ivory paper (`#FCFBF6`), deep midnight navy (`#0F1E36`), rich forest emerald green (`#0F5132`), warm golden amber (`#D97706`).
+  - Seamlessly integrated authentic UPSC hero artwork (Indian Parliament Samvidhan Sadan, Ashoka Lion Capital, UPSC answer booklet and luxury fountain pen) on the left editorial column.
+  - Added delicate watercolor botanical eucalyptus leaves framing the top-right corner.
+  - Right column: Elevated white submission card with drag & drop PDF dropzone, recipient email input, QCAB page slicing accordion, forest green CTA button, and bottom trust badges (`Grounded Case Law Citations | Calibrated UPSC CSE Standards`).
+  - Mounted `/static` in FastAPI `src/api/app.py` for high-resolution static asset serving.
+  - Preserved full asynchronous job dispatching to `POST /api/v1/jobs/submit`, immediate HTTP 202 leave confirmation modal, and real-time live status polling fallback.
+
 
 
 
