@@ -50,16 +50,17 @@ PILLAR_CONFIGS = {
 
 
 def calibrate_rating_to_upsc_marks(expected_rating: float, max_marks: float) -> float:
-    """Calibrates 1.0 - 5.0 G-Eval rating to official UPSC Mains percentage band:
-    - Rating 1.0 -> 25% (Poor)
-    - Rating 2.0 -> 35% (Below Average)
-    - Rating 3.0 -> 45% (Average)
-    - Rating 4.0 -> 55% (Good)
-    - Rating 5.0 -> 65% (Topper Benchmark)
-    Linear calibration formula: pct = 0.15 + (R * 0.10)
+    """Calibrates 1.0 - 5.0 G-Eval rating to authentic UPSC Mains percentage bands:
+    - Rating 1.0 -> 20.0% (Poor: 2.0/10, 3.0/15)
+    - Rating 2.0 -> 28.0% (Below Average: 2.8/10, 4.2/15)
+    - Rating 3.0 -> 36.0% (Average / Interview Cutoff: 3.6/10, 5.4/15)
+    - Rating 4.0 -> 44.0% (Good / Selection Zone: 4.4/10, 6.6/15)
+    - Rating 5.0 -> 52.0% (Topper Benchmark / Rank 1-50: 5.2/10, 7.8/15)
+    Linear calibration formula: pct = 0.12 + (R * 0.08)
+    Whole-copy aggregate: Topper averages 110-120 marks out of 250 (never inflated above 130).
     """
     bounded_r = max(1.0, min(5.0, expected_rating))
-    upsc_pct = 0.15 + (bounded_r * 0.10)
+    upsc_pct = 0.12 + (bounded_r * 0.08)
     return round(upsc_pct * max_marks, 3)
 
 

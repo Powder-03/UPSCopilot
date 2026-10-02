@@ -39,24 +39,24 @@ def test_pillar_weights_sum_to_one():
 
 
 def test_calibrate_rating_to_upsc_marks():
-    """Verify authentic linear calibration from 1-5 scale to UPSC percentage bands."""
-    # Rating 1.0 (Poor) -> 25% of 10 = 2.5 marks
-    assert calibrate_rating_to_upsc_marks(1.0, 10.0) == 2.5
+    """Verify authentic uninflated linear calibration from 1-5 scale to UPSC percentage bands."""
+    # Rating 1.0 (Poor) -> 20% of 10 = 2.0 marks
+    assert calibrate_rating_to_upsc_marks(1.0, 10.0) == 2.0
 
-    # Rating 3.0 (Average) -> 45% of 10 = 4.5 marks
-    assert calibrate_rating_to_upsc_marks(3.0, 10.0) == 4.5
+    # Rating 3.0 (Average) -> 36% of 10 = 3.6 marks
+    assert calibrate_rating_to_upsc_marks(3.0, 10.0) == 3.6
 
-    # Rating 4.0 (Good) -> 55% of 10 = 5.5 marks
-    assert calibrate_rating_to_upsc_marks(4.0, 10.0) == 5.5
+    # Rating 4.0 (Good) -> 44% of 10 = 4.4 marks
+    assert calibrate_rating_to_upsc_marks(4.0, 10.0) == 4.4
 
-    # Rating 5.0 (Topper Benchmark) -> 65% of 10 = 6.5 marks
-    assert calibrate_rating_to_upsc_marks(5.0, 10.0) == 6.5
+    # Rating 5.0 (Topper Benchmark) -> 52% of 10 = 5.2 marks
+    assert calibrate_rating_to_upsc_marks(5.0, 10.0) == 5.2
 
     # Scaling with 15-markers (max_marks = 15.0)
-    # Rating 3.0 -> 45% of 15 = 6.75 marks
-    assert calibrate_rating_to_upsc_marks(3.0, 15.0) == 6.75
-    # Rating 5.0 -> 65% of 15 = 9.75 marks
-    assert calibrate_rating_to_upsc_marks(5.0, 15.0) == 9.75
+    # Rating 3.0 -> 36% of 15 = 5.4 marks
+    assert calibrate_rating_to_upsc_marks(3.0, 15.0) == 5.4
+    # Rating 5.0 -> 52% of 15 = 7.8 marks
+    assert calibrate_rating_to_upsc_marks(5.0, 15.0) == 7.8
 
 
 def test_extract_json_dict():
@@ -93,9 +93,9 @@ def test_pillar_geval_score_math():
 
     max_marks = 2.5
     calibrated = calibrate_rating_to_upsc_marks(expected_rating, max_marks)
-    # expected_rating 4.2 -> pct = 0.15 + (4.2 * 0.10) = 0.57 (57%)
-    # 57% of 2.5 = 1.425
-    assert abs(calibrated - 1.425) < 1e-3
+    # expected_rating 4.2 -> pct = 0.12 + (4.2 * 0.08) = 0.456 (45.6%)
+    # 45.6% of 2.5 = 1.14
+    assert abs(calibrated - 1.140) < 1e-3
 
     pillar = PillarGEvalScore(
         pillar=PillarType.DEMAND_FULFILLMENT,
@@ -108,17 +108,17 @@ def test_pillar_geval_score_math():
         feedback="High demand compliance.",
     )
     assert pillar.raw_expected_rating == 4.2
-    assert pillar.calibrated_score == 1.425
+    assert pillar.calibrated_score == 1.140
 
 
 def test_classify_performance_band_boundaries():
-    """Rating 3.0 calibrates to exactly 45%, which must land in the Average band (35-45%)."""
-    assert _classify_performance_band(34.9) == UPSCPerformanceBand.NEEDS_FOUNDATION
-    assert _classify_performance_band(35.0) == UPSCPerformanceBand.AVERAGE
-    assert _classify_performance_band(45.0) == UPSCPerformanceBand.AVERAGE
-    assert _classify_performance_band(45.1) == UPSCPerformanceBand.GOOD
-    assert _classify_performance_band(55.9) == UPSCPerformanceBand.GOOD
-    assert _classify_performance_band(56.0) == UPSCPerformanceBand.TOPPER
+    """Rating 3.0 calibrates to exactly 36%, which must land in the Average band (32-40%)."""
+    assert _classify_performance_band(31.9) == UPSCPerformanceBand.NEEDS_FOUNDATION
+    assert _classify_performance_band(32.0) == UPSCPerformanceBand.AVERAGE
+    assert _classify_performance_band(40.0) == UPSCPerformanceBand.AVERAGE
+    assert _classify_performance_band(40.1) == UPSCPerformanceBand.GOOD
+    assert _classify_performance_band(47.9) == UPSCPerformanceBand.GOOD
+    assert _classify_performance_band(48.0) == UPSCPerformanceBand.TOPPER
 
 
 def test_parse_citation_status_never_reads_not_found_as_found():

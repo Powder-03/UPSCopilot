@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  UPSC Evaluator - Production Serverless Architecture on AWS Lambda, S3, DynamoDB, and SQS.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 1024
+    Tracing: Active
+    Environment:
+      Variables:
+        LLM_PROVIDER: "vertex"
+        AWS_REGION: !Ref "AWS::Region"
+        S3_BUCKET: !Ref UploadsBucket
+        DYNAMODB_TABLE: !Ref JobStateTable
+        SQS_QUEUE_URL: !Ref EvaluationQueue
+        EMAIL_PROVIDER: "ses"
+        SES_FROM_EMAIL: "evaluator@upscopilot.com"
+
+Resources:
+  # =================================================================
+  # Storage & State Resources
+  # =================================================================
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-uploads-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST, HEAD]
+            AllowedOrigins: ['*']
+            MaxAge: 3600
+
+  JobStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-job-state"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+
+  # =================================================================
+  # Asynchronous Task Queue (SQS + DLQ)
+  # =================================================================
+  EvaluationDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-eval-dlq"
+      MessageRetentionPeriod: 1209600 # 14 days
+
+  EvaluationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-eval-queue"
+      # Visibility timeout must exceed worker Lambda timeout (15 min = 900s)
+      VisibilityTimeout: 960
+      MessageRetentionPeriod: 86400 # 1 day
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt EvaluationDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  # =================================================================
+  # API Lambda (FastAPI via Mangum + API Gateway)
+  # =================================================================
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["src.lambda_api.handler"]
+      Timeout: 29
+      MemorySize: 2048
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref UploadsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobStateTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt EvaluationQueue.QueueName
+      Events:
+        ApiGateway:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        ApiRoot:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+    Metadata:
+      DockerTag: latest
+      DockerContext: .
+      Dockerfile: Dockerfile
+
+  # =================================================================
+  # Background Worker Lambda (Evaluation Engine + Bedrock/Vertex + SES)
+  # =================================================================
+  WorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["src.lambda_worker.handler"]
+      Timeout: 900 # 15 minutes max execution
+      MemorySize: 4096 # 4 GB RAM for PyMuPDF, OCR processing & Chroma
+      EphemeralStorage:
+        Size: 2048 # 2 GB /tmp storage for downloading and parsing PDFs
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref UploadsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobStateTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt EvaluationQueue.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt EvaluationQueue.Arn
+            BatchSize: 1 # Process one booklet at a time per worker instance
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+    Metadata:
+      DockerTag: latest
+      DockerContext: .
+      Dockerfile: Dockerfile
+
+# =================================================================
+# Outputs
+# =================================================================
+Outputs:
+  ApiUrl:
+    Description: "HTTP API Gateway URL for UPSC Evaluator"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  S3BucketName:
+    Description: "S3 Bucket for PDF Uploads"
+    Value: !Ref UploadsBucket
+  DynamoDBTableName:
+    Description: "DynamoDB Table for Job State Tracking"
+    Value: !Ref JobStateTable
+  SQSQueueUrl:
+    Description: "SQS Queue URL for Asynchronous Dispatch"
+    Value: !Ref EvaluationQueue

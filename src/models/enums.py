@@ -14,10 +14,10 @@ class DirectiveType(str, Enum):
 
 
 class UPSCPerformanceBand(str, Enum):
-    NEEDS_FOUNDATION = "Needs Foundation (<35%)"
-    AVERAGE = "Average (35-45%)"
-    GOOD = "Good (46-55%)"
-    TOPPER = "Topper Benchmark (56-65%+)"
+    NEEDS_FOUNDATION = "Needs Foundation (<32%)"
+    AVERAGE = "Average (32-40%)"
+    GOOD = "Good (41-47%)"
+    TOPPER = "Topper Benchmark (48-55%+)"
 
 
 class PresentationArchetype(str, Enum):

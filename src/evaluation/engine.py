@@ -44,7 +44,7 @@ from src.utils.json import extract_json_dict
 logger = logging.getLogger(__name__)
 
 # --- Calibration constants: authentic UPSC marking policy ---
-TOPPER_CEILING_PCT = 0.70       # Examiners never award more than ~70%; grade inflation is prohibited
+TOPPER_CEILING_PCT = 0.56       # Authentic national topper ceiling (~56%); grade inflation strictly forbidden
 MIN_SCORE_FLOOR = 0.5           # An on-topic attempt is never awarded a bare zero
 OFF_TOPIC_GATE_DEFAULT = 0.10   # Fallback relevance gate, matching the policy stated in the system prompt
 OFF_TOPIC_MAX_MARKS = 1.0       # Hard cap for an answer that addresses a different question
@@ -84,12 +84,12 @@ def _parse_citation_status(raw: Any) -> CitationStatus:
 
 
 def _classify_performance_band(pct: float) -> UPSCPerformanceBand:
-    """Maps a percentage to the official UPSC band (the 35-45% Average band is inclusive of 45%)."""
-    if pct < 35.0:
+    """Maps a percentage to the authentic UPSC band (Interview Cutoff: 32-40%, Selection: 41-47%, Topper: 48-55%+)."""
+    if pct < 32.0:
         return UPSCPerformanceBand.NEEDS_FOUNDATION
-    if pct <= 45.0:
+    if pct <= 40.0:
         return UPSCPerformanceBand.AVERAGE
-    if pct < 56.0:
+    if pct < 48.0:
         return UPSCPerformanceBand.GOOD
     return UPSCPerformanceBand.TOPPER
 
@@ -371,4 +371,14 @@ class UPSCEvaluationEngine:
 
         logger.info("Executing Call 1: Qualitative Diagnostic & CoT reasoning...")
         response = self.llm.invoke(messages)
-        return _parse_diagnostic(extract_json_dict(response.content))
+        parsed = extract_json_dict(response.content)
+        if not parsed:
+            logger.warning(
+                f"Call 1 Diagnostic JSON parse failed on initial attempt. Raw snippet: {response.content[:200]}... Retrying once..."
+            )
+            response = self.llm.invoke(messages)
+            parsed = extract_json_dict(response.content)
+            if not parsed:
+                logger.error(f"Call 1 Diagnostic raw output (first 1000 chars): {response.content[:1000]}")
+
+        return _parse_diagnostic(parsed)

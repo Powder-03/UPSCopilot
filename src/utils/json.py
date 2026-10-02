@@ -55,12 +55,25 @@ def extract_json_dict(text: str) -> dict[str, Any]:
     start = candidate.find("{")
     end = candidate.rfind("}")
     if start != -1 and end != -1 and end > start:
+        slice_str = candidate[start : end + 1]
         try:
-            obj = json.loads(candidate[start : end + 1], strict=False)
+            obj = json.loads(slice_str, strict=False)
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+
+        # Attempt 4: Clean comments and trailing commas from the slice
+        try:
+            cleaned = re.sub(r"^\s*//.*$", "", slice_str, flags=re.MULTILINE)
+            cleaned = re.sub(r"\s+//.*$", "", cleaned, flags=re.MULTILINE)
+            cleaned = re.sub(r"/\*.*?\*/", "", cleaned, flags=re.DOTALL)
+            cleaned = re.sub(r",\s*([\]}])", r"\1", cleaned)
+            obj = json.loads(cleaned, strict=False)
             if isinstance(obj, dict):
                 return obj
         except Exception as e:
-            logger.warning(f"Error parsing JSON from LLM output: {e}")
+            logger.warning(f"Error parsing JSON from sanitized LLM output: {e}")
 
     return {}
 

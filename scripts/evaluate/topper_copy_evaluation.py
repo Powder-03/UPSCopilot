@@ -57,14 +57,14 @@ def load_questions(input_path: Path, limit: int | None = None) -> list[dict[str,
 
 
 def overall_band(pct: float) -> str:
-    """Maps a whole-copy percentage onto selection-trajectory bands."""
-    if pct >= 55.0:
-        return "TOPPER LEVEL (Rank 1 - 50 Trajectory)"
+    """Maps a whole-copy percentage onto authentic UPSC selection-trajectory bands."""
     if pct >= 45.0:
-        return "GOOD / SELECTION ZONE (Rank 50 - 300 Trajectory)"
-    if pct >= 35.0:
-        return "AVERAGE / INTERVIEW CALL BOUNDARY"
-    return "BELOW AVERAGE / NEEDS FUNDAMENTAL VALUE ADD"
+        return "TOPPER LEVEL (Rank 1 - 50 Trajectory: 112-125 Marks)"
+    if pct >= 39.0:
+        return "GOOD / SELECTION ZONE (Rank 50 - 300 Trajectory: 98-111 Marks)"
+    if pct >= 32.0:
+        return "AVERAGE / INTERVIEW CALL BOUNDARY (80-97 Marks)"
+    return "BELOW AVERAGE / NEEDS FUNDAMENTAL VALUE ADD (<80 Marks)"
 
 
 def extract_question_metrics(q_num: int, max_marks: float, question: str, result: EvaluationResult) -> dict[str, Any]:

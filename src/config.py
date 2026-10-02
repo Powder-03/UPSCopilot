@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     upload_dir: str = Field(default="data/uploads", alias="UPLOAD_DIR")
     job_dir: str = Field(default="data/jobs", alias="JOB_DIR")
 
+    # AWS Serverless & Cloud Storage Configuration (Lambda, S3, DynamoDB, SQS)
+    s3_bucket: str | None = Field(default=None, alias="S3_BUCKET")
+    dynamodb_table: str | None = Field(default=None, alias="DYNAMODB_TABLE")
+    sqs_queue_url: str | None = Field(default=None, alias="SQS_QUEUE_URL")
+
     # Email Delivery Configuration (SES, SMTP, or Mock)
     email_provider: str = Field(default="mock", alias="EMAIL_PROVIDER")
     ses_from_email: str = Field(default="evaluator@upscopilot.com", alias="SES_FROM_EMAIL")

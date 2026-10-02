@@ -172,7 +172,21 @@ evaluator/
   - Robust JSON Extraction (`src/utils/json.py`): Fixed premature regex truncation (changed non-greedy `.*?` to greedy `.*`) and added `json.loads(..., strict=False)` fallback.
   - ChatVertexExpress Tuning (`src/evaluation/vertex_chat.py`): Set `thinking_budget=0` and `max_output_tokens=8192` to eliminate token exhaustion truncation in Gemini 2.5 Flash Call 1 diagnostics.
   - Successfully Parsed `GS-II.pdf` (`tests/fixtures/gs2_copy_parsed.json`): 20/20 questions parsed with 0 Hindi characters, 0 blank attempts, and 160-300 words transcribed per question.
-  - Executed Whole-Copy Evaluation (`scripts/evaluate/topper_copy_evaluation.py`): Evaluated all 20 questions concurrently across 4 workers; scored 138.33 / 250.00 (55.3%, TOPPER LEVEL / Rank 1-50 Trajectory), 0 hallucinated citations, and 71.4% mandatory KB anchor hit rate.
+- [x] Authentic UPSC CSE Calibration & Grade Inflation Purged:
+  - Eliminated grade inflation where toppers previously scored 138.33 / 250 (55.3%), which exceeded real UPSC CSE mark sheets.
+  - Aligned calibration formula to authentic UPSC standards in `src/evaluation/geval_scorer.py`: `upsc_pct = 0.12 + (R * 0.08)`.
+  - Recalibrated performance bands in `src/models/enums.py`: Needs Foundation (<32%), Average (32-40%, Interview Cutoff), Good / Selection Zone (41-47%, Rank 50-300), Topper Benchmark (48-55%+, Rank 1-50 Trajectory).
+  - Explicitly injected authentic marking rubrics into `SYSTEM_PROMPT_UPSC_EXAMINER` in `src/evaluation/prompt_templates.py` (national AIR 1 toppers score 110-120 / 250, aggregate 135+ marks do not exist).
+  - Purged invalid JavaScript comments (`//`) from prompt JSON schema, strengthened `extract_json_dict` with sanitized comment/comma stripping, and added parse-retry in `_run_diagnostic`.
+  - Verified Whole-Copy Evaluation (`scripts/evaluate/topper_copy_evaluation.py`): whole copy scored an authentic **108.51 / 250.00 marks (43.4%)** in Good / Selection Zone trajectory, with 10-markers scoring 3.90–4.84 and 15-markers scoring 5.29–6.98.
+- [x] Implemented AWS Serverless Lambda Deployment Layer (Zero Breaking Changes):
+  - Pluggable Storage & State: `StorageService` (transparent local disk vs Amazon S3 uploads) and `JobStateService` (transparent local JSON vs Amazon DynamoDB with float/Decimal conversions).
+  - Pluggable Queue Dispatcher: `QueueService` (local `threading.Thread` in development vs Amazon SQS message queue in production).
+  - Lambda API Entrypoint: `src/lambda_api.py` with `Mangum` ASGI adapter for API Gateway HTTP API.
+  - Lambda Worker Entrypoint: `src/lambda_worker.py` processing SQS batches with partial batch failure reporting, S3 download to `/tmp`, evaluation execution, and SES delivery.
+  - Multi-Purpose Lambda Container: `Dockerfile` on `public.ecr.aws/lambda/python:3.11` bundling PyMuPDF, onnxruntime, ChromaDB, and application code.
+  - Infrastructure-as-Code: `template.yaml` AWS SAM template defining S3 bucket, DynamoDB table, SQS queue + DLQ, API Lambda (29s timeout), Worker Lambda (15-minute timeout, 4GB RAM, 2GB `/tmp`), and IAM policies.
+  - Fully tested: 48 offline unit tests passing (including `test_serverless_services.py` and `test_lambda_handlers.py`), 100% clean `ruff` check.
 
 
 

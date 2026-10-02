@@ -1684,6 +1684,18 @@ wheels = [
 ]
 
 [[package]]
+name = "mangum"
+version = "0.22.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/82/c8/1579c705908d02a4526a748e8d0f0419151d4498c59033840f5df3a14822/mangum-0.22.0.tar.gz", hash = "sha256:701936891aaed8ed66479b871c2bda87ba288fd01c7d5dd6ba6c8e9ba1c239d1", size = 118290, upload-time = "2026-08-22T12:54:48.396Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/a2/21ee5d457ae79a2587ff0d4652990670b7cac84ba0eaab6e6865a3bd2515/mangum-0.22.0-py3-none-any.whl", hash = "sha256:a0595e3cc7a8091b22d8b3997bab5b2ad6aae7a5e40865e19c2015f5c959a93b", size = 17143, upload-time = "2026-08-22T12:54:46.924Z" },
+]
+
+[[package]]
 name = "markdown-it-py"
 version = "4.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4057,6 +4069,7 @@ dependencies = [
     { name = "langchain-community" },
     { name = "langchain-core" },
     { name = "langgraph" },
+    { name = "mangum" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pillow" },
@@ -4094,6 +4107,7 @@ requires-dist = [
     { name = "langchain-community", specifier = ">=0.2.0" },
     { name = "langchain-core", specifier = ">=0.2.0" },
     { name = "langgraph", specifier = ">=0.1.0" },
+    { name = "mangum", specifier = ">=0.17.0" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pillow", specifier = ">=10.2.0" },
     { name = "pydantic", specifier = ">=2.7.0" },
