@@ -75,6 +75,12 @@ class Settings(BaseSettings):
     # Confident AI / DeepEval Key
     confident_api_key: str | None = Field(default=None, alias="CONFIDENT_API_KEY")
 
+    # LangSmith Observability & Tracing Configuration
+    langsmith_tracing: bool = Field(default=True, alias="LANGSMITH_TRACING")
+    langsmith_api_key: str | None = Field(default=None, alias="LANGSMITH_API_KEY")
+    langsmith_project: str = Field(default="UPSCopilot", alias="LANGSMITH_PROJECT")
+    langsmith_endpoint: str = Field(default="https://api.smith.langchain.com", alias="LANGSMITH_ENDPOINT")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -113,4 +119,14 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Automatically sync LangSmith configuration into standard environment variables for LangChain & LangSmith runtimes
+if settings.langsmith_tracing and settings.langsmith_api_key:
+    os.environ["LANGSMITH_TRACING"] = "true"
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGSMITH_API_KEY"] = settings.langsmith_api_key
+    os.environ["LANGCHAIN_API_KEY"] = settings.langsmith_api_key
+    os.environ["LANGSMITH_PROJECT"] = settings.langsmith_project
+    os.environ["LANGCHAIN_PROJECT"] = settings.langsmith_project
+    os.environ["LANGSMITH_ENDPOINT"] = settings.langsmith_endpoint
 

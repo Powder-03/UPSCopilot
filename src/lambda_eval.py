@@ -12,12 +12,12 @@ from typing import Any
 from src.evaluation.engine import UPSCEvaluationEngine
 from src.models.api import JobStatus
 from src.models.evaluation import EvaluationResult
-from src.models.exceptions import DocumentParsingError
 from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.pipeline import UnifiedEvaluationPipeline
 from src.services.email_service import EmailService
 from src.services.job_state_service import JobStateService
 from src.services.scorecard_pdf import generate_scorecard_pdf
+from src.utils.tracing import flush_traces, traceable
 
 logger = logging.getLogger(__name__)
 
@@ -31,26 +31,30 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
 
     state = JobStateService()
 
-    if "Records" not in event:
-        return _process_single(event, state)
+    try:
+        if "Records" not in event:
+            return _process_single(event, state)
 
-    records = event["Records"]
-    logger.info("Processing %d SQS eval record(s)", len(records))
-    batch_item_failures = []
+        records = event["Records"]
+        logger.info("Processing %d SQS eval record(s)", len(records))
+        batch_item_failures = []
 
-    for record in records:
-        message_id = record.get("messageId", "unknown")
-        try:
-            body = record.get("body", "{}")
-            payload = json.loads(body) if isinstance(body, str) else body
-            _process_single(payload, state)
-        except Exception as e:
-            logger.exception("Eval worker failed for SQS message %s: %s", message_id, e)
-            batch_item_failures.append({"itemIdentifier": message_id})
+        for record in records:
+            message_id = record.get("messageId", "unknown")
+            try:
+                body = record.get("body", "{}")
+                payload = json.loads(body) if isinstance(body, str) else body
+                _process_single(payload, state)
+            except Exception as e:
+                logger.exception("Eval worker failed for SQS message %s: %s", message_id, e)
+                batch_item_failures.append({"itemIdentifier": message_id})
 
-    return {"batchItemFailures": batch_item_failures}
+        return {"batchItemFailures": batch_item_failures}
+    finally:
+        flush_traces()
 
 
+@traceable(name="LambdaEvalWorker.process_job", run_type="chain")
 def _process_single(
     payload: dict[str, Any],
     state: JobStateService,
@@ -86,17 +90,22 @@ def _process_single(
     # Evaluate each question
     eval_pairs: list[tuple[ParsedQuestion, EvaluationResult]] = []
     for idx, q in enumerate(questions, 1):
-        if q.error:
-            raise DocumentParsingError(f"Cannot evaluate Q{q.q_num:02d}: {q.error}")
-
         pct = int(40 + 45 * idx / total_questions)
         _update_state(state, job_id, JobStatus.EVALUATING, pct, f"Evaluating Q{q.q_num} ({idx}/{total_questions})...")
 
-        result = engine.evaluate_answer(
-            question=q.question,
-            candidate_answer=q.candidate_answer,
-            max_marks=q.max_marks,
-        )
+        if q.error and not (q.candidate_answer and q.candidate_answer.strip()):
+            logger.warning("Q%02d had transcription error: %s. Evaluating as unreadable.", q.q_num, q.error)
+            result = engine.evaluate_answer(
+                question=q.question or f"Question {q.q_num}",
+                candidate_answer="",
+                max_marks=q.max_marks,
+            )
+        else:
+            result = engine.evaluate_answer(
+                question=q.question,
+                candidate_answer=q.candidate_answer or "",
+                max_marks=q.max_marks,
+            )
         eval_pairs.append((q, result))
 
     eval_pairs.sort(key=lambda pair: pair[0].q_num)

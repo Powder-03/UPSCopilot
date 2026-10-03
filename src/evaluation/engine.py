@@ -40,6 +40,7 @@ from src.models.evaluation import (
 )
 from src.models.exceptions import ModelInvocationError
 from src.utils.json import extract_json_dict
+from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +212,7 @@ def _warn_on_degraded_scoring(pillars: dict[str, PillarGEvalScore]) -> None:
         )
 
 
+@traceable(name="Apply_UPSC_Marking_Policy", run_type="tool")
 def _apply_marking_policy(
     pillars: dict[str, PillarGEvalScore],
     presentation: PresentationEvaluation,
@@ -246,6 +248,7 @@ class UPSCEvaluationEngine:
         self._kb_cache: dict[str, list[str]] = {}
 
 
+    @traceable(name="Evaluate_Question_Answer", run_type="chain")
     def evaluate_answer(
         self,
         question: str,
@@ -341,6 +344,7 @@ class UPSCEvaluationEngine:
         logger.info(f"Evaluation completed: Score = {total_score} / {max_marks} ({pct}%) | Band = {band.value}")
         return result
 
+    @traceable(name="KB_Ground_Truth_Retrieval", run_type="retriever")
     def _retrieve_ground_truth(self, question: str) -> list[str]:
         """Step 1: hybrid retrieval of authentic KB context used for grounding verification."""
         if question in self._kb_cache:
@@ -350,6 +354,7 @@ class UPSCEvaluationEngine:
         logger.info(f"Retrieved {len(kb_context)} ground-truth context blocks from Knowledge Base.")
         return kb_context
 
+    @traceable(name="Call1_Diagnostic_CoT", run_type="chain")
     def _run_diagnostic(
         self,
         question: str,

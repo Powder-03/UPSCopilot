@@ -11,6 +11,7 @@ from src.evaluation.prompt_templates import build_geval_scoring_prompt
 from src.models.enums import PillarType
 from src.models.evaluation import PillarGEvalScore
 from src.models.exceptions import ModelInvocationError, RatingExtractionError
+from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -203,6 +204,7 @@ class BedrockGEvalScorer(BaseGEvalScorer):
             self._client = boto3.client("bedrock-runtime", region_name=self.region)
         return self._client
 
+    @traceable(name="Call2_GEval_Score_Pillars", run_type="llm")
     def score_pillars(
         self,
         question: str,
@@ -281,6 +283,7 @@ class VertexGEvalScorer(BaseGEvalScorer):
         if hasattr(self._thread_local, "client"):
             self._thread_local.client = None
 
+    @traceable(name="Call2_GEval_Score_Pillars", run_type="llm")
     def score_pillars(
         self,
         question: str,

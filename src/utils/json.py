@@ -75,6 +75,22 @@ def extract_json_dict(text: str) -> dict[str, Any]:
         except Exception as e:
             logger.warning(f"Error parsing JSON from sanitized LLM output: {e}")
 
+    # Attempt 5: Handle truncated JSON by closing open strings and braces
+    if candidate.startswith("{"):
+        repaired = candidate
+        if repaired.count('"') % 2 != 0:
+            repaired += '"'
+        open_braces = repaired.count("{") - repaired.count("}")
+        if open_braces > 0:
+            repaired += "}" * open_braces
+        try:
+            obj = json.loads(repaired, strict=False)
+            if isinstance(obj, dict):
+                logger.info("Successfully recovered truncated JSON via brace closure")
+                return obj
+        except Exception:
+            pass
+
     return {}
 
 

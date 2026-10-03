@@ -6,6 +6,7 @@ from typing import Any
 from langchain_core.documents import Document
 
 from src.kb.vector_store import get_vector_store
+from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,7 @@ class SelfQueryRetriever:
         self.force_mock = force_mock
         self.vector_store = get_vector_store(persist_dir, force_mock=force_mock)
 
+    @traceable(name="Pinecone_SelfQuery_Retriever", run_type="retriever")
     def retrieve(
         self,
         query: str,
@@ -148,6 +150,7 @@ class SelfQueryRetriever:
 
         return selected_docs[:k]
 
+    @traceable(name="Format_Retrieval_Context", run_type="tool")
     def get_retrieval_context(self, query: str, top_k: int = 8, use_reranker: bool = False) -> list[str]:
         """Formats retrieved documents into clean context blocks for LLM evaluators."""
         docs = self.retrieve(query, top_k=top_k, use_reranker=use_reranker)

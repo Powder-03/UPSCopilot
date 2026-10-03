@@ -17,6 +17,7 @@ from src.models.evaluation import EvaluationResult
 from src.models.exceptions import DocumentParsingError
 from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.parsing.pipeline import DocumentParsingPipeline
+from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class UnifiedEvaluationPipeline:
         self.engine = UPSCEvaluationEngine(eval_llm=eval_llm)
         self.workers = workers
 
+    @traceable(name="UnifiedEvaluationPipeline.run_pipeline", run_type="chain")
     def run_pipeline(
         self,
         pdf_path: str | Path,
@@ -165,6 +167,7 @@ class UnifiedEvaluationPipeline:
         return results
 
     @staticmethod
+    @traceable(name="Distill_Student_Scorecard", run_type="chain")
     def distill_results(
         document_name: str,
         evaluations: list[tuple[ParsedQuestion, EvaluationResult]],

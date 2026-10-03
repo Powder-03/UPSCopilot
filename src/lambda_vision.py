@@ -15,6 +15,7 @@ from src.parsing.pipeline import DocumentParsingPipeline
 from src.services.job_state_service import JobStateService
 from src.services.queue_service import QueueService
 from src.services.storage_service import StorageService
+from src.utils.tracing import flush_traces, traceable
 
 logger = logging.getLogger(__name__)
 
@@ -31,27 +32,31 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
     state = JobStateService()
     queue = QueueService()
 
-    if "Records" not in event:
-        # Direct invocation fallback
-        return _process_single(event, storage, state, queue)
+    try:
+        if "Records" not in event:
+            # Direct invocation fallback
+            return _process_single(event, storage, state, queue)
 
-    records = event["Records"]
-    logger.info("Processing %d SQS vision record(s)", len(records))
-    batch_item_failures = []
+        records = event["Records"]
+        logger.info("Processing %d SQS vision record(s)", len(records))
+        batch_item_failures = []
 
-    for record in records:
-        message_id = record.get("messageId", "unknown")
-        try:
-            body = record.get("body", "{}")
-            payload = json.loads(body) if isinstance(body, str) else body
-            _process_single(payload, storage, state, queue)
-        except Exception as e:
-            logger.exception("Vision worker failed for SQS message %s: %s", message_id, e)
-            batch_item_failures.append({"itemIdentifier": message_id})
+        for record in records:
+            message_id = record.get("messageId", "unknown")
+            try:
+                body = record.get("body", "{}")
+                payload = json.loads(body) if isinstance(body, str) else body
+                _process_single(payload, storage, state, queue)
+            except Exception as e:
+                logger.exception("Vision worker failed for SQS message %s: %s", message_id, e)
+                batch_item_failures.append({"itemIdentifier": message_id})
 
-    return {"batchItemFailures": batch_item_failures}
+        return {"batchItemFailures": batch_item_failures}
+    finally:
+        flush_traces()
 
 
+@traceable(name="LambdaVisionWorker.process_job", run_type="chain")
 def _process_single(
     payload: dict[str, Any],
     storage: StorageService,

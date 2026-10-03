@@ -8,6 +8,7 @@ from src.config import settings
 from src.models.exceptions import ModelInvocationError
 from src.parsing.prompts import VISION_QCAB_PARSER_SYSTEM_PROMPT
 from src.utils.json import extract_json_dict
+from src.utils.tracing import mask_vision_inputs, traceable
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,7 @@ class BedrockVisionClient(BaseVisionClient):
             self._client = boto3.client("bedrock-runtime", region_name=self.region_name)
         return self._client
 
+    @traceable(name="Bedrock_Multimodal_Vision_OCR", run_type="llm", process_inputs=mask_vision_inputs)
     def extract_answer_from_page_images(
         self,
         image_bytes_list: list[bytes],
@@ -144,6 +146,7 @@ class VertexVisionClient(BaseVisionClient):
         if hasattr(self._thread_local, "client"):
             self._thread_local.client = None
 
+    @traceable(name="Vertex_Multimodal_Vision_OCR", run_type="llm", process_inputs=mask_vision_inputs)
     def extract_answer_from_page_images(
         self,
         image_bytes_list: list[bytes],
@@ -186,7 +189,7 @@ class VertexVisionClient(BaseVisionClient):
                     config=types.GenerateContentConfig(
                         system_instruction=VISION_QCAB_PARSER_SYSTEM_PROMPT,
                         temperature=0.1,
-                        max_output_tokens=4096,
+                        max_output_tokens=8192,
                         response_mime_type="application/json",
                     ),
                 )

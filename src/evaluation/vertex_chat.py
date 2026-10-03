@@ -97,7 +97,29 @@ class ChatVertexExpress(BaseChatModel):
                     config=config,
                 )
                 reply_text = response.text or ""
-                return ChatResult(generations=[ChatGeneration(message=AIMessage(content=reply_text))])
+
+                # Extract token usage metadata for LangSmith cost & token tracking
+                usage_metadata = None
+                if hasattr(response, "usage_metadata") and response.usage_metadata:
+                    meta = response.usage_metadata
+                    input_toks = getattr(meta, "prompt_token_count", 0) or 0
+                    output_toks = getattr(meta, "candidates_token_count", 0) or 0
+                    total_toks = getattr(meta, "total_token_count", 0) or (input_toks + output_toks)
+                    usage_metadata = {
+                        "input_tokens": input_toks,
+                        "output_tokens": output_toks,
+                        "total_tokens": total_toks,
+                    }
+
+                ai_message = AIMessage(
+                    content=reply_text,
+                    usage_metadata=usage_metadata,
+                    response_metadata={
+                        "model_name": self.model_name,
+                        "usage": usage_metadata or {},
+                    },
+                )
+                return ChatResult(generations=[ChatGeneration(message=ai_message)])
             except Exception as e:
                 err_str = str(e)
                 if (

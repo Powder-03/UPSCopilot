@@ -11,6 +11,7 @@ from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.parsing.preprocessor import PDFPreprocessor
 from src.parsing.segmenter import QCABSegmenter
 from src.parsing.vision_client import BaseVisionClient, get_vision_client
+from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,7 @@ class DocumentParsingPipeline:
         self.max_workers = max_workers or settings.parsing_max_workers
 
 
+    @traceable(name="Process_Question_Pages", run_type="chain")
     def _process_question_slice(
         self,
         pdf_path: str | Path,
@@ -165,6 +167,7 @@ class DocumentParsingPipeline:
                 error=f"Transcription failed: {e}",
             )
 
+    @traceable(name="DocumentParsingPipeline.parse_pdf", run_type="chain")
     def parse_pdf(
         self,
         pdf_path: str | Path,

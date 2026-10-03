@@ -31,6 +31,19 @@ Parameters:
     Type: String
     Description: "Pinecone Index Name"
     Default: "upsc-kb"
+  LangSmithTracing:
+    Type: String
+    Description: "Enable LangSmith end-to-end tracing"
+    Default: "true"
+  LangSmithApiKey:
+    Type: String
+    NoEcho: true
+    Description: "LangSmith API Key"
+    Default: ""
+  LangSmithProject:
+    Type: String
+    Description: "LangSmith Project Name"
+    Default: "UPSCopilot"
 
 Globals:
   Function:
@@ -45,6 +58,12 @@ Globals:
         PINECONE_API_KEY: !Ref PineconeApiKey
         PINECONE_INDEX_NAME: !Ref PineconeIndexName
         EMBEDDING_DIMENSION: "768"
+        LANGSMITH_TRACING: !Ref LangSmithTracing
+        LANGSMITH_API_KEY: !Ref LangSmithApiKey
+        LANGSMITH_PROJECT: !Ref LangSmithProject
+        LANGCHAIN_TRACING_V2: !Ref LangSmithTracing
+        LANGCHAIN_API_KEY: !Ref LangSmithApiKey
+        LANGCHAIN_PROJECT: !Ref LangSmithProject
         S3_BUCKET: !Ref UploadsBucket
         DYNAMODB_TABLE: !Ref JobStateTable
         PARSED_BOOKLETS_TABLE: !Ref ParsedBookletsTable
