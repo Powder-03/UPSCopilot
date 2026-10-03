@@ -13,7 +13,7 @@ from src.models.api import (
     JobSubmitResponse,
     StudentEvaluationReport,
 )
-from src.pipeline import UnifiedEvaluationPipeline
+from src.orchestrator import UnifiedEvaluationPipeline
 from src.services.email_service import EmailService
 from src.services.job_state_service import JobStateService
 from src.services.queue_service import QueueService

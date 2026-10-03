@@ -162,7 +162,7 @@ Resources:
     Properties:
       PackageType: Image
       ImageConfig:
-        Command: ["src.lambda_api.handler"]
+        Command: ["src.handlers.api.handler"]
       Timeout: 29
       MemorySize: 2048
       Policies:
@@ -196,7 +196,7 @@ Resources:
     Properties:
       PackageType: Image
       ImageConfig:
-        Command: ["src.lambda_vision.handler"]
+        Command: ["src.handlers.vision_worker.handler"]
       Timeout: 600 # 10 minutes for multi-page OCR transcription
       MemorySize: 3008 # Max allowable within standard 3008 MB account tier
       EphemeralStorage:
@@ -239,7 +239,7 @@ Resources:
     Properties:
       PackageType: Image
       ImageConfig:
-        Command: ["src.lambda_eval.handler"]
+        Command: ["src.handlers.eval_worker.handler"]
       Timeout: 900 # 15 minutes max execution
       MemorySize: 3008 # Max allowable within standard 3008 MB account tier
       EphemeralStorage:

@@ -13,7 +13,7 @@ from src.evaluation.engine import UPSCEvaluationEngine
 from src.models.api import JobStatus
 from src.models.evaluation import EvaluationResult
 from src.models.parsing import ParsedDocument, ParsedQuestion
-from src.pipeline import UnifiedEvaluationPipeline
+from src.orchestrator import UnifiedEvaluationPipeline
 from src.services.email_service import EmailService
 from src.services.job_state_service import JobStateService
 from src.services.scorecard_pdf import generate_scorecard_pdf

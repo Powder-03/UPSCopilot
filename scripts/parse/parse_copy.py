@@ -3,7 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from src.parsing.pipeline import DocumentParsingPipeline
+from src.parsing.document_parser import DocumentParsingPipeline
 from src.utils.cli import configure_console, setup_logging
 
 

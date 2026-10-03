@@ -49,6 +49,6 @@ RUN mkdir -p /tmp/uploads /tmp/jobs
 
 # Default handler: API Gateway Lambda entrypoint
 # Overridden via ImageConfig.Command in template.yaml for decoupled workers:
-# - Stage 1 Vision OCR: src.lambda_vision.handler
-# - Stage 2 Evaluation: src.lambda_eval.handler
-CMD [ "src.lambda_api.handler" ]
+# - Stage 1 Vision OCR: src.handlers.vision_worker.handler
+# - Stage 2 Evaluation: src.handlers.eval_worker.handler
+CMD [ "src.handlers.api.handler" ]

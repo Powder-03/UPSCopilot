@@ -11,20 +11,20 @@
 ## 2. Core Model & Multi-Provider Architecture (Vertex AI & AWS Bedrock)
 - **Dual-Provider Plug-and-Play**: Toggled via `LLM_PROVIDER` in `.env` (`"vertex"` or `"bedrock"`).
   - **Vertex AI (Default / Active)**:
-    - Primary Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `ChatVertexExpress` in `src.evaluation.vertex_chat`.
-    - Vision Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `VertexVisionClient` in `src.parsing.vision_client`.
+    - Primary Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `ChatVertexExpress` in `src.providers.vertex`.
+    - Vision Model: Gemini 2.5 Flash (`gemini-2.5-flash`) via `VertexVisionClient` in `src.providers.vision`.
     - G-Eval Scorer: `VertexGEvalScorer` in `src.evaluation.geval_scorer` using Gemini token logprobs (`responseLogprobs: True`, `logprobs: 5`, `thinkingBudget: 0`).
     - Authentication: `GEMINI_API_KEY` with Google Cloud Vertex AI Model Garden endpoints (`https://us-central1-aiplatform.googleapis.com/...`).
   - **AWS Bedrock (Plug-and-Play on Account Activation)**:
     - Evaluation & Core LLM: Moonshot Kimi 2.5 (`moonshotai.kimi-k2.5`) via `langchain_aws.ChatBedrockConverse`.
-    - Vision Model: Moonshot Kimi 2.5 via `BedrockVisionClient`.
+    - Vision Model: Moonshot Kimi 2.5 via `BedrockVisionClient` in `src.providers.vision`.
     - G-Eval Scorer: `BedrockGEvalScorer` using native Kimi 2.5 token logprobs.
     - Embeddings: Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`, 1024-dim).
     - Authentication: Standard `boto3.client("bedrock-runtime", region_name=settings.aws_region)` with AWS credentials. (Lazy client instantiation ensures no crashes when Bedrock is inactive).
 - **Factories**:
-  - `src.evaluation.model_factory.get_eval_llm()`
+  - `src.providers.factory.get_eval_llm()`
   - `src.evaluation.geval_scorer.get_geval_scorer()`
-  - `src.parsing.vision_client.get_vision_client()`
+  - `src.providers.vision.get_vision_client()`
   - `src.kb.vector_store.get_embedding_function()` (falls back to `DeterministicMockEmbeddings(1024)` in offline / Vertex mode).
 - **Test Script**: `scripts/dev/test_llm.py` (`uv run python scripts/dev/test_llm.py` verified working on Vertex AI Gemini 2.5 Flash).
 
@@ -47,41 +47,70 @@
 evaluator/
 ├── .env / .env.example   # Local secrets & paths (DATA_DIR, KB_STORAGE_DIR, AWS, model IDs)
 ├── AGENTS.md             # This file: agent context, memory & rules
-├── pyproject.toml        # Dependencies, pytest config (bedrock marker), ruff config, dev group
+├── Dockerfile            # Multi-stage container image for AWS Lambda
+├── pyproject.toml        # Dependencies, pytest config, ruff config
+├── samconfig.toml        # SAM deploy configuration
+├── template.yaml         # SAM IaC: S3, DynamoDB, SQS, API/Vision/Eval Lambda functions
 ├── conftest.py           # Repo-wide pytest fixtures + --run-bedrock opt-in for live tests
-├── .pre-commit-config.yaml # Hygiene hooks + ruff --fix
-├── .github/workflows/ci.yml # CI: ruff check + offline pytest on every push/PR
-├── data/                 # NOT importable; raw corpus + vector store (gitignored artifacts)
+├── data/                 # NOT importable; raw corpus + uploads (gitignored artifacts)
 │   ├── raw/constitution_raw.json       # 465 authentic articles
 │   ├── documents/                      # Official Act PDFs, sc_cases/, central_acts/
-│   └── storage/chroma_db/              # Persisted Chroma vector store
+│   ├── jobs/                           # Local dev job state
+│   └── uploads/                        # Local dev uploads
 ├── scripts/
-│   ├── dev/              # test_llm.py, check_kimi_logprobs.py (developer probes)
-│   ├── ingest/           # all.py (master pipeline), download_acts.py (govt PDFs)
-│   └── evaluate/         # topper_copy_evaluation.py (multi-run consistency CLI), sample.py, retrieval.py
+│   ├── dev/              # Developer probes & test scripts
+│   ├── ingest/           # Ingestion pipeline scripts (Pinecone, Acts, all)
+│   ├── parse/            # parse_copy.py (PDF OCR transcription CLI)
+│   └── evaluate/         # Evaluation CLIs (topper_copy_evaluation.py, evaluate_pdf.py, etc.)
 ├── src/
 │   ├── config.py         # Settings loading from .env (pydantic-settings)
-│   ├── evaluation/
-│   │   ├── engine.py         # 2-call orchestrator + marking-policy constants
-│   │   ├── geval_scorer.py   # G-Eval logprob continuous scoring
-│   │   ├── model_factory.py  # Factory returning ChatBedrockConverse (Kimi 2.5)
+│   ├── orchestrator.py   # Unified end-to-end evaluation & distillation pipeline
+│   ├── api/              # FastAPI routes (health, submit, status, presigned URL)
+│   │   └── app.py
+│   ├── handlers/         # AWS Lambda entrypoint handlers
+│   │   ├── api.py           # Mangum ASGI adapter for API Gateway
+│   │   ├── vision_worker.py # SQS worker for Stage 1 multimodal vision OCR
+│   │   └── eval_worker.py   # SQS worker for Stage 2 RAG + 2-call evaluation & SES delivery
+│   ├── providers/        # LLM & Vision provider clients & factories
+│   │   ├── vertex.py        # ChatVertexExpress (Google GenAI SDK)
+│   │   ├── vision.py        # VertexVisionClient & BedrockVisionClient
+│   │   └── factory.py       # get_eval_llm() provider router
+│   ├── evaluation/       # Core 2-call evaluation engine
+│   │   ├── engine.py        # CoT diagnostic + marking policy
+│   │   ├── geval_scorer.py  # Continuous logprob scoring
 │   │   └── prompt_templates.py
-│   ├── kb/
-│   │   ├── corpus_loader.py  # Constitution JSON + document loaders (single source of truth)
-│   │   ├── retriever.py      # Hybrid retriever (BM25 + Chroma RRF + FlashRank)
-│   │   └── vector_store.py   # Chroma DB with Bedrock Titan Embeddings
-│   ├── models/           # ALL schemas live here (single ownership)
-│   │   ├── enums.py          # UPSC performance bands, directives, pillars
-│   │   ├── evaluation.py     # EvaluationResult, PillarGEvalScore, citation audit models
-│   │   └── kb.py             # RetrievalEvaluationItem
+│   ├── parsing/          # Vision OCR booklet parsing
+│   │   ├── document_parser.py # DocumentParsingPipeline
+│   │   ├── preprocessor.py    # PyMuPDF rendering & visual blank detection
+│   │   ├── prompts.py         # OCR & layout prompts
+│   │   └── segmenter.py       # QCAB question slicing & sorting
+│   ├── kb/               # Knowledge base & Pinecone retrieval
+│   │   ├── corpus_loader.py
+│   │   ├── retriever.py
+│   │   └── vector_store.py
+│   ├── models/           # Pydantic schemas (single ownership)
+│   │   ├── api.py
+│   │   ├── enums.py
+│   │   ├── evaluation.py
+│   │   ├── exceptions.py
+│   │   ├── kb.py
+│   │   └── parsing.py
+│   ├── services/         # Pluggable infrastructure adapters
+│   │   ├── email_service.py
+│   │   ├── job_manager.py
+│   │   ├── job_state_service.py
+│   │   ├── queue_service.py
+│   │   ├── scorecard_pdf.py
+│   │   └── storage_service.py
+│   ├── static/           # Single source of truth web frontend
+│   │   └── index.html
 │   └── utils/
-│       ├── json.py           # Shared LLM-output JSON extraction (extract_json_dict, clean_json_text)
-│       └── cli.py            # Shared console/logging setup for scripts
+│       ├── cli.py
+│       ├── json.py
+│       └── tracing.py
 └── tests/
-    ├── fixtures/         # golden_dataset.json, topper_copy.json, sample_answers.json, retrieval_benchmark.json
-    ├── outputs/          # Evaluation run artifacts (gitignored)
-    ├── test_evaluation_engine.py # Offline unit tests (13)
-    └── test_kb_retrieval.py      # Live retrieval suite, marked `bedrock` (6)
+    ├── fixtures/         # golden_dataset.json, topper_copy.json, benchmark JSONs
+    └── test_*.py         # Comprehensive unit test suite (55 offline tests pass)
 ```
 
 ---
@@ -214,6 +243,14 @@ evaluator/
   - Implemented `create_job_from_storage_ref` in `src/services/job_manager.py` allowing job creation from existing S3 objects.
   - Added `GET /api/v1/jobs/upload-url` and `POST /api/v1/jobs/submit-direct` in `src/api/app.py`.
   - Upgraded frontend in `src/static/index.html` and `index.html` to stream large PDFs directly to Amazon S3 with real-time percentage progress bar before triggering background evaluation (< 1 KB payload).
+- [x] Project Structure Clean-Up & Production Refactoring:
+  - Purged root-level large PDFs (`GS-II.pdf`, `VIKAS...pdf`), stray test artifacts (`test_msg.json`, `test_scorecard.pdf`), and redundant root files (`index.html`, `static/`).
+  - Purged 18 unused design iteration PNGs from `src/static/`, leaving `src/static/index.html` as the single source of truth.
+  - Consolidated LLM and vision model clients into `src/providers/` (`vertex.py`, `vision.py`, `factory.py`).
+  - Consolidated AWS Lambda entrypoint handlers into `src/handlers/` (`api.py`, `vision_worker.py`, `eval_worker.py`), updating `template.yaml` and `Dockerfile`.
+  - Renamed `src/pipeline.py` -> `src/orchestrator.py` and `src/parsing/pipeline.py` -> `src/parsing/document_parser.py` to eliminate ambiguous name collision.
+  - Fixed circular import between providers and parsing packages.
+  - Verified 100% clean `ruff check .` and all 55 offline pytest tests passing.
 
 
 

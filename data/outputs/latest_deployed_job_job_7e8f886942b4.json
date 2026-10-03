@@ -1,0 +1,462 @@
+{
+  "email_sent": true,
+  "created_at": "2026-10-03T16:30:30.039086+00:00",
+  "current_step": "Evaluation complete.",
+  "pdf_path": "s3://upsc-evaluator-uploads-690664094819/uploads/job_7e8f886942b4_VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf",
+  "status": "COMPLETED",
+  "result": {
+    "summary": {
+      "percentage": 34,
+      "overall_feedback": {
+        "key_strengths": [
+          "Clear structure with headings and bullet points.",
+          "Correctly identifies GST and GST Council as outcomes of 101st CAA.",
+          "Relevant mention of Bommai case for federalism."
+        ],
+        "top_areas_to_improve": [
+          "Explicitly mention Article 246A to explain simultaneous legislative power and Article 279A for the GST Council's role in cooperative federalism.",
+          "Elaborate on the mechanisms by which the GST Council fosters cooperative federalism (e.g., consensus-based decision making, voting weightage).",
+          "Add a concise conclusion summarizing the strengthening of federalism through fiscal integration and cooperative mechanisms."
+        ]
+      },
+      "total_score": 85.09,
+      "max_marks": 250
+    },
+    "questions": [
+      {
+        "what_to_do_better": [
+          "Explicitly mention Article 246A to explain simultaneous legislative power and Article 279A for the GST Council's role in cooperative federalism.",
+          "Elaborate on the mechanisms by which the GST Council fosters cooperative federalism (e.g., consensus-based decision making, voting weightage).",
+          "Add a concise conclusion summarizing the strengthening of federalism through fiscal integration and cooperative mechanisms.",
+          "Lacks depth in explaining 'how' 101st CAA strengthens federalism, missing key constitutional provisions like Article 246A and 279A.",
+          "Limited elaboration on the 'keystone' aspect of resource collection beyond listing components.",
+          "No forward-looking conclusion or synthesis."
+        ],
+        "max_marks": 10,
+        "score": 3.12,
+        "q_num": 1,
+        "percentage": 31.2,
+        "question": "Resource collection and redistribution remains a keystone in federal structure. How enactment of 101st Constitutional Amendment Act strengthens federalism?",
+        "pros": [
+          "Clear structure with headings and bullet points.",
+          "Correctly identifies GST and GST Council as outcomes of 101st CAA.",
+          "Relevant mention of Bommai case for federalism."
+        ]
+      },
+      {
+        "score": 3.2,
+        "question": "A Governor has no executive function to be performed independently under the Indian Constitution. Comment.",
+        "percentage": 32,
+        "what_to_do_better": [
+          "Elaborate on specific discretionary powers of the Governor (e.g., reservation of bills, report for President's Rule, seeking information from CM, administration of tribal areas).",
+          "Complete the explanation of the Nabam Rebia judgment's implications for Governor's discretion.",
+          "Provide a balanced perspective, acknowledging both the titular role and the limited but significant discretionary functions.",
+          "Add a concise conclusion summarizing the Governor's dual role as a constitutional head and a link between the Centre and State.",
+          "Incomplete answer, especially regarding the discretionary powers of the Governor.",
+          "The explanation of the Nabam Rebia case is cut short.",
+          "Lacks a balanced discussion as required by 'Comment' directive.",
+          "No conclusion or synthesis."
+        ],
+        "q_num": 2,
+        "max_marks": 10,
+        "pros": [
+          "Correctly identifies the constitutional basis for the Governor's office (Art 153).",
+          "Mentions the aid and advice principle (Art 163).",
+          "Refers to the relevant Nabam Rebia case."
+        ]
+      },
+      {
+        "max_marks": 10,
+        "score": 2.84,
+        "q_num": 3,
+        "question": "Civil services should focus more on the outcomes rather than on strict adherence to internal procedures. Critically examine.",
+        "percentage": 28.4,
+        "pros": [
+          "Identifies key benefits of outcome-based governance.",
+          "Uses bullet points for clear presentation."
+        ],
+        "what_to_do_better": [
+          "Address the 'critically examine' part by discussing the necessity of procedures for accountability, transparency, rule of law, and preventing arbitrary actions.",
+          "Incorporate ethical principles (e.g., integrity, objectivity, accountability from KB) to show how procedures uphold these values.",
+          "Provide a balanced conclusion that synthesizes the need for both outcomes and robust procedures.",
+          "Cite relevant committee recommendations (e.g., 2nd ARC on ethics in governance) to add authority.",
+          "Fails to address the 'critically examine' directive by not discussing the importance of procedures.",
+          "Lacks depth and multi-dimensional analysis.",
+          "No conclusion provided.",
+          "Limited grounding in ethical principles or governance frameworks."
+        ]
+      },
+      {
+        "score": 2.84,
+        "q_num": 4,
+        "pros": [
+          "Clear and concise definition of e-governance.",
+          "Uses relevant real-world examples (Akshaya, Meri Panchayat App, Meghalaya).",
+          "Good use of bullet points for readability."
+        ],
+        "what_to_do_better": [
+          "Integrate specific constitutional articles (e.g., 243G for functions, 243J for audit) to ground the arguments.",
+          "Elaborate on specific e-governance tools/platforms (e.g., e-Gram Swaraj, PFMS, online grievance portals, digital Gram Sabhas) and their direct impact.",
+          "Structure the answer with distinct subheadings for 'Strengthening PRIs' and 'Enhancing Citizen Participation' to address both demands clearly.",
+          "Mention challenges and a way forward for a more comprehensive answer.",
+          "Lacks depth and specific mechanisms of e-governance application.",
+          "No mention of constitutional provisions or relevant committee recommendations (e.g., 2nd ARC) from the KB.",
+          "The introduction starts with a quote which, while not incorrect, is not ideal for a formal UPSC answer.",
+          "Does not clearly differentiate between strengthening PRIs and enhancing citizen participation in its points, often blending them."
+        ],
+        "max_marks": 10,
+        "percentage": 28.4,
+        "question": "How can e-governance initiatives be leveraged to strengthen Panchayati Raj institutions and enhance citizen participation in local governance in India?"
+      },
+      {
+        "question": "Self-help groups (SHGs) create collective efforts towards financial inclusion and robust social capital. Elaborate.",
+        "what_to_do_better": [
+          "Thoroughly address all parts of the question, especially the 'social capital' aspect, by providing specific examples (e.g., collective bargaining, community leadership, empowerment against social issues).",
+          "Verify all quotes and terms used in the introduction to ensure factual accuracy and avoid potential misrepresentation.",
+          "Add more specific examples or brief elaborations for each point under financial inclusion to demonstrate deeper understanding (e.g., specific schemes, impact on livelihoods).",
+          "Fails to address the 'robust social capital' part of the question.",
+          "Introduction contains a potentially incorrect or fabricated quote/term.",
+          "Lack of depth and specific examples for the financial inclusion points.",
+          "Overall brevity and incompleteness."
+        ],
+        "score": 2.86,
+        "max_marks": 10,
+        "q_num": 5,
+        "percentage": 28.6,
+        "pros": [
+          "Clear headings for the two main demands.",
+          "Uses bullet points for readability.",
+          "Identifies key mechanisms of financial inclusion (bank linkage, microcredit, digital payments)."
+        ]
+      },
+      {
+        "pros": [
+          "Identifies key issues like lack of unions and informal workers.",
+          "Uses a clear, bullet-point structure."
+        ],
+        "q_num": 6,
+        "score": 2.8,
+        "percentage": 28,
+        "max_marks": 10,
+        "question": "Lack of formal associations creates vulnerability to workers in new age companies. Analyze.",
+        "what_to_do_better": [
+          "Elaborate on each point with specific examples of vulnerabilities (e.g., lack of minimum wage, social security, arbitrary termination, grievance redressal).",
+          "Incorporate relevant constitutional provisions (e.g., Article 43A) or recent legislative efforts (e.g., Code on Social Security, e-Shram portal) to add depth and authority.",
+          "Add a concise conclusion suggesting a way forward (e.g., policy interventions, role of technology).",
+          "Briefly define 'new-age companies' in the introduction (e.g., gig economy, platform workers).",
+          "Lack of depth and elaboration for each point.",
+          "No specific examples of new-age companies or their practices.",
+          "Absence of any constitutional or legal grounding (e.g., Article 43A, Code on Social Security).",
+          "No conclusion provided.",
+          "Introduction is too generic and brief."
+        ]
+      },
+      {
+        "q_num": 7,
+        "percentage": 21.6,
+        "score": 2.16,
+        "what_to_do_better": [
+          "Provide a more comprehensive definition of demographic dividend, including concepts like dependency ratio and the 'window of opportunity' from the KB.",
+          "Detail specific provisions of NEP 2020 related to skill development (e.g., vocational education integration from Class 6, multidisciplinary approach, internships, National Credit Framework).",
+          "Detail specific efforts under the National Skill Development Mission (e.g., PMKVY, Skill India Portal, Sector Skill Councils, ITIs, Apprenticeship Promotion Scheme).",
+          "Explicitly draw connections and complementarities between NEP's provisions and NSDM's objectives, showing how one supports the other (e.g., NEP creating foundational skills, NSDM providing advanced training and certification).",
+          "Extremely superficial treatment of the core demand regarding NEP 2020 and NSDM.",
+          "Lacks specific provisions, schemes, or examples from either NEP or NSDM.",
+          "Definition of demographic dividend is incomplete (e.g., misses dependency ratio, window of opportunity).",
+          "No clear explanation of 'how' NEP complements NSDM, just a single generic point."
+        ],
+        "pros": [
+          "Briefly defines demographic dividend.",
+          "Uses bullet points for better readability.",
+          "Mentions relevant contemporary concepts like IR 4.0."
+        ],
+        "question": "Skill development is a crucial factor in reaping the demographic dividend. How does the National Education Policy, 2020 complement the efforts under the National Skill Development Mission?",
+        "max_marks": 10
+      },
+      {
+        "score": 3.16,
+        "what_to_do_better": [
+          "Elaborate on how the ₹5 lakh insurance specifically prevents catastrophic health expenditure and subsequent impoverishment (e.g., covering hospitalizations, surgeries, diagnostics).",
+          "Add a brief introduction defining PMJAY and its objective.",
+          "Include a concise conclusion summarizing its impact as a safety net and potential areas for improvement or challenges.",
+          "Provide more specific examples or mechanisms for how HWCs reduce OOP expenditure beyond just 'doorstep services' (e.g., free diagnostics, essential medicines).",
+          "The explanation of 'how it is a safety net' is incomplete and lacks depth, especially for the insurance component.",
+          "The answer is very brief and does not fully 'discuss' the topic as per the directive.",
+          "Lacks a proper introduction and conclusion."
+        ],
+        "question": "High healthcare expenses drag millions into situational poverty. In this light, discuss how the Pradhan Mantri Jan Arogya Yojana (PMJAY) has become a safety net.",
+        "q_num": 8,
+        "max_marks": 10,
+        "percentage": 31.6,
+        "pros": [
+          "Identifies the core problem of high OOP expenditure and the 'missing middle'.",
+          "Accurately lists the key components of PMJAY.",
+          "Uses a clear, bullet-point structure."
+        ]
+      },
+      {
+        "question": "Taliban's policy on opium has led to a drastic drop in poppy cultivation. Analyze its impact on organized crime in India.",
+        "pros": [
+          "Good contextual introduction with the 'Golden Crescent' concept.",
+          "Effective use of a diagram to illustrate geographical context.",
+          "Clear and concise points explaining the drop in poppy cultivation.",
+          "Relevant open-world facts cited (UN Resolution, satellite tech)."
+        ],
+        "what_to_do_better": [
+          "Elaborate significantly on the 'Impact on organised crime in India' section, providing at least 3-4 distinct points with brief explanations.",
+          "Consider impacts like increased synthetic drug trafficking, alternative funding for terror groups, new trafficking routes, and challenges for law enforcement.",
+          "Add a concise conclusion summarizing the complex nature of the issue and potential policy responses.",
+          "Quantify or provide examples where possible for impacts on organized crime.",
+          "The core demand of 'impact on organized crime in India' is severely underdeveloped, with only one point mentioned.",
+          "Lacks multi-dimensional analysis of impacts (e.g., shift in drug routes, rise of synthetic drugs, funding for other crimes, money laundering).",
+          "No conclusion or forward-looking statement."
+        ],
+        "q_num": 9,
+        "max_marks": 10,
+        "score": 3.66,
+        "percentage": 36.6
+      },
+      {
+        "max_marks": 10,
+        "percentage": 2.1,
+        "score": 0.21,
+        "question": "Geopolitical tensions unchecked often, turn into humanitarian crises. Discuss the role of 'World Food Programme' in containing poverty and hunger near battlegrounds.",
+        "q_num": 10,
+        "pros": [
+          "Identifies relevant geopolitical tensions and associated humanitarian crises."
+        ],
+        "what_to_do_better": [
+          "Address the core demand of the question directly by discussing the role of the World Food Programme.",
+          "Provide specific examples of WFP's work in conflict zones, its challenges, and successes.",
+          "Structure the answer with an introduction, body paragraphs discussing WFP's role, and a conclusion.",
+          "Integrate the listed geopolitical tensions and humanitarian crises as context for WFP's operations, rather than just listing them.",
+          "Completely omits discussion of the World Food Programme (WFP), which is the central demand of the question.",
+          "Lacks analytical depth; merely lists points without elaboration.",
+          "No introduction or conclusion."
+        ]
+      },
+      {
+        "what_to_do_better": [
+          "Begin with a nuanced introduction that directly addresses the tension between individual liberty and state interests, perhaps referencing the Preamble's emphasis on both.",
+          "Structure the answer to first acknowledge the statement's premise (state interests can restrict liberty) with constitutional backing (reasonable restrictions), then critically analyze it by highlighting the judiciary's role in protecting individual liberty (e.g., through Article 21, due process, proportionality test).",
+          "Include landmark judgments like Maneka Gandhi (due process, expansive Article 21) and Puttaswamy (privacy as fundamental right, limits on state power) to demonstrate the evolving balance.",
+          "Discuss the role of DPSP in guiding state action and how it sometimes necessitates restrictions on individual liberty for collective good, but always within constitutional limits.",
+          "Conclude with a balanced perspective on how the Indian Constitution seeks to harmonize individual liberty with state interests, emphasizing constitutional morality and the rule of law.",
+          "Correct the factual inaccuracy regarding Article 23 & 24.",
+          "Does not 'discuss' the core statement, merely lists provisions.",
+          "Incomplete answer, ends abruptly.",
+          "Misses crucial constitutional provisions (e.g., Article 21, emergency provisions) and landmark judgments (Maneka Gandhi, Puttaswamy) essential for a comprehensive discussion.",
+          "Imprecise explanation for Article 23 & 24 regarding state's power to take services without pay.",
+          "Introduction is generic and does not set the stage for the specific debate."
+        ],
+        "max_marks": 15,
+        "score": 4.2,
+        "question": "Exigency of liberty of the individual should always follow the interests of the State. Discuss the statement with reference to Indian Constitutional provisions.",
+        "percentage": 28,
+        "q_num": 11,
+        "pros": [
+          "Identifies relevant fundamental rights articles.",
+          "Uses a clear bullet-point structure for listing provisions."
+        ]
+      },
+      {
+        "question": "Do you agree that the directive principles function as 'Conscience of Constitution' apart from the fundamental rights? Substantiate.",
+        "pros": [
+          "Accurate and relevant constitutional citations (Articles, Minerva Mills, Ambedkar).",
+          "Clear and structured presentation using bullet points.",
+          "Covers multiple dimensions of DPSP's role (social/economic democracy, welfare state, foreign policy, separation of powers)."
+        ],
+        "max_marks": 15,
+        "what_to_do_better": [
+          "Start with a clear, concise statement agreeing with the premise and briefly outlining the answer's direction.",
+          "Strengthen the conclusion by explicitly linking both FRs and DPSPs as integral components of the 'Conscience of the Constitution', perhaps referencing the 'harmonious construction' or 'basic structure' doctrine more directly.",
+          "Briefly contrast the enforceability of FRs vs. DPSPs to address the 'apart from' aspect more comprehensively.",
+          "Lacks an explicit statement of agreement/disagreement at the outset.",
+          "The synthesis of how DPSPs and FRs together form the 'Conscience' is not fully developed.",
+          "The 'apart from' aspect of the question could have been elaborated more, perhaps by discussing their non-justiciable nature vs. justiciable FRs."
+        ],
+        "score": 6.98,
+        "q_num": 12,
+        "percentage": 46.5
+      },
+      {
+        "question": "Judicial legislation violates the doctrine of separation of power and creates a third chamber for legislation. Discuss.",
+        "score": 6.26,
+        "q_num": 13,
+        "pros": [
+          "Clear definition and relevant examples (Visakha, Basic Structure).",
+          "Well-structured with distinct headings and bullet points.",
+          "Addresses both parts of the question directly and logically."
+        ],
+        "what_to_do_better": [
+          "Explicitly cite relevant constitutional articles (e.g., Articles 245, 246 for legislative powers) to strengthen the 'separation of powers' argument.",
+          "Add a concise, balanced conclusion that acknowledges the necessity of judicial review while emphasizing judicial restraint and the need for legislative action.",
+          "Briefly mention the rationale behind judicial activism (e.g., to fill legislative vacuum, protect fundamental rights) to provide a more nuanced 'discussion' as per the directive.",
+          "Lack of explicit constitutional article citations for legislative powers.",
+          "Absence of a distinct, forward-looking conclusion.",
+          "Could have included a brief counter-argument or justification for judicial activism (e.g., legislative vacuum, protection of rights) to provide a more balanced 'discussion'."
+        ],
+        "max_marks": 15,
+        "percentage": 41.7
+      },
+      {
+        "percentage": 40.1,
+        "q_num": 14,
+        "max_marks": 15,
+        "question": "Legislative immunity should be limited to actions that have a functional relationship to the discharge of the duty of a legislator. Examine.",
+        "score": 6.02,
+        "pros": [
+          "Addresses both sides of the argument (utility and limitations).",
+          "Uses relevant contemporary examples (Mahua Moitra, Soren case).",
+          "Good use of bullet points for structured presentation."
+        ],
+        "what_to_do_better": [
+          "Explicitly define and discuss what constitutes a 'functional relationship' in the context of legislative duties, linking it to the arguments for limitation.",
+          "Ensure precise factual details for judicial pronouncements (e.g., correct year and full implications of the Soren case on P.V. Narasimha Rao judgment).",
+          "Add a concise, forward-looking conclusion that synthesizes the need for privileges with the demand for accountability and functional relevance.",
+          "Lack of explicit analytical depth on 'functional relationship'.",
+          "Minor factual inaccuracies regarding the Soren case date and the precise application of Article 122.",
+          "Conclusion is missing, which is crucial for an 'examine' directive."
+        ]
+      },
+      {
+        "max_marks": 15,
+        "what_to_do_better": [
+          "For 'colonial legacy', specify structural elements like federal scheme, office of Governor, judiciary, public service commissions, emergency provisions from GoI Act 1935.",
+          "For 'modernity', cite specific articles (e.g., Art 14, 19, 21, 32, 44) and landmark cases (e.g., Maneka Gandhi for expansive liberty, Minerva Mills for FR-DPSP balance) to demonstrate philosophical depth.",
+          "Add a concise conclusion that synthesizes how the constitution, while drawing from colonial administrative structures, transformed them with a modern, progressive, and inclusive philosophical framework.",
+          "Lack of specific constitutional articles, provisions, or landmark cases to substantiate claims, especially for 'modernity'.",
+          "Points are too brief and lack analytical depth; merely lists rather than comments.",
+          "No conclusion to synthesize the two aspects as required by 'Comment'.",
+          "Inclusion of 'indigenous initiatives' under 'colonial legacy' is conceptually weak, though they are influences on the constitution."
+        ],
+        "pros": [
+          "Clear structural division into 'colonial legacy' and 'modernity' as per the question's demand.",
+          "Identifies key historical influences like GoI Act 1935 and indigenous initiatives."
+        ],
+        "percentage": 29.3,
+        "q_num": 15,
+        "question": "The Indian Constitution is structurally rooted in colonial legacy while philosophically resonates with modernity. Comment.",
+        "score": 4.4
+      },
+      {
+        "what_to_do_better": [
+          "Begin with a concise introduction defining Article 244's dual role (5th and 6th Schedules) in protecting tribal rights and cultural diversity.",
+          "For 'Impacts', elaborate on how autonomous councils (6th Schedule) and Gram Sabhas (PESA/5th Schedule) specifically preserve customary laws, languages, and traditional governance, directly linking to 'cultural systems'.",
+          "For 'Challenges', expand on the constitutional amendment process, potential federal issues, and socio-political implications of extending provisions to new areas like Ladakh (e.g., demographic changes, resource conflicts, political resistance).",
+          "Conclude with a forward-looking statement on balancing tribal autonomy with national integration and development.",
+          "Lack of explicit mention and discussion of the 5th Schedule, which is a core component of Article 244.",
+          "Impact points could be more directly linked to 'cultural systems' accommodation.",
+          "Challenges section is brief and lacks depth in analysis of constitutional and practical hurdles.",
+          "The introduction is very brief and could set the context more comprehensively."
+        ],
+        "q_num": 16,
+        "percentage": 40.9,
+        "question": "Assess the impact of Article 244 in accommodating diverse cultural systems in India. What are the challenges in extending the provisions to new areas?",
+        "max_marks": 15,
+        "score": 6.14,
+        "pros": [
+          "Clear structure with distinct headings for impacts and challenges.",
+          "Inclusion of relevant real-world examples (Bodoland, Ladakh demand).",
+          "Correct identification of Article 244 and 6th Schedule states."
+        ]
+      },
+      {
+        "question": "Examine the effectiveness of Rights of Persons with Disabilities Act in creating equitable opportunities for differently abled persons.",
+        "percentage": 35.2,
+        "q_num": 17,
+        "score": 5.28,
+        "pros": [
+          "Clear structure with distinct 'Positives' and 'Shortcomings' sections.",
+          "Good use of bullet points for readability.",
+          "Includes relevant real-world examples/terms like 'Accessible India campaign' and 'Divyangjan'.",
+          "Directly addresses the 'examine' directive by covering both aspects."
+        ],
+        "what_to_do_better": [
+          "Cite specific sections/provisions of the RPwD Act (e.g., increased reservation percentage, definition of disability, accessibility mandates) to strengthen arguments.",
+          "Add a concise, forward-looking conclusion that synthesizes the effectiveness and challenges, perhaps suggesting measures for better implementation.",
+          "Elaborate on each point with a brief explanation or example to add depth, rather than just listing.",
+          "Explicitly mention constitutional articles (e.g., 'in line with Article 16 for reservations') where relevant.",
+          "Lack of specific provisions/sections of the RPwD Act to substantiate points.",
+          "Points are general and lack analytical depth.",
+          "Absence of a concluding statement or way forward.",
+          "Missed opportunity to link to constitutional articles (14, 15, 16) more explicitly for grounding."
+        ],
+        "max_marks": 15
+      },
+      {
+        "pros": [
+          "Addresses both parts of the question.",
+          "Provides relevant statistical data (NFHS-5, UNDP MPI, CMIE) to support arguments regarding GHI.",
+          "Lists relevant government schemes (NFSA, Poshan 2.0, ONORC) as counter-arguments.",
+          "Good use of bullet points for clarity."
+        ],
+        "what_to_do_better": [
+          "For GHI, briefly mention methodological criticisms (e.g., child-centric indicators, undernourishment calculation) to strengthen the 'falsify claims' argument.",
+          "For PMGKAY, explicitly state it provides 'free of cost' foodgrains to PHH and AAY beneficiaries, and link it to NFSA's legal entitlement aspect for deeper significance.",
+          "Add a concise, forward-looking conclusion that synthesizes India's efforts in food security and nutrition, perhaps mentioning the need for multi-sectoral approach or data transparency.",
+          "Elaborate on the 'significance' of PMGKAY beyond just 'last mile' – e.g., its role in preventing distress migration, reducing out-of-pocket expenditure, and ensuring nutritional security during crises.",
+          "Lacks in-depth analysis of GHI methodology or its specific criticisms relevant to India.",
+          "Description of PMGKAY is superficial, missing key details like 'free of cost' and specific beneficiary categories (PHH/AAY) as per KB.",
+          "The 'significance' of PMGKAY is not fully discussed beyond its basic provision; its role in poverty alleviation, food security, and as a legal entitlement is not explored.",
+          "Conclusion is abrupt and lacks a forward-looking synthesis or balanced perspective."
+        ],
+        "q_num": 18,
+        "max_marks": 15,
+        "score": 5.72,
+        "percentage": 38.1,
+        "question": "Does the global hunger index reflect the ground reality in India? Discuss the significance of Pradhan Mantri Garib Kalyan Yojana."
+      },
+      {
+        "q_num": 19,
+        "pros": [
+          "Good introductory statistics setting the context.",
+          "Comprehensive list of challenges covering political, economic, and infrastructural aspects.",
+          "Effective use of bullet points for clarity and readability.",
+          "Relevant citation of Gujral Doctrine and other contemporary concepts."
+        ],
+        "what_to_do_better": [
+          "For measures, elaborate on 'how' to revive SAARC (e.g., focus on sub-regional cooperation like BBIN, BIMSTEC).",
+          "Suggest specific infrastructure projects or digital initiatives to improve connectivity.",
+          "Add a concise, forward-looking conclusion emphasizing the benefits of regional integration for shared prosperity and stability.",
+          "Measures section lacks specific, actionable policy recommendations.",
+          "Some points in measures are too general (e.g., 'Revive SAARC' without detailing how).",
+          "Could have included more diverse dimensions in measures, such as people-to-people contact or digital connectivity."
+        ],
+        "percentage": 46.5,
+        "max_marks": 15,
+        "score": 6.98,
+        "question": "South Asia is one of the least integrated regions in the world in terms of trade. What are the challenges in building a robust regional economy? Suggest measures to overcome the challenges."
+      },
+      {
+        "what_to_do_better": [
+          "For each bullet point, add a concise 1-2 line explanation of *how* or *why* it impacts the relationship/balance of power to fulfill the 'examine' directive more thoroughly.",
+          "Add a brief, forward-looking conclusion (2-3 lines) that summarizes the overall implications for India's foreign policy or the future of Eurasia.",
+          "Could have elaborated slightly more on the 'examine' directive by providing brief explanations for each point rather than just listing them.",
+          "The conclusion is implicit; a brief concluding thought synthesizing the implications would enhance the answer."
+        ],
+        "q_num": 20,
+        "score": 6.26,
+        "percentage": 41.7,
+        "max_marks": 15,
+        "question": "Growing isolation of Russia creates great stress on India-Russia relations and affects the balance of power in Eurasia. Examine.",
+        "pros": [
+          "Addresses both parts of the question comprehensively.",
+          "Uses clear headings and bullet points for good structure.",
+          "Includes relevant real-world examples and data (e.g., SIPRI report, PM Modi's visit, NATO expansion).",
+          "Demonstrates good understanding of current geopolitical dynamics."
+        ]
+      }
+    ],
+    "document": "/tmp/tmpsaxw060q/job_7e8f886942b4_VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf",
+    "status": "success"
+  },
+  "job_id": "job_7e8f886942b4",
+  "email": "rishabh19112003@gmail.com",
+  "filename": "VIKAS SS GS-2 AIR-27 - VIKAS_SS_GS_2_AIR_27_ae48d764de.pdf",
+  "updated_at": "2026-10-03T16:38:08.952058+00:00",
+  "start_page": null,
+  "max_pages": null,
+  "progress_pct": 100,
+  "error": null
+}

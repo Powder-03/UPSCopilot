@@ -17,7 +17,7 @@ from deepeval.models.base_model import DeepEvalBaseLLM
 from deepeval.test_case import LLMTestCase
 
 from src.config import settings
-from src.evaluation.model_factory import get_eval_llm
+from src.providers.factory import get_eval_llm
 from src.kb.retriever import HybridRetriever
 from src.utils.cli import configure_console, setup_logging
 from src.utils.json import clean_json_text

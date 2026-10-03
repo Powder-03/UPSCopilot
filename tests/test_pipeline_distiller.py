@@ -2,7 +2,7 @@
 from src.models.enums import DirectiveType, PresentationArchetype, UPSCPerformanceBand
 from src.models.evaluation import CitationAudit, EvaluationResult, PresentationEvaluation
 from src.models.parsing import ParsedQuestion
-from src.pipeline import UnifiedEvaluationPipeline
+from src.orchestrator import UnifiedEvaluationPipeline
 
 
 def _mock_eval_result(

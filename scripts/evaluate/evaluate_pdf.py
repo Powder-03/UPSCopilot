@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.table import Table
 
 from src.models.api import JobStatus, StudentEvaluationReport
-from src.pipeline import UnifiedEvaluationPipeline
+from src.orchestrator import UnifiedEvaluationPipeline
 from src.services.email_service import EmailService
 
 logger = logging.getLogger("evaluate_pdf")

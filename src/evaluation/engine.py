@@ -17,7 +17,6 @@ from src.evaluation.geval_scorer import (
     BaseGEvalScorer,
     get_geval_scorer,
 )
-from src.evaluation.model_factory import get_eval_llm
 from src.evaluation.prompt_templates import (
     SYSTEM_PROMPT_UPSC_EXAMINER,
     build_cot_diagnostic_prompt,
@@ -39,6 +38,7 @@ from src.models.evaluation import (
     PresentationEvaluation,
 )
 from src.models.exceptions import ModelInvocationError
+from src.providers.factory import get_eval_llm
 from src.utils.json import extract_json_dict
 from src.utils.tracing import traceable
 

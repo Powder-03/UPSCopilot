@@ -1,6 +1,6 @@
 """Test script for primary evaluation LLM (Google Cloud Vertex AI Gemini or AWS Bedrock Kimi)."""
 from src.config import settings
-from src.evaluation.model_factory import get_eval_llm
+from src.providers.factory import get_eval_llm
 
 
 def main():

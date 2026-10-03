@@ -2,8 +2,8 @@
 import json
 from unittest.mock import patch
 
-from src.lambda_eval import handler as eval_handler
-from src.lambda_vision import handler as vision_handler
+from src.handlers.eval_worker import handler as eval_handler
+from src.handlers.vision_worker import handler as vision_handler
 from src.models.api import JobStatus
 from src.models.enums import DirectiveType, PresentationArchetype, UPSCPerformanceBand
 from src.models.evaluation import CitationAudit, EvaluationResult, PresentationEvaluation
@@ -91,10 +91,10 @@ def test_lambda_vision_sqs_event():
     mock_parsed_doc = _build_dummy_parsed_doc()
 
     with (
-        patch("src.lambda_vision.StorageService") as mock_storage_cls,
-        patch("src.lambda_vision.JobStateService") as mock_state_cls,
-        patch("src.lambda_vision.QueueService") as mock_queue_cls,
-        patch("src.lambda_vision.DocumentParsingPipeline") as mock_pipeline_cls,
+        patch("src.handlers.vision_worker.StorageService") as mock_storage_cls,
+        patch("src.handlers.vision_worker.JobStateService") as mock_state_cls,
+        patch("src.handlers.vision_worker.QueueService") as mock_queue_cls,
+        patch("src.handlers.vision_worker.DocumentParsingPipeline") as mock_pipeline_cls,
     ):
         mock_storage = mock_storage_cls.return_value
         mock_storage.get_local_path.return_value = "/tmp/test.pdf"
@@ -132,10 +132,10 @@ def test_lambda_vision_direct_invocation():
     mock_parsed_doc = _build_dummy_parsed_doc()
 
     with (
-        patch("src.lambda_vision.StorageService") as mock_storage_cls,
-        patch("src.lambda_vision.JobStateService") as mock_state_cls,
-        patch("src.lambda_vision.QueueService") as mock_queue_cls,
-        patch("src.lambda_vision.DocumentParsingPipeline") as mock_pipeline_cls,
+        patch("src.handlers.vision_worker.StorageService") as mock_storage_cls,
+        patch("src.handlers.vision_worker.JobStateService") as mock_state_cls,
+        patch("src.handlers.vision_worker.QueueService") as mock_queue_cls,
+        patch("src.handlers.vision_worker.DocumentParsingPipeline") as mock_pipeline_cls,
     ):
         mock_storage_cls.return_value.get_local_path.return_value = "/tmp/test.pdf"
         mock_state_cls.return_value.get_job.return_value = {"job_id": "job_vis_direct"}
@@ -159,7 +159,7 @@ def test_lambda_vision_batch_failure():
         ]
     }
 
-    with patch("src.lambda_vision.StorageService") as mock_storage_cls:
+    with patch("src.handlers.vision_worker.StorageService") as mock_storage_cls:
         mock_storage_cls.return_value.get_local_path.side_effect = RuntimeError("S3 Download Corrupt")
         resp = vision_handler(sqs_event)
 
@@ -197,10 +197,10 @@ def test_lambda_eval_sqs_event():
     mock_eval_res = _build_mock_eval_result()
 
     with (
-        patch("src.lambda_eval.JobStateService") as mock_state_cls,
-        patch("src.lambda_eval.UPSCEvaluationEngine") as mock_engine_cls,
-        patch("src.lambda_eval.generate_scorecard_pdf") as mock_pdf_func,
-        patch("src.lambda_eval.EmailService") as mock_email_cls,
+        patch("src.handlers.eval_worker.JobStateService") as mock_state_cls,
+        patch("src.handlers.eval_worker.UPSCEvaluationEngine") as mock_engine_cls,
+        patch("src.handlers.eval_worker.generate_scorecard_pdf") as mock_pdf_func,
+        patch("src.handlers.eval_worker.EmailService") as mock_email_cls,
     ):
         mock_state = mock_state_cls.return_value
         mock_state.get_job.return_value = stored_state
@@ -241,7 +241,7 @@ def test_lambda_eval_batch_failure():
         ]
     }
 
-    with patch("src.lambda_eval.JobStateService") as mock_state_cls:
+    with patch("src.handlers.eval_worker.JobStateService") as mock_state_cls:
         mock_state_cls.return_value.get_job.return_value = None  # Job not found
 
         resp = eval_handler(sqs_event)

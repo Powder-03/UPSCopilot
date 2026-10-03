@@ -3,7 +3,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.config import settings
-from src.evaluation.vertex_chat import ChatVertexExpress
+from src.providers.vertex import ChatVertexExpress
 
 
 def get_eval_llm(

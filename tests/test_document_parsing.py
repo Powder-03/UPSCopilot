@@ -101,7 +101,7 @@ def test_preprocessor_blank_page_heuristic():
 
 def test_clean_question_text_removes_hindi_and_metadata():
     """Verifies that _clean_question_text strips Devanagari script, numbering, marks, and word limits."""
-    from src.parsing.pipeline import _clean_question_text
+    from src.parsing.document_parser import _clean_question_text
 
     # Bilingual prompt with Hindi first line, English second line, marks and word counts
     raw_bilingual = (

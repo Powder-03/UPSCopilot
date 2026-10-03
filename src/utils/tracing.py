@@ -38,7 +38,7 @@ def flush_traces(timeout: float = 5.0) -> None:
     """
     Forces all buffered background trace batches to post to LangSmith immediately.
 
-    Critical for AWS Lambda environments (e.g. lambda_vision, lambda_eval) where
+    Critical for AWS Lambda environments (e.g. vision_worker, eval_worker) where
     the runtime CPU freezes as soon as the handler returns, which would otherwise
     drop or stall pending background HTTP trace emissions.
     """
@@ -46,15 +46,17 @@ def flush_traces(timeout: float = 5.0) -> None:
         return
 
     try:
-        # 1. Flush via LangSmith unit / tracer if available
+        # 1. Flush the exact cached client used by @traceable and RunTree
         try:
-            from langsmith.unit import wait_for_all_tracers
+            from langsmith.run_trees import get_cached_client
 
-            wait_for_all_tracers()
-        except ImportError:
-            pass
+            cached_c = get_cached_client()
+            if cached_c and hasattr(cached_c, "flush"):
+                cached_c.flush()
+        except Exception as e:
+            logger.debug("Cached client flush notice: %s", e)
 
-        # 2. Flush via client
+        # 2. Flush custom singleton client if active
         client = get_langsmith_client()
         if client and hasattr(client, "flush"):
             client.flush()

@@ -8,10 +8,10 @@ from src.evaluation.geval_scorer import (
     VertexGEvalScorer,
     get_geval_scorer,
 )
-from src.evaluation.model_factory import get_eval_llm
-from src.evaluation.vertex_chat import ChatVertexExpress
 from src.models.enums import PillarType
-from src.parsing.vision_client import (
+from src.providers.factory import get_eval_llm
+from src.providers.vertex import ChatVertexExpress
+from src.providers.vision import (
     BedrockVisionClient,
     VertexVisionClient,
     get_vision_client,

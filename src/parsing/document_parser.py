@@ -10,7 +10,7 @@ from src.config import settings
 from src.models.parsing import ParsedDocument, ParsedQuestion
 from src.parsing.preprocessor import PDFPreprocessor
 from src.parsing.segmenter import QCABSegmenter
-from src.parsing.vision_client import BaseVisionClient, get_vision_client
+from src.providers.vision import BaseVisionClient, get_vision_client
 from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)

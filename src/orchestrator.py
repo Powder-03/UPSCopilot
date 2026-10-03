@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from src.evaluation.engine import UPSCEvaluationEngine
-from src.evaluation.model_factory import get_eval_llm
 from src.models.api import (
     JobStatus,
     OverallFeedback,
@@ -16,7 +15,8 @@ from src.models.api import (
 from src.models.evaluation import EvaluationResult
 from src.models.exceptions import DocumentParsingError
 from src.models.parsing import ParsedDocument, ParsedQuestion
-from src.parsing.pipeline import DocumentParsingPipeline
+from src.parsing.document_parser import DocumentParsingPipeline
+from src.providers.factory import get_eval_llm
 from src.utils.tracing import traceable
 
 logger = logging.getLogger(__name__)

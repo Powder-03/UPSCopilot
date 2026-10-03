@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from src.models.api import JobStatus
-from src.parsing.pipeline import DocumentParsingPipeline
+from src.parsing.document_parser import DocumentParsingPipeline
 from src.services.job_state_service import JobStateService
 from src.services.queue_service import QueueService
 from src.services.storage_service import StorageService
