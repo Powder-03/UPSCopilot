@@ -55,6 +55,16 @@ free -h
 # 5. Create Systemd Services for Coordinator and Worker
 echo "[5/5] Creating systemd services for UPSCopilot coordinator and worker..."
 
+# Ensure uv is globally accessible in /usr/local/bin
+UV_PATH="$(command -v uv || echo "$HOME/.local/bin/uv")"
+if [ -f "$UV_PATH" ]; then
+    sudo ln -sf "$UV_PATH" /usr/local/bin/uv
+fi
+
+# Pre-sync Python dependencies in the evaluator directory
+echo "Syncing Python virtual environment with uv..."
+cd "$HOME/evaluator" && /usr/local/bin/uv sync || true
+
 # A. FastAPI Web Portal & Coordinator Service
 cat << 'EOF' | sudo tee /etc/systemd/system/upscopilot.service
 [Unit]
@@ -66,7 +76,7 @@ Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/evaluator
 EnvironmentFile=/home/ubuntu/evaluator/.env
-ExecStart=/home/ubuntu/.cargo/bin/uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 1
+ExecStart=/usr/local/bin/uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 1
 Restart=always
 RestartSec=5
 LimitNOFILE=65535
@@ -86,7 +96,7 @@ Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/evaluator
 EnvironmentFile=/home/ubuntu/evaluator/.env
-ExecStart=/home/ubuntu/.cargo/bin/uv run python -m src.handlers.ec2_worker
+ExecStart=/usr/local/bin/uv run python -m src.handlers.ec2_worker
 Restart=always
 RestartSec=5
 LimitNOFILE=65535

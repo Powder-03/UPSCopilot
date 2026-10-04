@@ -9,7 +9,7 @@ import logging
 from typing import Any
 
 from src.evaluation.engine import UPSCEvaluationEngine
-from src.utils.tracing import flush_traces, traceable
+from src.utils.tracing import flush_traces
 
 logger = logging.getLogger(__name__)
 
@@ -25,47 +25,47 @@ def get_engine() -> UPSCEvaluationEngine:
     return _engine
 
 
-@traceable(name="LambdaSingleQuestionEvaluator.handler", run_type="chain")
 def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
-    """
-    AWS Lambda entrypoint for evaluating a single question.
+    """AWS Lambda entrypoint for evaluating a single question.
+
     Expected event payload:
     {
         "q_num": int,
         "question": str,
         "candidate_answer": str,
         "max_marks": float (default: 10.0),
-        "kb_context": list[str] (prefetched ground truth blocks)
+        "kb_context": list[str] (prefetched ground truth blocks),
+        "trace_headers": dict[str, str] (optional LangSmith parent trace headers)
     }
     """
+    q_num = int(event.get("q_num", 1))
+    question = event.get("question", f"Question {q_num}")
+    candidate_answer = event.get("candidate_answer", "")
+    max_marks = float(event.get("max_marks", 10.0))
+    kb_context = event.get("kb_context", [])
+    trace_headers = event.get("trace_headers")
+
+    logger.info("SingleQuestionEvaluator invoked for Q%02d (%.1f marks)", q_num, max_marks)
+
     try:
-        q_num = int(event.get("q_num", 1))
-        question = event.get("question", f"Question {q_num}")
-        candidate_answer = event.get("candidate_answer", "")
-        max_marks = float(event.get("max_marks", 10.0))
-        kb_context = event.get("kb_context", [])
-        trace_headers = event.get("trace_headers")
+        from langsmith.run_helpers import trace
+    except ImportError:
+        import contextlib
 
-        logger.info("SingleQuestionEvaluator invoked for Q%02d (%.1f marks)", q_num, max_marks)
+        trace = contextlib.nullcontext
 
-        engine = get_engine()
+    engine = get_engine()
 
+    try:
+        trace_kwargs: dict[str, Any] = {
+            "name": f"SingleQuestionEval_Q{q_num:02d}",
+            "run_type": "chain",
+            "inputs": {"q_num": q_num, "question": question, "max_marks": max_marks},
+        }
         if trace_headers:
-            from langsmith.run_helpers import trace
+            trace_kwargs["parent"] = trace_headers
 
-            with trace(
-                f"SingleQuestionEval_Q{q_num:02d}",
-                run_type="chain",
-                parent=trace_headers,
-                inputs={"q_num": q_num, "question": question, "max_marks": max_marks},
-            ):
-                result = engine.evaluate_answer(
-                    question=question,
-                    candidate_answer=candidate_answer,
-                    max_marks=max_marks,
-                    kb_context=kb_context,
-                )
-        else:
+        with trace(**trace_kwargs):
             result = engine.evaluate_answer(
                 question=question,
                 candidate_answer=candidate_answer,
@@ -73,11 +73,11 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
                 kb_context=kb_context,
             )
 
-        return {
-            "status": "success",
-            "q_num": q_num,
-            "max_marks": max_marks,
-            "evaluation": result.model_dump(mode="json"),
-        }
+            return {
+                "status": "success",
+                "q_num": q_num,
+                "max_marks": max_marks,
+                "evaluation": result.model_dump(mode="json"),
+            }
     finally:
         flush_traces()

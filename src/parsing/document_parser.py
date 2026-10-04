@@ -201,10 +201,14 @@ class DocumentParsingPipeline:
 
         extracted_questions: list[ParsedQuestion] = []
 
-        # Execute extraction across parallel worker threads
+        # Execute extraction across parallel worker threads with propagated tracing context
+        import contextvars
+
+        ctx = contextvars.copy_context()
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_slice = {
                 executor.submit(
+                    ctx.run,
                     self._process_question_slice,
                     pdf_file,
                     s,
