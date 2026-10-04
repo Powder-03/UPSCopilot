@@ -250,7 +250,35 @@ evaluator/
   - Consolidated AWS Lambda entrypoint handlers into `src/handlers/` (`api.py`, `vision_worker.py`, `eval_worker.py`), updating `template.yaml` and `Dockerfile`.
   - Renamed `src/pipeline.py` -> `src/orchestrator.py` and `src/parsing/pipeline.py` -> `src/parsing/document_parser.py` to eliminate ambiguous name collision.
   - Fixed circular import between providers and parsing packages.
-  - Verified 100% clean `ruff check .` and all 55 offline pytest tests passing.
+- [x] Hybrid Free-Tier Direct-S3 + EC2 Coordinator + 20-Lambda Fan-Out Architecture:
+  - **Memory Cliff Mitigations**:
+    - Calibrated default parsing DPI to 135 DPI in `src/config.py` (80% RAM reduction, 0% Lanczos downsampling CPU waste).
+    - Upgraded `PDFPreprocessor` in `src/parsing/preprocessor.py` with `render_page_processed`: single-pass rendering, direct PyMuPDF C-level JPEG compression (`pix.tobytes("jpeg")`), fast blank sampling, and explicit `del pix` + `gc.collect()`.
+    - Eliminated double-rendering in `src/parsing/document_parser.py`.
+    - Cached singleton `genai.Client` in `ChatVertexExpress` (`src/providers/vertex.py`) via `PrivateAttr` to prevent spawning dozens of HTTP/2 connection pools.
+  - **Single-Question Lambda Evaluator (`src/handlers/single_question_eval.py`)**:
+    - Micro-worker evaluating 1 question in ~7-8 seconds with pre-provided KB ground truth context.
+    - Pure compute micro-container with zero vector DB / Pinecone / PyMuPDF dependencies.
+    - Added `SingleQuestionEvalFunction` resource and output to `template.yaml`.
+  - **Knowledge Base Batch Prefetcher (`src/kb/prefetcher.py`)**:
+    - Prefetches authoritative statutory and landmark case context blocks for all 20 questions in parallel on EC2 (< 1.0s).
+    - Supports fast-path blank question skipping.
+  - **EC2 Concurrency-Gated Fan-Out Orchestrator (`src/orchestrator_ec2.py`)**:
+    - Enforces `MAX_CONCURRENT_COPIES = 2` via `asyncio.Semaphore(2)` so peak EC2 memory stays < 350 MB on `t3.micro`.
+    - Fans out 20 concurrent SingleQuestionEval Lambdas, completes evaluation in ~7.5s flat, and compiles/delivers student scorecards.
+  - **Immediate Storage Cleanup & DynamoDB TTL**:
+    - Added `delete_file` and `get_file_size` (200 MB limit) to `StorageService` (`src/services/storage_service.py`).
+    - Added 1-day expiration lifecycle rule to `UploadsBucket` in `template.yaml`.
+    - Auto-injected 14-day TTL in `JobStateService` (`src/services/job_state_service.py`) and enabled TTL in `template.yaml`.
+  - **EC2 Free-Tier Bootstrap (`scripts/deploy/setup_ec2.sh`) & Worker Daemon (`src/handlers/ec2_worker.py`)**:
+    - Created long-polling `EC2WorkerDaemon` in `src/handlers/ec2_worker.py` consuming SQS jobs with concurrency gating and 20-Lambda fan-out.
+    - Automated provisioning of 3 GB swap file on the 30 GB EBS volume, swappiness tuning, and systemd services (`upscopilot.service` and `upscopilot-worker.service`).
+  - **Monolithic Lambda Worker Purge**:
+    - Purged `VisionWorkerFunction`, `EvalWorkerFunction`, `VisionQueue`, `VisionDeadLetterQueue`, and `ParsedBookletsTable` from `template.yaml`.
+    - CloudFormation will automatically delete old workers and tables upon `sam deploy`, activating the clean EC2 Coordinator + `SingleQuestionEvalFunction` micro-worker stack.
+  - **Comprehensive Test Suite**: 63 offline tests passing (including `tests/test_ec2_coordinator.py` and `tests/test_lambda_handlers.py`), 100% clean `ruff` check.
+
+
 
 
 

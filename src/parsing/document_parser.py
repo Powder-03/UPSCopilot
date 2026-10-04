@@ -104,14 +104,12 @@ class DocumentParsingPipeline:
         page_images_bytes: list[bytes] = []
 
         for p in pages:
-            img = self.preprocessor.render_page_to_image(pdf_path, p)
-            is_blank = self.preprocessor.is_page_visually_blank(img)
+            # Single-pass C rendering & blank detection (avoids double-rendering and memory bloat)
+            img_bytes, is_blank = self.preprocessor.render_page_processed(
+                pdf_path, p, quality=80
+            )
             if not is_blank:
                 all_blank = False
-            # Render bytes for vision model (compact JPEG under 200 KB per page)
-            img_bytes = self.preprocessor.render_page_to_bytes(
-                pdf_path, p, img_format="JPEG", max_dimension=1600, quality=80
-            )
             page_images_bytes.append(img_bytes)
 
         # Fast path for visually blank / unattempted sheets (saves API tokens)

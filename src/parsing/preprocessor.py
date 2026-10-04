@@ -1,5 +1,5 @@
 """Document Preprocessor: extracts, normalizes, and renders PDF pages to images using PyMuPDF and Pillow."""
-import io
+import gc
 import logging
 from collections.abc import Generator
 from pathlib import Path
@@ -26,6 +26,51 @@ class PDFPreprocessor:
         with pymupdf.open(str(pdf_path)) as doc:
             return len(doc)
 
+    def render_page_processed(
+        self,
+        pdf_path: str | Path,
+        page_num: int,
+        quality: int = 80,
+        darkness_threshold: float = 0.005,
+        max_dimension: int = 1600,
+        doc: pymupdf.Document | None = None,
+    ) -> tuple[bytes, bool]:
+        """
+        Single-pass rendering: extracts page, checks visual blankness directly on C pixmap samples,
+        and compresses directly to JPEG bytes in C with zero redundant intermediate bitmap allocations.
+        Returns: (jpeg_bytes, is_blank).
+        """
+        close_doc = False
+        active_doc = doc
+        if active_doc is None:
+            active_doc = pymupdf.open(str(pdf_path))
+            close_doc = True
+        try:
+            if page_num < 1 or page_num > len(active_doc):
+                raise ValueError(f"Page number {page_num} is out of bounds (1 to {len(active_doc)}).")
+            page = active_doc[page_num - 1]
+            pix = page.get_pixmap(matrix=self.matrix, alpha=False)
+
+            # Fast in-memory blank check directly on C pixmap samples (subsampling every 4th pixel)
+            samples = pix.samples
+            total_pixels = pix.width * pix.height
+            dark_pixels = 0
+            step = 12  # 4 pixels * 3 channels (RGB)
+            for i in range(0, len(samples), step):
+                if (samples[i] + samples[i + 1] + samples[i + 2]) < 660:  # average < 220
+                    dark_pixels += 1
+            sampled_total = max(1, total_pixels // 4)
+            is_blank = (dark_pixels / float(sampled_total)) < darkness_threshold
+
+            # Direct C-level JPEG compression (avoids PIL Image and BytesIO)
+            img_bytes = pix.tobytes("jpeg", jpg_quality=quality)
+            del pix
+            gc.collect()
+            return img_bytes, is_blank
+        finally:
+            if close_doc and active_doc is not None:
+                active_doc.close()
+
     def render_page_to_image(self, pdf_path: str | Path, page_num: int) -> Image.Image:
         """
         Renders a single 1-indexed page of a PDF to a PIL RGB Image.
@@ -36,6 +81,7 @@ class PDFPreprocessor:
             page = doc[page_num - 1]
             pix = page.get_pixmap(matrix=self.matrix, alpha=False)
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            del pix
             return img
 
     def render_page_to_bytes(
@@ -47,26 +93,15 @@ class PDFPreprocessor:
         quality: int = 80,
     ) -> bytes:
         """
-        Renders a 1-indexed page to image bytes, automatically resized if exceeding max_dimension
-        to ensure compatibility with AWS Bedrock image payload constraints.
+        Renders a 1-indexed page to image bytes using single-pass C-level JPEG compression.
         """
-        img = self.render_page_to_image(pdf_path, page_num)
-
-        # Scale down if dimensions exceed Bedrock limits while preserving aspect ratio
-        if max(img.width, img.height) > max_dimension:
-            scale = max_dimension / float(max(img.width, img.height))
-            new_size = (int(img.width * scale), int(img.height * scale))
-            img = img.resize(new_size, Image.Resampling.LANCZOS)
-
-        buffer = io.BytesIO()
-        if img_format.upper() in ("JPEG", "JPG"):
-            # Ensure RGB mode for JPEG saving
-            if img.mode != "RGB":
-                img = img.convert("RGB")
-            img.save(buffer, format="JPEG", quality=quality, optimize=True)
-        else:
-            img.save(buffer, format="PNG", optimize=True)
-        return buffer.getvalue()
+        img_bytes, _ = self.render_page_processed(
+            pdf_path=pdf_path,
+            page_num=page_num,
+            quality=quality,
+            max_dimension=max_dimension,
+        )
+        return img_bytes
 
     def is_page_visually_blank(self, img: Image.Image, darkness_threshold: float = 0.005) -> bool:
         """

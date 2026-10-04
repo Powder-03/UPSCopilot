@@ -63,7 +63,12 @@ class JobStateService:
         return self._table
 
     def save_job(self, job_id: str, job_data: dict[str, Any]) -> None:
-        """Saves job state to DynamoDB or local JSON file."""
+        """Saves job state to DynamoDB or local JSON file with automatic 14-day TTL."""
+        # Auto-inject 14-day TTL attribute for DynamoDB automatic expiration cleanup
+        if "ttl" not in job_data:
+            import time
+            job_data["ttl"] = int(time.time()) + (14 * 86400)
+
         if self.is_dynamodb_enabled:
             try:
                 # DynamoDB requires float -> Decimal conversion
@@ -71,7 +76,7 @@ class JobStateService:
                 # Ensure primary key is explicitly present
                 item["job_id"] = job_id
                 self.table.put_item(Item=item)
-                logger.debug("Saved job %s to DynamoDB table %s", job_id, self.table_name)
+                logger.debug("Saved job %s to DynamoDB table %s (TTL: %d)", job_id, self.table_name, job_data["ttl"])
             except Exception as e:
                 logger.error("Failed to save job %s to DynamoDB: %s", job_id, e)
                 raise

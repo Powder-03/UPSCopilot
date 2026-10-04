@@ -123,3 +123,50 @@ class StorageService:
 
         # Otherwise treated as local path
         return Path(storage_ref)
+
+    def delete_file(self, storage_ref: str) -> bool:
+        """
+        Deletes a file from S3 or local storage.
+        Used for immediate cleanup once OCR / evaluation is complete.
+        """
+        if not storage_ref:
+            return False
+
+        if storage_ref.startswith("s3://"):
+            if not self.is_s3_enabled:
+                return False
+            try:
+                parts = storage_ref[5:].split("/", 1)
+                bucket = parts[0]
+                key = parts[1] if len(parts) > 1 else ""
+                logger.info("Deleting S3 object: s3://%s/%s", bucket, key)
+                self.s3_client.delete_object(Bucket=bucket, Key=key)
+                return True
+            except Exception as e:
+                logger.warning("Failed to delete S3 file %s: %s", storage_ref, e)
+                return False
+
+        # Local filesystem cleanup
+        try:
+            p = Path(storage_ref)
+            if p.exists():
+                p.unlink(missing_ok=True)
+                logger.info("Deleted local file: %s", storage_ref)
+                return True
+        except Exception as e:
+            logger.warning("Failed to delete local file %s: %s", storage_ref, e)
+        return False
+
+    def get_file_size(self, storage_ref: str) -> int:
+        """Returns the file size in bytes for an S3 object or local path."""
+        if storage_ref.startswith("s3://"):
+            if not self.is_s3_enabled:
+                return 0
+            parts = storage_ref[5:].split("/", 1)
+            bucket = parts[0]
+            key = parts[1] if len(parts) > 1 else ""
+            res = self.s3_client.head_object(Bucket=bucket, Key=key)
+            return int(res.get("ContentLength", 0))
+
+        p = Path(storage_ref)
+        return p.stat().st_size if p.exists() else 0

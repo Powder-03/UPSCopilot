@@ -91,10 +91,11 @@ class QueueService:
             "max_pages": max_pages,
         }
 
-        if self.vision_queue_url and self.vision_queue_url.strip():
-            logger.info("Dispatching vision job %s to SQS: %s", job_id, self.vision_queue_url)
+        target_queue = self.vision_queue_url or self.eval_queue_url or getattr(settings, "queue_url", None)
+        if target_queue and target_queue.strip():
+            logger.info("Dispatching job %s to SQS: %s", job_id, target_queue)
             self.sqs_client.send_message(
-                QueueUrl=self.vision_queue_url,
+                QueueUrl=target_queue,
                 MessageBody=json.dumps(payload),
             )
             return "sqs"
@@ -112,7 +113,7 @@ class QueueService:
             logger.info("Dispatched background thread %s for %s", thread.name, job_id)
             return "thread"
 
-        raise RuntimeError(f"Cannot dispatch vision job {job_id}: SQS disabled and no local runner.")
+        raise RuntimeError(f"Cannot dispatch job {job_id}: SQS disabled and no local runner.")
 
     def dispatch_eval(
         self,

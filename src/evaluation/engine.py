@@ -242,11 +242,16 @@ class UPSCEvaluationEngine:
         eval_llm: Any = None,
         geval_scorer: BaseGEvalScorer | None = None,
     ):
-        self.retriever = retriever or HybridRetriever(top_k=6)
+        self._retriever = retriever
         self.llm = eval_llm or get_eval_llm()
         self.geval_scorer = geval_scorer or get_geval_scorer()
         self._kb_cache: dict[str, list[str]] = {}
 
+    @property
+    def retriever(self) -> HybridRetriever:
+        if self._retriever is None:
+            self._retriever = HybridRetriever(top_k=6)
+        return self._retriever
 
     @traceable(name="Evaluate_Question_Answer", run_type="chain")
     def evaluate_answer(
@@ -254,6 +259,7 @@ class UPSCEvaluationEngine:
         question: str,
         candidate_answer: str,
         max_marks: float = 10.0,
+        kb_context: list[str] | None = None,
     ) -> EvaluationResult:
         """Evaluates a candidate answer using 2-call CoT + G-Eval probability trailing."""
         logger.info(f"Starting UPSC evaluation for question ({int(max_marks)} marks)...")
@@ -299,7 +305,8 @@ class UPSCEvaluationEngine:
                 topper_action_plan=["Attempt all questions in GS-2 to capture step marks."],
             )
 
-        kb_context = self._retrieve_ground_truth(question)
+        if kb_context is None:
+            kb_context = self._retrieve_ground_truth(question)
         parts = self._run_diagnostic(question, candidate_answer, kb_context, max_marks)
 
         logger.info("Executing Call 2: G-Eval probabilistic logprob scoring head...")

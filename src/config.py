@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     bedrock_vision_model_id: str = Field(
         default="moonshotai.kimi-k2.5", alias="BEDROCK_VISION_MODEL_ID"
     )
-    parsing_dpi: int = Field(default=200, alias="PARSING_DPI")
+    parsing_dpi: int = Field(default=135, alias="PARSING_DPI")
     parsing_max_workers: int = Field(default=4, alias="PARSING_MAX_WORKERS")
 
     # Embedding Configuration (Vertex AI text-embedding-004 = 768, Titan = 1024)
@@ -56,12 +56,19 @@ class Settings(BaseSettings):
     data_dir: str = Field(default="data", alias="DATA_DIR")
     upload_dir: str = Field(default="data/uploads", alias="UPLOAD_DIR")
     job_dir: str = Field(default="data/jobs", alias="JOB_DIR")
+    max_upload_size_mb: int = Field(default=200, alias="MAX_UPLOAD_SIZE_MB")
+
+    @property
+    def max_upload_size_bytes(self) -> int:
+        return self.max_upload_size_mb * 1024 * 1024
 
     # AWS Serverless & Cloud Storage Configuration (Lambda, S3, DynamoDB, SQS)
     s3_bucket: str | None = Field(default=None, alias="S3_BUCKET")
     dynamodb_table: str | None = Field(default=None, alias="DYNAMODB_TABLE")
     vision_queue_url: str | None = Field(default=None, alias="VISION_QUEUE_URL")
     eval_queue_url: str | None = Field(default=None, alias="EVAL_QUEUE_URL")
+    queue_url: str | None = Field(default=None, alias="QUEUE_URL")
+    eval_lambda_function_name: str | None = Field(default=None, alias="EVAL_LAMBDA_FUNCTION_NAME")
     parsed_booklets_table: str | None = Field(default=None, alias="PARSED_BOOKLETS_TABLE")
 
     # Email Delivery Configuration (SES, SMTP, or Mock)

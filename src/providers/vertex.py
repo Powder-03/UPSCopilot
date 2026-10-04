@@ -12,7 +12,7 @@ from langchain_core.messages import (
     SystemMessage,
 )
 from langchain_core.outputs import ChatGeneration, ChatResult
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from src.models.exceptions import ModelInvocationError
 
@@ -33,6 +33,8 @@ class ChatVertexExpress(BaseChatModel):
     max_tokens: int = Field(default=8192)
     timeout: int = Field(default=60)
 
+    _cached_client: Any = PrivateAttr(default=None)
+
     @property
     def _llm_type(self) -> str:
         return "vertex-express-chat"
@@ -42,12 +44,14 @@ class ChatVertexExpress(BaseChatModel):
         return self.model_name
 
     def _get_client(self) -> genai.Client:
-        return genai.Client(
-            vertexai=True,
-            project=self.project_id,
-            location=self.location,
-            api_key=self.api_key,
-        )
+        if self._cached_client is None:
+            self._cached_client = genai.Client(
+                vertexai=True,
+                project=self.project_id,
+                location=self.location,
+                api_key=self.api_key,
+            )
+        return self._cached_client
 
     def _convert_messages(self, messages: list[BaseMessage]) -> tuple[str | None, list[types.Content]]:
         """Converts LangChain messages to Gemini systemInstruction and Content objects."""
@@ -131,6 +135,7 @@ class ChatVertexExpress(BaseChatModel):
                     logger.warning(
                         f"Vertex AI Gemini connection error ({e}); retrying attempt {attempt + 1}..."
                     )
+                    self._cached_client = None
                     client = self._get_client()
                     continue
                 logger.error(f"Error calling Vertex AI ({self.model_name}): {e}")
