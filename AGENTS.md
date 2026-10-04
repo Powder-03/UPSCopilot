@@ -277,6 +277,13 @@ evaluator/
     - Purged `VisionWorkerFunction`, `EvalWorkerFunction`, `VisionQueue`, `VisionDeadLetterQueue`, and `ParsedBookletsTable` from `template.yaml`.
     - CloudFormation will automatically delete old workers and tables upon `sam deploy`, activating the clean EC2 Coordinator + `SingleQuestionEvalFunction` micro-worker stack.
   - **Comprehensive Test Suite**: 63 offline tests passing (including `tests/test_ec2_coordinator.py` and `tests/test_lambda_handlers.py`), 100% clean `ruff` check.
+- [x] Fixed LangSmith Tracing: One Copy Check = One Thread with Nested Traces:
+  - **Root Cause**: All traces appeared as flat, separate root-level runs in LangSmith instead of nested under a single parent trace per copy check. This was caused by: (a) `@traceable` on the wrong method (semaphore wrapper instead of actual worker), (b) broken `contextvars` propagation across `asyncio.run_in_executor` and `ThreadPoolExecutor` threads, (c) ad-hoc `trace()` context managers creating orphaned root traces.
+  - **Fix**: Moved `@traceable(name="UPSC_Answer_Booklet_Evaluation")` to `_process_job_guarded` in `src/orchestrator_ec2.py`, the actual work method. Replaced all ad-hoc `trace()` calls with `@traceable`-decorated module-level helper functions (`_run_vision_ocr`, `_run_kb_prefetch`, `_run_distillation`, `_run_pdf_generation`, `_run_email_delivery`) that receive `langsmith_extra={"parent": headers}` for proper nesting when called from executor threads.
+  - **KB Prefetcher** (`src/kb/prefetcher.py`): Extracted `_prefetch_single_question` as a module-level `@traceable` function; `prefetch_all` captures RunTree headers and passes them via `langsmith_extra` to each thread-pool worker so `KB_Prefetch_Single` traces nest under `KB_Batch_Prefetch`.
+  - **SingleQuestionEval Handler** (`src/handlers/single_question_eval.py`): Replaced manual `trace()` context manager with `@traceable`-decorated `_evaluate_question` function accepting `langsmith_extra` with parent headers from the EC2 coordinator's fan-out trace.
+  - **Result**: Clicking one copy check in LangSmith shows the full trace tree: `UPSC_Answer_Booklet_Evaluation` → `DocumentParsing_OCR` → `KB_Ground_Truth_Prefetch` → `EC2_FanOut_20_Lambda_Evaluation` → 20× `LambdaSingleQuestionEval` → `Student_Scorecard_Distillation` → `Scorecard_PDF_Generation` → `Amazon_SES_Email_Delivery`.
+  - Full test suite: 63 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
 
 
 

@@ -3,6 +3,11 @@
 Enforces MAX_CONCURRENT_COPIES = 2 via asyncio.Semaphore to prevent RAM spikes on t3.micro.
 Prefetches KB ground truth on EC2 in parallel (<1s), fans out 20 concurrent SingleQuestionEval
 Lambda functions (~7.5s), and compiles/delivers student scorecards.
+
+Tracing: One copy check = one LangSmith thread. The @traceable on `_process_job_guarded`
+creates the root trace; every child operation (OCR, KB prefetch, Lambda fan-out, distillation,
+PDF generation, email delivery) nests inside it via captured RunTree headers propagated
+across asyncio executor threads.
 """
 import asyncio
 import json
@@ -38,6 +43,92 @@ def get_copy_semaphore() -> asyncio.Semaphore:
     if _copy_semaphore is None:
         _copy_semaphore = asyncio.Semaphore(MAX_CONCURRENT_COPIES)
     return _copy_semaphore
+
+
+def _get_trace_headers() -> dict[str, str]:
+    """Capture current LangSmith RunTree headers for propagation to child threads."""
+    try:
+        from langsmith.run_helpers import get_current_run_tree
+
+        current_run = get_current_run_tree()
+        if current_run:
+            return current_run.to_headers()
+    except Exception:
+        pass
+    return {}
+
+
+def _make_langsmith_extra(headers: dict[str, str]) -> dict[str, Any] | None:
+    """Build a langsmith_extra dict that parents a @traceable call under the given headers."""
+    if not headers:
+        return None
+    return {"parent": headers}
+
+
+# --- Standalone @traceable helpers for child operations ---
+# Each is a module-level function decorated with @traceable so LangSmith auto-nests them
+# when called with langsmith_extra={"parent": <headers>} from executor threads.
+
+
+@traceable(name="DocumentParsing_OCR", run_type="chain")
+def _run_vision_ocr(
+    local_pdf: Path,
+    start_page: int | None,
+    max_pages: int | None,
+    dpi: int = 135,
+    max_workers: int = 4,
+) -> ParsedDocument:
+    """Runs multimodal vision OCR pipeline on the answer booklet."""
+    parser = DocumentParsingPipeline(dpi=dpi, max_workers=max_workers)
+    return parser.parse_pdf(
+        pdf_path=local_pdf,
+        start_page=start_page,
+        max_pages=max_pages,
+    )
+
+
+@traceable(name="KB_Ground_Truth_Prefetch", run_type="retriever")
+def _run_kb_prefetch(
+    questions: list[ParsedQuestion],
+    prefetcher: KnowledgeBasePrefetcher,
+) -> dict[int, list[str]]:
+    """Prefetches KB ground truth blocks for all questions in parallel."""
+    return prefetcher.prefetch_all(questions)
+
+
+@traceable(name="Student_Scorecard_Distillation", run_type="chain")
+def _run_distillation(
+    filename: str,
+    eval_pairs: list[tuple[ParsedQuestion, EvaluationResult]],
+) -> StudentEvaluationReport:
+    """Distills evaluation results into the student scorecard."""
+    return UnifiedEvaluationPipeline.distill_results(
+        document_name=filename,
+        evaluations=eval_pairs,
+    )
+
+
+@traceable(name="Scorecard_PDF_Generation", run_type="tool")
+def _run_pdf_generation(report: StudentEvaluationReport) -> bytes:
+    """Generates the scorecard PDF."""
+    return generate_scorecard_pdf(report)
+
+
+@traceable(name="Amazon_SES_Email_Delivery", run_type="tool")
+def _run_email_delivery(
+    email_svc: EmailService,
+    to_email: str,
+    report: StudentEvaluationReport,
+    job_id: str,
+    pdf_bytes: bytes | None,
+) -> bool:
+    """Sends evaluation scorecard email via Amazon SES."""
+    return email_svc.send_evaluation_email(
+        to_email=to_email,
+        report=report,
+        job_id=job_id,
+        pdf_bytes=pdf_bytes,
+    )
 
 
 class EC2CoordinatorOrchestrator:
@@ -109,13 +200,8 @@ class EC2CoordinatorOrchestrator:
         total = len(questions)
         logger.info("Fanning out %d concurrent question evaluations...", total)
 
-        try:
-            from langsmith.run_helpers import get_current_run_tree
-
-            current_run = get_current_run_tree()
-            trace_headers = current_run.to_headers() if current_run else {}
-        except Exception:
-            trace_headers = {}
+        # Capture current trace headers so Lambda child traces nest under this run
+        trace_headers = _get_trace_headers()
 
         tasks = []
         for q in questions:
@@ -145,7 +231,6 @@ class EC2CoordinatorOrchestrator:
 
         return eval_pairs
 
-    @traceable(name="UPSC_Answer_Booklet_Evaluation", run_type="chain")
     async def process_job(
         self,
         job_id: str,
@@ -169,6 +254,7 @@ class EC2CoordinatorOrchestrator:
                 max_pages=max_pages,
             )
 
+    @traceable(name="UPSC_Answer_Booklet_Evaluation", run_type="chain")
     async def _process_job_guarded(
         self,
         job_id: str,
@@ -178,7 +264,12 @@ class EC2CoordinatorOrchestrator:
         start_page: int | None = None,
         max_pages: int | None = None,
     ) -> StudentEvaluationReport:
-        """Internal execution within the concurrency gate."""
+        """Internal execution within the concurrency gate.
+
+        This is the single root trace for one copy check. All child operations
+        (OCR, KB prefetch, Lambda fan-out, distillation, PDF gen, email delivery)
+        nest under this trace via langsmith_extra parent header propagation.
+        """
         logger.info("EC2 Coordinator starting job %s (Storage: %s)", job_id, storage_ref)
 
         def _update(pct: int, step: str, status: JobStatus = JobStatus.PARSING):
@@ -187,12 +278,6 @@ class EC2CoordinatorOrchestrator:
             data["progress_pct"] = pct
             data["current_step"] = step
             self.job_state.save_job(job_id, data)
-
-        try:
-            from langsmith.run_helpers import trace
-        except ImportError:
-            import contextlib
-            trace = contextlib.nullcontext
 
         try:
             # 1. Size verification (reject oversized files > 200 MB)
@@ -204,26 +289,30 @@ class EC2CoordinatorOrchestrator:
                 _update(0, err_msg, JobStatus.FAILED)
                 raise ValueError(err_msg)
 
+            # Capture parent trace headers for propagation into executor threads.
+            # All @traceable helper functions called via run_in_executor receive these
+            # headers in langsmith_extra={"parent": headers} so they nest properly.
+            parent_headers = _get_trace_headers()
+            ls_extra = _make_langsmith_extra(parent_headers)
+
             # 2. Ephemeral Download & Vision OCR
             _update(15, "Downloading PDF and starting OCR...")
             with tempfile.TemporaryDirectory() as tmp_dir:
                 local_pdf = self.storage.get_local_path(storage_ref, temp_dir=Path(tmp_dir))
 
                 _update(25, "Running multimodal vision OCR...")
-                parser = DocumentParsingPipeline(
-                    dpi=settings.parsing_dpi,  # 135 DPI
-                    max_workers=4,
-                )
                 loop = asyncio.get_running_loop()
-                with trace("DocumentParsing_OCR", run_type="chain", inputs={"filename": filename}):
-                    parsed_doc: ParsedDocument = await loop.run_in_executor(
-                        None,
-                        lambda: parser.parse_pdf(
-                            pdf_path=local_pdf,
-                            start_page=start_page,
-                            max_pages=max_pages,
-                        ),
-                    )
+                parsed_doc: ParsedDocument = await loop.run_in_executor(
+                    None,
+                    lambda: _run_vision_ocr(
+                        local_pdf=local_pdf,
+                        start_page=start_page,
+                        max_pages=max_pages,
+                        dpi=settings.parsing_dpi,
+                        max_workers=4,
+                        langsmith_extra=ls_extra,
+                    ),
+                )
 
             # 3. Immediate Storage Cleanup: Delete S3 raw PDF as soon as OCR is done
             self.storage.delete_file(storage_ref)
@@ -234,10 +323,14 @@ class EC2CoordinatorOrchestrator:
             _update(40, f"OCR complete ({total_questions} questions parsed). Prefetching ground truth...")
 
             # 4. Parallel Knowledge Base Prefetching (<1s on EC2)
-            with trace("Pinecone_KB_Prefetch", run_type="retriever", inputs={"question_count": total_questions}):
-                kb_contexts = await loop.run_in_executor(
-                    None, lambda: self.prefetcher.prefetch_all(questions)
-                )
+            kb_contexts: dict[int, list[str]] = await loop.run_in_executor(
+                None,
+                lambda: _run_kb_prefetch(
+                    questions=questions,
+                    prefetcher=self.prefetcher,
+                    langsmith_extra=ls_extra,
+                ),
+            )
             _update(50, "Ground truth prefetched. Fanning out 20 concurrent AI evaluators...")
 
             # 5. 20-Lambda Concurrent Fan-Out Evaluation (~7-9s)
@@ -249,28 +342,41 @@ class EC2CoordinatorOrchestrator:
 
             # 6. Distill Student Scorecard
             _update(90, "Distilling actionable student feedback...")
-            with trace("Student_Scorecard_Distillation", run_type="chain"):
-                report = UnifiedEvaluationPipeline.distill_results(
-                    document_name=filename,
-                    evaluations=eval_pairs,
-                )
+            report: StudentEvaluationReport = await loop.run_in_executor(
+                None,
+                lambda: _run_distillation(
+                    filename=filename,
+                    eval_pairs=eval_pairs,
+                    langsmith_extra=ls_extra,
+                ),
+            )
 
             # 7. Generate Scorecard PDF
-            with trace("Scorecard_PDF_Generation", run_type="tool"):
-                pdf_bytes = generate_scorecard_pdf(report)
+            pdf_bytes: bytes | None = None
+            try:
+                pdf_bytes = await loop.run_in_executor(
+                    None,
+                    lambda: _run_pdf_generation(report, langsmith_extra=ls_extra),
+                )
+            except Exception as pdf_err:
+                logger.warning("PDF generation failed for %s: %s", job_id, pdf_err)
 
             # 8. Send Email via Amazon SES
             email_sent = False
             target_email = email
             if target_email:
                 _update(95, f"Delivering scorecard to {target_email}...")
-                with trace("Amazon_SES_Email_Delivery", run_type="tool", inputs={"recipient": target_email}):
-                    email_sent = self.email_svc.send_evaluation_email(
+                email_sent = await loop.run_in_executor(
+                    None,
+                    lambda: _run_email_delivery(
+                        email_svc=self.email_svc,
                         to_email=target_email,
                         report=report,
                         job_id=job_id,
                         pdf_bytes=pdf_bytes,
-                    )
+                        langsmith_extra=ls_extra,
+                    ),
+                )
 
             # 9. Mark Completed
             final_data = self.job_state.get_job(job_id) or {"job_id": job_id}

@@ -4,12 +4,15 @@ This handler represents a pure compute micro-worker. It receives a single questi
 runs Call 1 (CoT Diagnostic) and Call 2 (G-Eval Logprob scoring), applies UPSC marking policy,
 and returns the EvaluationResult JSON.
 Zero vector DB / Pinecone / PyMuPDF dependencies are loaded.
+
+Tracing: Receives `trace_headers` from the EC2 coordinator's parent trace, so this Lambda's
+trace appears as a child of the parent `EC2_FanOut_20_Lambda_Evaluation` trace in LangSmith.
 """
 import logging
 from typing import Any
 
 from src.evaluation.engine import UPSCEvaluationEngine
-from src.utils.tracing import flush_traces
+from src.utils.tracing import flush_traces, traceable
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +26,34 @@ def get_engine() -> UPSCEvaluationEngine:
         # Retriever is passed as None: never initialized because kb_context is pre-provided
         _engine = UPSCEvaluationEngine(retriever=None)
     return _engine
+
+
+@traceable(name="LambdaSingleQuestionEval", run_type="chain")
+def _evaluate_question(
+    engine: UPSCEvaluationEngine,
+    q_num: int,
+    question: str,
+    candidate_answer: str,
+    max_marks: float,
+    kb_context: list[str],
+) -> dict[str, Any]:
+    """Evaluates a single question under the parent trace context.
+
+    This @traceable function accepts langsmith_extra={"parent": trace_headers}
+    so the trace nests under the EC2 coordinator's fan-out trace.
+    """
+    result = engine.evaluate_answer(
+        question=question,
+        candidate_answer=candidate_answer,
+        max_marks=max_marks,
+        kb_context=kb_context,
+    )
+    return {
+        "status": "success",
+        "q_num": q_num,
+        "max_marks": max_marks,
+        "evaluation": result.model_dump(mode="json"),
+    }
 
 
 def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
@@ -47,37 +78,22 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
 
     logger.info("SingleQuestionEvaluator invoked for Q%02d (%.1f marks)", q_num, max_marks)
 
-    try:
-        from langsmith.run_helpers import trace
-    except ImportError:
-        import contextlib
-
-        trace = contextlib.nullcontext
-
     engine = get_engine()
 
     try:
-        trace_kwargs: dict[str, Any] = {
-            "name": f"SingleQuestionEval_Q{q_num:02d}",
-            "run_type": "chain",
-            "inputs": {"q_num": q_num, "question": question, "max_marks": max_marks},
-        }
+        # Build langsmith_extra to parent this trace under the coordinator's fan-out trace
+        ls_extra: dict[str, Any] | None = None
         if trace_headers:
-            trace_kwargs["parent"] = trace_headers
+            ls_extra = {"parent": trace_headers}
 
-        with trace(**trace_kwargs):
-            result = engine.evaluate_answer(
-                question=question,
-                candidate_answer=candidate_answer,
-                max_marks=max_marks,
-                kb_context=kb_context,
-            )
-
-            return {
-                "status": "success",
-                "q_num": q_num,
-                "max_marks": max_marks,
-                "evaluation": result.model_dump(mode="json"),
-            }
+        return _evaluate_question(
+            engine=engine,
+            q_num=q_num,
+            question=question,
+            candidate_answer=candidate_answer,
+            max_marks=max_marks,
+            kb_context=kb_context,
+            langsmith_extra=ls_extra,
+        )
     finally:
         flush_traces()
