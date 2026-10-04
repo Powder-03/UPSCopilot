@@ -44,3 +44,16 @@ def outputs_dir() -> Path:
     """Absolute path to tests/outputs, created on demand for evaluation run artifacts."""
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     return OUTPUTS_DIR
+
+
+@pytest.fixture(autouse=True)
+def clean_aws_env_for_tests(monkeypatch):
+    """Ensures offline unit tests are hermetic and don't pick up live AWS resources from local .env."""
+    from src.config import settings
+
+    monkeypatch.setattr(settings, "s3_bucket", None)
+    monkeypatch.setattr(settings, "dynamodb_table", None)
+    monkeypatch.setattr(settings, "eval_queue_url", None)
+    monkeypatch.setattr(settings, "vision_queue_url", None)
+    monkeypatch.setattr(settings, "queue_url", None)
+

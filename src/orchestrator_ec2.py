@@ -93,7 +93,7 @@ class EC2CoordinatorOrchestrator:
         # Fallback / Local mode: invoke handler directly
         return single_question_handler(payload)
 
-    @traceable(name="EC2_FanOut_Evaluation", run_type="chain")
+    @traceable(name="EC2_FanOut_20_Lambda_Evaluation", run_type="chain")
     async def evaluate_copy_fanout(
         self,
         questions: list[ParsedQuestion],
@@ -103,10 +103,19 @@ class EC2CoordinatorOrchestrator:
         """
         Fires 20 Single-Question evaluations in parallel using asyncio.
         All 20 questions complete concurrently in ~7-9 seconds total.
+        Passes LangSmith parent trace headers so every Lambda appears nested under this thread.
         """
         loop = asyncio.get_running_loop()
         total = len(questions)
         logger.info("Fanning out %d concurrent question evaluations...", total)
+
+        try:
+            from langsmith.run_helpers import get_current_run_tree
+
+            current_run = get_current_run_tree()
+            trace_headers = current_run.to_headers() if current_run else {}
+        except Exception:
+            trace_headers = {}
 
         tasks = []
         for q in questions:
@@ -116,6 +125,7 @@ class EC2CoordinatorOrchestrator:
                 "candidate_answer": q.candidate_answer,
                 "max_marks": q.max_marks,
                 "kb_context": kb_contexts.get(q.q_num, []),
+                "trace_headers": trace_headers,
             }
             tasks.append(
                 loop.run_in_executor(None, self._invoke_single_question_eval, payload)
@@ -135,7 +145,7 @@ class EC2CoordinatorOrchestrator:
 
         return eval_pairs
 
-    @traceable(name="EC2Coordinator.process_job", run_type="chain")
+    @traceable(name="UPSC_Answer_Booklet_Evaluation", run_type="chain")
     async def process_job(
         self,
         job_id: str,
@@ -179,6 +189,12 @@ class EC2CoordinatorOrchestrator:
             self.job_state.save_job(job_id, data)
 
         try:
+            from langsmith.run_helpers import trace
+        except ImportError:
+            import contextlib
+            trace = contextlib.nullcontext
+
+        try:
             # 1. Size verification (reject oversized files > 200 MB)
             file_size = self.storage.get_file_size(storage_ref)
             max_bytes = 200 * 1024 * 1024
@@ -199,14 +215,15 @@ class EC2CoordinatorOrchestrator:
                     max_workers=4,
                 )
                 loop = asyncio.get_running_loop()
-                parsed_doc: ParsedDocument = await loop.run_in_executor(
-                    None,
-                    lambda: parser.parse_pdf(
-                        pdf_path=local_pdf,
-                        start_page=start_page,
-                        max_pages=max_pages,
-                    ),
-                )
+                with trace("DocumentParsing_OCR", run_type="chain", inputs={"filename": filename}):
+                    parsed_doc: ParsedDocument = await loop.run_in_executor(
+                        None,
+                        lambda: parser.parse_pdf(
+                            pdf_path=local_pdf,
+                            start_page=start_page,
+                            max_pages=max_pages,
+                        ),
+                    )
 
             # 3. Immediate Storage Cleanup: Delete S3 raw PDF as soon as OCR is done
             self.storage.delete_file(storage_ref)
@@ -217,9 +234,10 @@ class EC2CoordinatorOrchestrator:
             _update(40, f"OCR complete ({total_questions} questions parsed). Prefetching ground truth...")
 
             # 4. Parallel Knowledge Base Prefetching (<1s on EC2)
-            kb_contexts = await loop.run_in_executor(
-                None, lambda: self.prefetcher.prefetch_all(questions)
-            )
+            with trace("Pinecone_KB_Prefetch", run_type="retriever", inputs={"question_count": total_questions}):
+                kb_contexts = await loop.run_in_executor(
+                    None, lambda: self.prefetcher.prefetch_all(questions)
+                )
             _update(50, "Ground truth prefetched. Fanning out 20 concurrent AI evaluators...")
 
             # 5. 20-Lambda Concurrent Fan-Out Evaluation (~7-9s)
@@ -231,25 +249,28 @@ class EC2CoordinatorOrchestrator:
 
             # 6. Distill Student Scorecard
             _update(90, "Distilling actionable student feedback...")
-            report = UnifiedEvaluationPipeline.distill_results(
-                document_name=filename,
-                evaluations=eval_pairs,
-            )
+            with trace("Student_Scorecard_Distillation", run_type="chain"):
+                report = UnifiedEvaluationPipeline.distill_results(
+                    document_name=filename,
+                    evaluations=eval_pairs,
+                )
 
             # 7. Generate Scorecard PDF
-            pdf_bytes = generate_scorecard_pdf(report)
+            with trace("Scorecard_PDF_Generation", run_type="tool"):
+                pdf_bytes = generate_scorecard_pdf(report)
 
             # 8. Send Email via Amazon SES
             email_sent = False
             target_email = email
             if target_email:
                 _update(95, f"Delivering scorecard to {target_email}...")
-                email_sent = self.email_svc.send_evaluation_email(
-                    to_email=target_email,
-                    report=report,
-                    job_id=job_id,
-                    pdf_bytes=pdf_bytes,
-                )
+                with trace("Amazon_SES_Email_Delivery", run_type="tool", inputs={"recipient": target_email}):
+                    email_sent = self.email_svc.send_evaluation_email(
+                        to_email=target_email,
+                        report=report,
+                        job_id=job_id,
+                        pdf_bytes=pdf_bytes,
+                    )
 
             # 9. Mark Completed
             final_data = self.job_state.get_job(job_id) or {"job_id": job_id}

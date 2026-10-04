@@ -44,16 +44,34 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
         candidate_answer = event.get("candidate_answer", "")
         max_marks = float(event.get("max_marks", 10.0))
         kb_context = event.get("kb_context", [])
+        trace_headers = event.get("trace_headers")
 
         logger.info("SingleQuestionEvaluator invoked for Q%02d (%.1f marks)", q_num, max_marks)
 
         engine = get_engine()
-        result = engine.evaluate_answer(
-            question=question,
-            candidate_answer=candidate_answer,
-            max_marks=max_marks,
-            kb_context=kb_context,
-        )
+
+        if trace_headers:
+            from langsmith.run_helpers import trace
+
+            with trace(
+                f"SingleQuestionEval_Q{q_num:02d}",
+                run_type="chain",
+                parent=trace_headers,
+                inputs={"q_num": q_num, "question": question, "max_marks": max_marks},
+            ):
+                result = engine.evaluate_answer(
+                    question=question,
+                    candidate_answer=candidate_answer,
+                    max_marks=max_marks,
+                    kb_context=kb_context,
+                )
+        else:
+            result = engine.evaluate_answer(
+                question=question,
+                candidate_answer=candidate_answer,
+                max_marks=max_marks,
+                kb_context=kb_context,
+            )
 
         return {
             "status": "success",
