@@ -1,5 +1,7 @@
 """LangChain-compatible Chat Model for Google Cloud Vertex AI using official google-genai SDK."""
 import logging
+import random
+import time
 from typing import Any
 
 from google import genai
@@ -93,7 +95,7 @@ class ChatVertexExpress(BaseChatModel):
             thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
 
-        for attempt in range(3):
+        for attempt in range(5):
             try:
                 response = client.models.generate_content(
                     model=self.model_name,
@@ -126,6 +128,23 @@ class ChatVertexExpress(BaseChatModel):
                 return ChatResult(generations=[ChatGeneration(message=ai_message)])
             except Exception as e:
                 err_str = str(e)
+                is_rate_limit = (
+                    "429" in err_str
+                    or "RESOURCE_EXHAUSTED" in err_str
+                    or "ResourceExhausted" in err_str
+                    or "quota" in err_str.lower()
+                    or "rate limit" in err_str.lower()
+                )
+                if is_rate_limit and attempt < 4:
+                    backoff = (2 ** attempt) * 1.5 + random.uniform(0.5, 1.5)
+                    logger.warning(
+                        "Vertex AI rate limit hit (attempt %d/5). Backing off for %.1fs...",
+                        attempt + 1,
+                        backoff,
+                    )
+                    time.sleep(backoff)
+                    continue
+
                 if (
                     "closed" in err_str
                     or "10053" in err_str
@@ -133,12 +152,14 @@ class ChatVertexExpress(BaseChatModel):
                     or "aborted" in err_str.lower()
                 ) and attempt < 2:
                     logger.warning(
-                        f"Vertex AI Gemini connection error ({e}); retrying attempt {attempt + 1}..."
+                        "Vertex AI Gemini connection error (%s); retrying attempt %d...",
+                        e,
+                        attempt + 1,
                     )
                     self._cached_client = None
                     client = self._get_client()
                     continue
-                logger.error(f"Error calling Vertex AI ({self.model_name}): {e}")
+                logger.error("Error calling Vertex AI (%s): %s", self.model_name, e)
                 raise ModelInvocationError(
                     f"Vertex AI Gemini invocation failed: {e}. Please verify your API key and connection."
                 ) from e

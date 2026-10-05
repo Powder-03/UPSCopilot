@@ -57,7 +57,7 @@ def parse_args() -> argparse.Namespace:
         "-s",
         type=int,
         default=None,
-        help="1-indexed starting page where Question 1 begins (skips front cover/rubric sheets).",
+        help="Optional 1-indexed starting page (default: auto-detects from page 1).",
     )
     parser.add_argument(
         "--model",

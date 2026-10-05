@@ -1,12 +1,17 @@
 """Multimodal Vision Client for extracting handwritten text, diagrams, and QCAB layouts supporting Bedrock and Vertex AI."""
 import logging
+import random
 import threading
+import time
 from abc import ABC, abstractmethod
 from typing import Any
 
 from src.config import settings
 from src.models.exceptions import ModelInvocationError
-from src.parsing.prompts import VISION_QCAB_PARSER_SYSTEM_PROMPT
+from src.parsing.prompts import (
+    VISION_QCAB_PARSER_SYSTEM_PROMPT,
+    VISION_SINGLE_PAGE_OCR_SYSTEM_PROMPT,
+)
 from src.utils.json import extract_json_dict
 from src.utils.tracing import mask_vision_inputs, traceable
 
@@ -25,6 +30,16 @@ class BaseVisionClient(ABC):
         expected_q_num: int | None = None,
     ) -> dict[str, Any]:
         """Sends page images to the multimodal vision model and extracts structured question/answer JSON."""
+        pass
+
+    @abstractmethod
+    def parse_single_page(
+        self,
+        image_bytes: bytes,
+        page_num: int,
+        image_format: str = "jpeg",
+    ) -> dict[str, Any]:
+        """Parses a single page: detects question header, transcribes content, classifies front/back matter."""
         pass
 
 
@@ -108,6 +123,38 @@ class BedrockVisionClient(BaseVisionClient):
             logger.error(f"Error calling Bedrock Vision: {e}")
             raise ModelInvocationError(f"Bedrock Vision OCR failed: {e}") from e
 
+    @traceable(name="Bedrock_Single_Page_OCR", run_type="llm", process_inputs=mask_vision_inputs)
+    def parse_single_page(
+        self,
+        image_bytes: bytes,
+        page_num: int,
+        image_format: str = "jpeg",
+    ) -> dict[str, Any]:
+        """Parses a single page to dynamically detect question boundaries and transcribe handwritten content."""
+        content_blocks = [
+            {
+                "image": {
+                    "format": image_format.lower().replace("jpg", "jpeg"),
+                    "source": {"bytes": image_bytes},
+                }
+            },
+            {"text": f"Please transcribe Page {page_num} and detect if it starts a new question."},
+        ]
+        try:
+            response = self.client.converse(
+                modelId=self.model_id,
+                system=[{"text": VISION_SINGLE_PAGE_OCR_SYSTEM_PROMPT}],
+                messages=[{"role": "user", "content": content_blocks}],
+                inferenceConfig={"temperature": 0.1, "maxTokens": 4096},
+            )
+            raw_text = response["output"]["message"]["content"][0]["text"]
+            parsed_json = extract_json_dict(raw_text)
+            parsed_json["page_num"] = page_num
+            return parsed_json
+        except Exception as e:
+            logger.error("Error in Bedrock single page OCR on Page %d: %s", page_num, e)
+            raise ModelInvocationError(f"Bedrock single page OCR failed on Page {page_num}: {e}") from e
+
 
 class VertexVisionClient(BaseVisionClient):
     """Invokes Google Cloud Vertex AI Multimodal Vision (Gemini 2.5 Flash) via official google-genai SDK."""
@@ -181,7 +228,7 @@ class VertexVisionClient(BaseVisionClient):
             f"Calling Vertex Vision ({self.model_id}) with {len(image_bytes_list)} page images..."
         )
 
-        for attempt in range(2):
+        for attempt in range(5):
             try:
                 response = self.client.models.generate_content(
                     model=self.model_id,
@@ -200,12 +247,103 @@ class VertexVisionClient(BaseVisionClient):
                 return parsed_json
             except Exception as e:
                 err_str = str(e)
-                if "client has been closed" in err_str and attempt == 0:
-                    logger.warning("Vertex Vision thread client closed; recreating and retrying once...")
+                is_rate_limit = (
+                    "429" in err_str
+                    or "RESOURCE_EXHAUSTED" in err_str
+                    or "ResourceExhausted" in err_str
+                    or "quota" in err_str.lower()
+                    or "rate limit" in err_str.lower()
+                )
+                if is_rate_limit and attempt < 4:
+                    backoff = (2 ** attempt) * 2.0 + random.uniform(1.0, 3.0)
+                    logger.warning(
+                        "Vertex Vision OCR rate limit hit (attempt %d/5). Backing off for %.1fs...",
+                        attempt + 1,
+                        backoff,
+                    )
+                    time.sleep(backoff)
+                    continue
+
+                if ("client has been closed" in err_str or "10053" in err_str) and attempt < 2:
+                    logger.warning(
+                        "Vertex Vision connection issue (%s); recreating client and retrying attempt %d...",
+                        e,
+                        attempt + 1,
+                    )
                     self._reset_thread_client()
                     continue
-                logger.error(f"Error calling Vertex Vision: {e}")
+
+                logger.error("Error calling Vertex Vision: %s", e)
                 raise ModelInvocationError(f"Vertex Vision OCR failed: {e}") from e
+
+    @traceable(name="Vertex_Single_Page_OCR", run_type="llm", process_inputs=mask_vision_inputs)
+    def parse_single_page(
+        self,
+        image_bytes: bytes,
+        page_num: int,
+        image_format: str = "jpeg",
+    ) -> dict[str, Any]:
+        """Parses a single page to dynamically detect question boundaries and transcribe handwritten content."""
+        from google.genai import types
+
+        mime = f"image/{image_format.lower().replace('jpg', 'jpeg')}"
+        parts = [
+            types.Part.from_bytes(data=image_bytes, mime_type=mime),
+            f"Please transcribe Page {page_num} and detect if it starts a new question.",
+        ]
+
+        for attempt in range(5):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_id,
+                    contents=parts,
+                    config=types.GenerateContentConfig(
+                        system_instruction=VISION_SINGLE_PAGE_OCR_SYSTEM_PROMPT,
+                        temperature=0.1,
+                        max_output_tokens=4096,
+                        response_mime_type="application/json",
+                    ),
+                )
+                raw_text = response.text or ""
+                parsed_json = extract_json_dict(raw_text)
+                if not parsed_json:
+                    raise ModelInvocationError(
+                        f"Vertex Vision returned non-JSON output for Page {page_num}: {raw_text[:200]}"
+                    )
+                parsed_json["page_num"] = page_num
+                return parsed_json
+            except Exception as e:
+                err_str = str(e)
+                is_rate_limit = (
+                    "429" in err_str
+                    or "RESOURCE_EXHAUSTED" in err_str
+                    or "ResourceExhausted" in err_str
+                    or "quota" in err_str.lower()
+                    or "rate limit" in err_str.lower()
+                )
+                if is_rate_limit and attempt < 4:
+                    backoff = (2 ** attempt) * 1.5 + random.uniform(0.5, 1.5)
+                    logger.warning(
+                        "Vertex Vision single page OCR rate limit hit for Page %d (attempt %d/5). Backing off for %.1fs...",
+                        page_num,
+                        attempt + 1,
+                        backoff,
+                    )
+                    time.sleep(backoff)
+                    continue
+
+                if ("client has been closed" in err_str or "10053" in err_str) and attempt < 2:
+                    logger.warning(
+                        "Vertex Vision connection issue (%s) on Page %d; retrying attempt %d...",
+                        e,
+                        page_num,
+                        attempt + 1,
+                    )
+                    self._reset_thread_client()
+                    continue
+
+                logger.error("Error calling Vertex Vision on Page %d: %s", page_num, e)
+                raise ModelInvocationError(f"Vertex Vision single page OCR failed on Page {page_num}: {e}") from e
 
 
 def get_vision_client(

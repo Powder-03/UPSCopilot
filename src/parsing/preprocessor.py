@@ -31,7 +31,7 @@ class PDFPreprocessor:
         pdf_path: str | Path,
         page_num: int,
         quality: int = 80,
-        darkness_threshold: float = 0.005,
+        darkness_threshold: float = 0.002,
         max_dimension: int = 1600,
         doc: pymupdf.Document | None = None,
     ) -> tuple[bytes, bool]:
@@ -103,7 +103,7 @@ class PDFPreprocessor:
         )
         return img_bytes
 
-    def is_page_visually_blank(self, img: Image.Image, darkness_threshold: float = 0.005) -> bool:
+    def is_page_visually_blank(self, img: Image.Image, darkness_threshold: float = 0.002) -> bool:
         """
         Lightweight visual heuristic: checks if a rendered page has virtually zero ink/writing.
         Returns True if the fraction of non-white / dark pixels is below the threshold.

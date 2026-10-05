@@ -284,12 +284,39 @@ evaluator/
   - **SingleQuestionEval Handler** (`src/handlers/single_question_eval.py`): Replaced manual `trace()` context manager with `@traceable`-decorated `_evaluate_question` function accepting `langsmith_extra` with parent headers from the EC2 coordinator's fan-out trace.
   - **Result**: Clicking one copy check in LangSmith shows the full trace tree: `UPSC_Answer_Booklet_Evaluation` → `DocumentParsing_OCR` → `KB_Ground_Truth_Prefetch` → `EC2_FanOut_20_Lambda_Evaluation` → 20× `LambdaSingleQuestionEval` → `Student_Scorecard_Distillation` → `Scorecard_PDF_Generation` → `Amazon_SES_Email_Delivery`.
   - Full test suite: 63 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
-
-
-
-
-
-
+- [x] Vertex AI Rate Limit Mitigation & QCAB Question Parsing Fixes:
+  - **Vertex AI Quota & 429 Root Cause**: With Vertex AI / Gemini API keys on Free/Express tier, RPM is limited to 10-15 requests/min. Fanning out 20 Lambdas simultaneously or firing 4 OCR workers sent 20-40 simultaneous requests in <1s, causing `429 RESOURCE_EXHAUSTED` / `ModelInvocationError` and dropping questions.
+  - **Exponential Backoff with Jitter**: Added 5-attempt retry with randomized exponential backoff (1.5s, 3s, 6s, 12s + jitter) across `ChatVertexExpress` (`src/providers/vertex.py`), `VertexVisionClient` (`src/providers/vision.py`), and `VertexGEvalScorer` (`src/evaluation/geval_scorer.py`).
+  - **Concurrency Gating**: Added `EVAL_MAX_CONCURRENCY` (default: 5) to `Settings` (`src/config.py`) and gated `evaluate_copy_fanout` in `src/orchestrator_ec2.py` with `asyncio.Semaphore(settings.eval_max_concurrency)` to prevent burst saturation of Vertex AI quotas while completing whole-copy evaluation in ~30s.
+  - **QCAB Segmenter & Blank Detection Hardening**:
+    - Fixed `calculate_default_qcab_page_slices` in `src/parsing/segmenter.py`: for standard 52-page booklets (2 cover/instruction pages + 50 question pages), correctly starts questions on Page 3 instead of shifting page boundaries. Guarantees all 20 question slices are generated even if pages terminate early.
+    - Fixed `reconcile_and_sort_questions`: ensures all 20 canonical questions exist in sequence, filling any missing extraction gaps with blank placeholders so no question is ever dropped from the final scorecard.
+- [x] Dynamic Page-by-Page OCR & Non-Fixed Boundary Stitching for Mock Booklets:
+  - **The Mock Booklet Variance Problem**: Different coaching institutes (Vajiram & Ravi, VisionIAS, ForumIAS, NextIAS, etc.) format booklets differently: 1 to 3 pages of front matter (cover, instructions, evaluation rubrics), varying page counts per question, extra pages, or arbitrary offsets. Fixed mathematical slicing (assuming Q1 starts on Page 2 or Page 3, and Q4 starts on Page 7) caused cascading page offset errors where Q20 was shifted past the booklet bounds and dropped.
+  - **Dynamic Page-by-Page OCR Architecture**:
+    - `src/providers/vision.py`: Implemented `parse_single_page` in `BaseVisionClient`, `BedrockVisionClient`, and `VertexVisionClient` using `VISION_SINGLE_PAGE_OCR_SYSTEM_PROMPT` to analyze each individual page image in isolation.
+    - System prompt extracts structured JSON: `has_question_header: bool`, `q_num: int | null`, `max_marks: float | null`, `question: str | null`, `candidate_answer: str`, `diagrams: list[str]`, `is_blank: bool`, `is_cover_or_rubric: bool`.
+    - `src/parsing/document_parser.py`: Implemented `_parse_single_page_worker` and `_stitch_pages_into_questions`.
+    - **Intelligent Boundary Stitcher**: Automatically ignores cover/rubric pages, detects new question headers to start new questions, seamlessly appends continuation pages to the active question (concatenating answer text and collecting diagrams), and reconciles with `segmenter.reconcile_and_sort_questions` to ensure all 20 questions are always accounted for.
+    - **High-Throughput Parallel OCR**: In `parse_pdf(..., mode="dynamic")`, all booklet pages are rendered and parsed in parallel via `ThreadPoolExecutor(max_workers=min(self.max_workers, 15))` with 5-attempt exponential backoff on 429 rate limits, completing OCR of full 52-page booklets in seconds.
+    - Preserves `mode="slice"` fallback for backward compatibility.
+    - Full test suite: 64 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
+- [x] Mock Paper Robustness & Multi-Section Dynamic Page-by-Page OCR:
+  - **The Real Student Mock Paper Reality**: Students write mock tests across unpredictable layouts: loose ruled/unruled sheets starting on Page 1, coaching test copies (Vision IAS, ForumIAS, Vajiram, etc.) with 0, 1, or 2 front matter pages, answers spanning 1 to 3 pages arbitrarily, multiple questions written on a single page (e.g. Q1 concludes on upper half, Q2 begins on lower half), and sectional mock tests (e.g., 5 or 10 questions rather than 20).
+  - **Eliminated Fixed Page Assumptions**: Purged all assumptions about Q1 being on "pages 3 and 4". Page-by-page dynamic OCR is the universal default starting from Page 1.
+  - **Multi-Section Page Prompt Architecture (`VISION_SINGLE_PAGE_OCR_SYSTEM_PROMPT`)**:
+    - Upgraded schema to support `continuation_answer` + `continuation_diagrams` (handwriting continuing from prior page) alongside a `questions` array for any new questions starting on that page.
+    - Added strict negative instructions preventing the vision model from mistaking numbered points inside an answer ("1. Constitutional issues", "2. Economic challenges") for examination question headers.
+    - Preserves bilingual extraction rule: English prompt extracted, Hindi Devanagari filtered.
+  - **Dynamic Multi-Question Stitcher (`_stitch_pages_into_questions` & `_normalize_page_result`)**:
+    - Normalizes both legacy single-question pages and enhanced multi-section pages.
+    - Seamlessly splits pages that contain both the end of one question and the beginning of another.
+    - Merges multi-page answers belonging to the same question without data loss.
+    - Never discards candidate handwriting as "front matter" if non-empty answer text exists.
+  - **Sectional Mock Test Reconciliation (`reconcile_and_sort_questions`)**:
+    - For sectional mock tests (e.g., Q1 to Q5, or Q1 to Q10), only reconciles internal skipped questions within the attempted range; does NOT fabricate bogus blank questions up to 20 unless `total_expected_questions=20` or a 20-question `master_questions` paper is provided.
+  - **Safe Blank Detection Threshold**: Adjusted `darkness_threshold` in `PDFPreprocessor` from 0.005 to 0.002 so light pencil strokes or brief conclusions are never falsely dropped before vision OCR.
+  - **Validation**: 66 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance

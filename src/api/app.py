@@ -163,7 +163,7 @@ async def submit_direct_job(payload: DirectJobSubmitRequest) -> JobSubmitRespons
 async def submit_evaluation_job(
     file: Annotated[UploadFile, File(description="Uploaded UPSC answer booklet PDF")],
     email: Annotated[str | None, Form(description="Student email address for automatic scorecard delivery")] = None,
-    start_page: Annotated[int | None, Form(description="1-indexed starting page for Question 1 (e.g. 3)")] = None,
+    start_page: Annotated[int | None, Form(description="Optional 1-indexed starting page (default: auto-detects from page 1)")] = None,
     max_pages: Annotated[int | None, Form(description="Maximum pages to process for partial evaluation")] = None,
 ) -> JobSubmitResponse:
     """

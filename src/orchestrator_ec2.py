@@ -203,6 +203,13 @@ class EC2CoordinatorOrchestrator:
         # Capture current trace headers so Lambda child traces nest under this run
         trace_headers = _get_trace_headers()
 
+        # Gate concurrency to protect against Vertex AI rate limits / quotas (e.g. 5 or 10 concurrent)
+        sem = asyncio.Semaphore(settings.eval_max_concurrency)
+
+        async def _eval_one(payload: dict[str, Any]) -> dict[str, Any]:
+            async with sem:
+                return await loop.run_in_executor(None, self._invoke_single_question_eval, payload)
+
         tasks = []
         for q in questions:
             payload = {
@@ -213,9 +220,7 @@ class EC2CoordinatorOrchestrator:
                 "kb_context": kb_contexts.get(q.q_num, []),
                 "trace_headers": trace_headers,
             }
-            tasks.append(
-                loop.run_in_executor(None, self._invoke_single_question_eval, payload)
-            )
+            tasks.append(_eval_one(payload))
 
         raw_results = await asyncio.gather(*tasks)
 

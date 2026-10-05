@@ -2,8 +2,10 @@
 import json
 import logging
 import math
+import random
 import re
 import threading
+import time
 from typing import Any
 
 from src.config import settings
@@ -302,7 +304,7 @@ class VertexGEvalScorer(BaseGEvalScorer):
 
         from google.genai import types
 
-        for attempt in range(3):
+        for attempt in range(5):
             try:
                 res = self.client.models.generate_content(
                     model=self.model_id,
@@ -344,11 +346,33 @@ class VertexGEvalScorer(BaseGEvalScorer):
                 return self._parse_logprob_pillars(content_tokens, output_text, pillar_summary, max_marks)
             except Exception as e:
                 err_str = str(e)
+                is_rate_limit = (
+                    "429" in err_str
+                    or "RESOURCE_EXHAUSTED" in err_str
+                    or "ResourceExhausted" in err_str
+                    or "quota" in err_str.lower()
+                    or "rate limit" in err_str.lower()
+                )
+                if is_rate_limit and attempt < 4:
+                    backoff = (2 ** attempt) * 1.5 + random.uniform(0.5, 1.5)
+                    logger.warning(
+                        "Vertex G-Eval scorer rate limit hit (attempt %d/5). Backing off for %.1fs...",
+                        attempt + 1,
+                        backoff,
+                    )
+                    time.sleep(backoff)
+                    continue
+
                 if ("closed" in err_str or "10053" in err_str or "connection" in err_str.lower() or "aborted" in err_str.lower()) and attempt < 2:
-                    logger.warning(f"Vertex G-Eval connection issue ({e}); resetting client and retrying attempt {attempt + 1}...")
+                    logger.warning(
+                        "Vertex G-Eval connection issue (%s); resetting client and retrying attempt %d...",
+                        e,
+                        attempt + 1,
+                    )
                     self._reset_thread_client()
                     continue
-                logger.error(f"Error in Vertex G-Eval call: {e}")
+
+                logger.error("Error in Vertex G-Eval call: %s", e)
                 raise ModelInvocationError(f"Vertex G-Eval scoring failed: {e}") from e
 
 

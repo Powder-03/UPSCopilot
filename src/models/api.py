@@ -122,5 +122,5 @@ class DirectJobSubmitRequest(BaseModel):
     storage_ref: str = Field(description="Storage reference returned by upload-url")
     filename: str = Field(description="Original PDF filename")
     email: str | None = Field(default=None, description="Student email address for scorecard delivery")
-    start_page: int | None = Field(default=None, description="1-indexed starting page for Question 1")
+    start_page: int | None = Field(default=None, description="Optional 1-indexed starting page (default: auto-detects from page 1)")
     max_pages: int | None = Field(default=None, description="Maximum pages to process")

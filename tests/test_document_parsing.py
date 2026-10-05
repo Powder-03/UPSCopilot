@@ -122,3 +122,200 @@ def test_clean_question_text_removes_hindi_and_metadata():
     cleaned_inline = _clean_question_text(raw_inline)
     assert cleaned_inline == "Evaluate the effectiveness of the Sevottam model."
 
+
+def test_stitch_pages_into_questions_dynamic_mock():
+    """Verifies that DocumentParsingPipeline stitches arbitrary page sequences without fixed-offset assumptions."""
+    from unittest.mock import MagicMock
+
+    from src.parsing.document_parser import DocumentParsingPipeline
+
+    pipeline = DocumentParsingPipeline(vision_client=MagicMock())
+
+    page_results = [
+        {"page_num": 1, "is_cover_or_rubric": True, "has_question_header": False},
+        {"page_num": 2, "is_cover_or_rubric": True, "has_question_header": False},
+        {"page_num": 3, "is_cover_or_rubric": True, "has_question_header": False},
+        {
+            "page_num": 4,
+            "has_question_header": True,
+            "q_num": 1,
+            "max_marks": 10.0,
+            "question": "1. Discuss constitutional morality.",
+            "candidate_answer": "Constitutional morality means adherence to constitutional principles.",
+            "diagrams": ["Flowchart 1"],
+        },
+        {
+            "page_num": 5,
+            "has_question_header": False,
+            "candidate_answer": "In Navtej Johar, the SC reiterated this concept.",
+            "diagrams": [],
+        },
+        {
+            "page_num": 6,
+            "has_question_header": True,
+            "q_num": 2,
+            "max_marks": 10.0,
+            "question": "2. Evaluate the Sevottam model.",
+            "candidate_answer": "Sevottam has three core components.",
+            "diagrams": [],
+        },
+    ]
+
+    master = [
+        {"q_num": 1, "max_marks": 10.0, "question": "Discuss constitutional morality."},
+        {"q_num": 2, "max_marks": 10.0, "question": "Evaluate the Sevottam model."},
+    ]
+
+    stitched = pipeline._stitch_pages_into_questions(page_results, master_questions=master)
+
+    # Q1 and Q2 should be correctly extracted
+    q1 = next(q for q in stitched if q.q_num == 1)
+    assert q1.page_numbers == [4, 5]
+    assert "adherence to constitutional principles" in q1.candidate_answer
+    assert "In Navtej Johar" in q1.candidate_answer
+    assert q1.diagrams == ["Flowchart 1"]
+    assert q1.is_blank is False
+
+    q2 = next(q for q in stitched if q.q_num == 2)
+    assert q2.page_numbers == [6]
+    assert "Sevottam has three core components" in q2.candidate_answer
+
+
+def test_stitch_pages_multi_question_on_same_page():
+    """Verifies that when a single page contains the end of Q1 and the beginning of Q2, both are cleanly split."""
+    from unittest.mock import MagicMock
+
+    from src.parsing.document_parser import DocumentParsingPipeline
+
+    pipeline = DocumentParsingPipeline(vision_client=MagicMock())
+
+    page_results = [
+        # Page 1: Student starts Question 1
+        {
+            "page_num": 1,
+            "is_cover_or_rubric": False,
+            "is_blank": False,
+            "continuation_answer": "",
+            "questions": [
+                {
+                    "q_num": 1,
+                    "max_marks": 10.0,
+                    "question": "Discuss judicial review in India.",
+                    "answer": "Part 1: Judicial review is part of the basic structure.",
+                    "diagrams": ["Hierarchy chart"],
+                }
+            ],
+        },
+        # Page 2: Student finishes Q1 on top half, and starts Q2 on bottom half!
+        {
+            "page_num": 2,
+            "is_cover_or_rubric": False,
+            "is_blank": False,
+            "continuation_answer": "Conclusion for Q1: Minerva Mills reinforced this balance.",
+            "continuation_diagrams": [],
+            "questions": [
+                {
+                    "q_num": 2,
+                    "max_marks": 10.0,
+                    "question": "What is the Sevottam model?",
+                    "answer": "Sevottam is a citizen-centric service delivery framework.",
+                    "diagrams": ["Sevottam 3 pillars"],
+                }
+            ],
+        },
+        # Page 3: Student continues Q2
+        {
+            "page_num": 3,
+            "is_cover_or_rubric": False,
+            "is_blank": False,
+            "continuation_answer": "Implementation challenges include lack of institutional capacity.",
+            "continuation_diagrams": [],
+            "questions": [],
+        },
+    ]
+
+    stitched = pipeline._stitch_pages_into_questions(page_results)
+
+    assert len(stitched) == 2
+    q1 = stitched[0]
+    q2 = stitched[1]
+
+    # Q1 should span pages 1 and 2
+    assert q1.q_num == 1
+    assert q1.page_numbers == [1, 2]
+    assert "Part 1: Judicial review" in q1.candidate_answer
+    assert "Minerva Mills reinforced this balance" in q1.candidate_answer
+    assert q1.diagrams == ["Hierarchy chart"]
+
+    # Q2 should span pages 2 and 3
+    assert q2.q_num == 2
+    assert q2.page_numbers == [2, 3]
+    assert "Sevottam is a citizen-centric" in q2.candidate_answer
+    assert "Implementation challenges include" in q2.candidate_answer
+    assert q2.diagrams == ["Sevottam 3 pillars"]
+
+
+def test_stitch_pages_out_of_order_and_sectional_mock():
+    """Verifies that out-of-order student answers (Q5 before Q1) sort canonically and sectional tests avoid bogus blanks."""
+    from unittest.mock import MagicMock
+
+    from src.parsing.document_parser import DocumentParsingPipeline
+
+    pipeline = DocumentParsingPipeline(vision_client=MagicMock())
+
+    page_results = [
+        # Page 1: Student writes Question 3 first
+        {
+            "page_num": 1,
+            "is_cover_or_rubric": False,
+            "is_blank": False,
+            "continuation_answer": "",
+            "questions": [
+                {
+                    "q_num": 3,
+                    "max_marks": 10.0,
+                    "question": "Examine the role of NITI Aayog.",
+                    "answer": "NITI Aayog acts as a think tank promoting cooperative federalism.",
+                    "diagrams": [],
+                }
+            ],
+        },
+        # Page 2: Student then attempts Question 1
+        {
+            "page_num": 2,
+            "is_cover_or_rubric": False,
+            "is_blank": False,
+            "continuation_answer": "",
+            "questions": [
+                {
+                    "q_num": 1,
+                    "max_marks": 10.0,
+                    "question": "Define constitutional morality.",
+                    "answer": "Constitutional morality was articulated by Dr. Ambedkar.",
+                    "diagrams": [],
+                }
+            ],
+        },
+    ]
+
+    # In a sectional test where student attempted up to Q3 (skipped Q2)
+    stitched = pipeline._stitch_pages_into_questions(page_results)
+
+    assert len(stitched) == 3
+    # Canonical order: Q1, Q2 (blank), Q3
+    assert [q.q_num for q in stitched] == [1, 2, 3]
+
+    q1 = stitched[0]
+    assert q1.q_num == 1
+    assert "Ambedkar" in q1.candidate_answer
+
+    q2 = stitched[1]
+    assert q2.q_num == 2
+    assert q2.is_blank is True
+    assert q2.candidate_answer == ""
+
+    q3 = stitched[2]
+    assert q3.q_num == 3
+    assert "NITI Aayog" in q3.candidate_answer
+
+

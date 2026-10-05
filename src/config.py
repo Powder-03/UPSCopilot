@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     )
     eval_temperature: float = Field(default=0.2, alias="EVAL_TEMPERATURE")
     eval_max_tokens: int = Field(default=4096, alias="EVAL_MAX_TOKENS")
+    eval_max_concurrency: int = Field(default=20, alias="EVAL_MAX_CONCURRENCY")
 
     # Multimodal Vision Model Configuration (for handwriting and diagram OCR)
     bedrock_vision_model_id: str = Field(

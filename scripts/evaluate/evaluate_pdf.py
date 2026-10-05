@@ -62,7 +62,7 @@ def render_terminal_scorecard(report: StudentEvaluationReport) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate a handwritten UPSC answer booklet PDF.")
     parser.add_argument("--pdf", type=str, required=True, help="Path to answer booklet PDF")
-    parser.add_argument("--start-page", type=int, default=None, help="1-indexed starting page (e.g. 3)")
+    parser.add_argument("--start-page", type=int, default=None, help="Optional 1-indexed start page (default: auto-detect from page 1)")
     parser.add_argument("--max-pages", type=int, default=None, help="Max pages to process")
     parser.add_argument("--workers", type=int, default=4, help="Parallel evaluation workers")
     parser.add_argument("--email", type=str, default=None, help="Email address to send scorecard to")
