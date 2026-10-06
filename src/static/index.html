@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UPSCopilot | Evaluation - Calibrated UPSC Mains Answer Evaluation</title>
-  <meta name="description" content="Calibrated UPSC CSE scoring, grounded statutory citations, and deep diagnostic diagnostics delivered directly to your inbox." />
+  <meta name="description" content="Authentic UPSC CSE Mains answer copy evaluation, realistic scoring, and actionable question-by-question feedback delivered directly to your email." />
   
   <!-- Preconnect & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,10 @@
 
     html, body {
       background-color: var(--bg-cream);
+      background-image: 
+        radial-gradient(circle at 8% 12%, rgba(217, 119, 6, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 92% 88%, rgba(15, 81, 50, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 0%, transparent 80%);
       color: var(--text-navy);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
@@ -52,37 +56,41 @@
       position: relative;
     }
 
-    /* Botanical watercolor corner branch */
-    .botanical-corner {
+    /* Ambient decorative background accents */
+    .ambient-glow-top {
       position: absolute;
-      top: 0;
-      right: 0;
-      width: clamp(200px, 22vw, 320px);
-      height: auto;
+      top: -100px;
+      right: -80px;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(209, 250, 229, 0.5) 0%, rgba(254, 243, 199, 0.3) 50%, transparent 70%);
+      filter: blur(60px);
       pointer-events: none;
       z-index: 0;
-      user-select: none;
-      opacity: 0.95;
+      border-radius: 50%;
     }
 
     /* Main Page Wrapper */
     .page-wrapper {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 32px 32px 48px;
+      padding: 24px 32px 36px;
       position: relative;
       z-index: 1;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      justify-content: space-between;
     }
 
     /* Top Brand Navigation */
     .navbar {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      margin-bottom: 24px;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.7);
     }
 
     .brand-link {
@@ -94,15 +102,15 @@
     }
 
     .brand-logo-svg {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       display: block;
     }
 
     .brand-title {
       font-family: 'Playfair Display', Georgia, serif;
       font-weight: 700;
-      font-size: 1.45rem;
+      font-size: 1.5rem;
       letter-spacing: -0.01em;
       color: var(--text-navy);
     }
@@ -117,81 +125,92 @@
     .brand-sub {
       font-family: 'Inter', sans-serif;
       font-size: 1.1rem;
-      font-weight: 400;
-      color: #334155;
+      font-weight: 500;
+      color: var(--text-forest);
+    }
+
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(15, 81, 50, 0.08);
+      border: 1px solid rgba(15, 81, 50, 0.18);
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-forest);
+      letter-spacing: 0.02em;
+    }
+
+    .nav-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-forest);
+      box-shadow: 0 0 0 2px rgba(15, 81, 50, 0.2);
     }
 
     /* Two-Column Grid */
     .main-grid {
       display: grid;
-      grid-template-columns: 535px 1fr;
-      gap: 40px;
-      align-items: flex-start;
+      grid-template-columns: minmax(0, 1.15fr) minmax(420px, 480px);
+      gap: 48px;
+      align-items: center;
       flex: 1;
-      position: relative;
+      margin: auto 0;
+      padding: 10px 0;
     }
 
-    /* Left Hero Column with Authentic Artwork Integration */
+    /* Left Hero Column */
     .hero-col {
-      position: relative;
-      width: 535px;
-      min-height: 640px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-    }
-
-    /* Background illustration: Parliament, Ashoka Lion, Booklet, Pen */
-    .hero-bg-art {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 535px;
-      height: 640px;
-      object-fit: cover;
-      object-position: top left;
-      z-index: 0;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    /* Hero Text Content (sits in the top-left open canvas of the illustration) */
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 355px;
-      padding-top: 15px;
+      justify-content: center;
+      width: 100%;
+      max-width: 580px;
     }
 
     .hero-tagline {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
+    }
+
+    .tagline-pill {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-gold);
+      background: var(--amber-light);
+      border: 1px solid var(--amber-border);
+      padding: 3px 10px;
+      border-radius: 20px;
     }
 
     .tagline-bar {
-      width: 32px;
-      height: 2.5px;
-      background: var(--amber-gold);
+      width: 24px;
+      height: 2px;
+      background: #CBD5E1;
       border-radius: 2px;
       display: inline-block;
     }
 
-    .tagline-text {
-      font-size: 0.76rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #334155;
+    .tagline-sub {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-slate);
+      letter-spacing: 0.02em;
     }
 
     .hero-heading {
       font-family: 'Playfair Display', Georgia, serif;
-      font-size: 3.5rem;
-      line-height: 1.05;
+      font-size: 3.4rem;
+      line-height: 1.08;
       font-weight: 800;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
 
@@ -203,22 +222,120 @@
     .hero-heading .line-eval {
       color: var(--text-forest);
       display: block;
+      background: linear-gradient(135deg, #0F5132 0%, #1e40af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .hero-subtitle {
-      font-size: 0.98rem;
+      font-size: 1.02rem;
       line-height: 1.6;
       color: var(--text-slate);
-      max-width: 340px;
+      max-width: 520px;
+      margin-bottom: 24px;
+    }
+
+    /* Hero Feature Cards */
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-bottom: 24px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+
+    .feature-item:hover {
+      background: #FFFFFF;
+      border-color: #CBD5E1;
+      box-shadow: 0 4px 12px rgba(15, 30, 54, 0.04);
+      transform: translateX(3px);
+    }
+
+    .feature-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--emerald-light);
+      border: 1px solid var(--emerald-border);
+      color: var(--text-forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .feature-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .feature-text strong {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-navy);
+    }
+
+    .feature-text span {
+      font-size: 0.8rem;
+      color: var(--text-slate);
+      line-height: 1.4;
+    }
+
+    /* Hero Platform Stats */
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(226, 232, 240, 0.75);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: var(--text-forest);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    .stat-sep {
+      width: 1px;
+      height: 22px;
+      background: #E2E8F0;
     }
 
     /* Right Column: Floating White Submission Card */
     .card-col {
       display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
+      justify-content: center;
+      align-items: center;
       width: 100%;
-      padding-top: 4px;
     }
 
     .eval-card {
@@ -226,9 +343,9 @@
       border: 1px solid var(--card-border);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-card);
-      padding: 36px 36px 30px;
+      padding: 32px 32px 24px;
       width: 100%;
-      max-width: 490px;
+      max-width: 480px;
       position: relative;
       transition: box-shadow 0.3s ease;
     }
@@ -241,8 +358,8 @@
     .card-header {
       display: flex;
       align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 26px;
+      gap: 14px;
+      margin-bottom: 22px;
     }
 
     .card-icon-box {
@@ -829,29 +946,15 @@
     }
 
     /* Responsive Media Queries */
-    @media (max-width: 1080px) {
+    @media (max-width: 1040px) {
       .main-grid {
         grid-template-columns: 1fr;
-        gap: 32px;
+        gap: 36px;
       }
 
       .hero-col {
-        width: 100%;
-        max-width: 535px;
-        min-height: auto;
+        max-width: 580px;
         margin: 0 auto;
-      }
-
-      .hero-bg-art {
-        position: relative;
-        width: 100%;
-        height: auto;
-        max-width: 500px;
-        margin: 12px auto 0;
-      }
-
-      .hero-content {
-        max-width: 100%;
         text-align: center;
       }
 
@@ -860,21 +963,25 @@
       }
 
       .hero-subtitle {
-        max-width: 100%;
+        margin: 0 auto 24px;
+      }
+
+      .hero-features {
+        text-align: left;
+      }
+
+      .hero-stats {
+        justify-content: center;
       }
 
       .card-col {
         justify-content: center;
       }
-
-      .botanical-corner {
-        width: 160px;
-      }
     }
 
     @media (max-width: 600px) {
       .page-wrapper {
-        padding: 20px 16px 36px;
+        padding: 16px 14px 28px;
       }
 
       .eval-card {
@@ -883,7 +990,15 @@
       }
 
       .hero-heading {
-        font-size: 2.6rem;
+        font-size: 2.5rem;
+      }
+
+      .hero-stats {
+        gap: 12px;
+      }
+
+      .stat-value {
+        font-size: 1rem;
       }
 
       .card-trust-row {
@@ -899,13 +1014,8 @@
 </head>
 <body>
 
-  <!-- Top-Right Botanical Eucalyptus Corner Branch -->
-  <img 
-    src="/static/botanical_corner.png" 
-    onerror="this.onerror=null; this.src='static/botanical_corner.png'"
-    alt="Botanical Leaf Accent" 
-    class="botanical-corner" 
-  />
+  <!-- Ambient Decorative Background Glow -->
+  <div class="ambient-glow-top"></div>
 
   <div class="page-wrapper">
     <!-- Navbar -->
@@ -926,34 +1036,91 @@
         <span class="brand-sep">|</span>
         <span class="brand-sub">Evaluation</span>
       </a>
+
+      <div class="nav-badge">
+        <span class="nav-badge-dot"></span>
+        <span>Calibrated UPSC CSE Standards</span>
+      </div>
     </header>
 
     <!-- Main Grid -->
     <main class="main-grid">
-      <!-- Left Column: Editorial & Authentic UPSC Artwork Integration -->
+      <!-- Left Column: Editorial & Value Propositions -->
       <section class="hero-col">
-        <!-- Authentic Background Artwork: Parliament, Ashoka Lion, Booklet, Pen -->
-        <img 
-          src="/static/hero_illustration_smooth.png" 
-          onerror="this.onerror=null; this.src='static/hero_illustration_smooth.png'"
-          alt="UPSC Answer Booklet, Fountain Pen, Indian Parliament Samvidhan Sadan and Ashoka Lion Capital" 
-          class="hero-bg-art"
-        />
+        <div class="hero-tagline">
+          <span class="tagline-pill">UPSC CIVIL SERVICES</span>
+          <span class="tagline-bar"></span>
+          <span class="tagline-sub">Mains Evaluation Engine</span>
+        </div>
 
-        <div class="hero-content">
-          <div class="hero-tagline">
-            <span class="tagline-bar"></span>
-            <span class="tagline-text">ANSWER BETTER. PREPARE SMARTER.</span>
+        <h1 class="hero-heading">
+          <span class="line-brand">UPSCopilot</span>
+          <span class="line-eval">Evaluation</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Authentic, uninflated answer copy evaluation calibrated against official UPSC standards. Upload your handwritten booklet and get detailed feedback delivered directly to your inbox.
+        </p>
+
+        <!-- 3 Feature Pillars -->
+        <div class="hero-features">
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <polyline points="9 12 11 14 15 10"></polyline>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <strong>Realistic UPSC Scoring</strong>
+              <span>Strict, uninflated marks reflecting authentic UPSC examiner standards.</span>
+            </div>
           </div>
 
-          <h1 class="hero-heading">
-            <span class="line-brand">UPSCopilot</span>
-            <span class="line-eval">Evaluation</span>
-          </h1>
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <strong>Question-by-Question Diagnostics</strong>
+              <span>Actionable analysis of key strengths, missing points, and ways to score higher.</span>
+            </div>
+          </div>
 
-          <p class="hero-subtitle">
-            Calibrated UPSC scoring, grounded case citations, and deep diagnostic diagnostics delivered directly to your inbox.
-          </p>
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <path d="m9 15 2 2 4-4"></path>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <strong>Scorecard PDF to Your Email</strong>
+              <span>Complete evaluation scorecard delivered straight to your Gmail inbox in ~1 min.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform Stats -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-value">~50s</span>
+            <span class="stat-label">Evaluation Speed</span>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-item">
+            <span class="stat-value">Instant</span>
+            <span class="stat-label">Email Delivery</span>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-item">
+            <span class="stat-value">PDF</span>
+            <span class="stat-label">Detailed Scorecard</span>
+          </div>
         </div>
       </section>
 
@@ -1130,13 +1297,11 @@
             <div class="card-trust-row">
               <div class="trust-badge-item">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 3v17"></path>
-                  <path d="M5 21h14"></path>
-                  <path d="M4 7h16"></path>
-                  <path d="M4 7l-2 5a3 3 0 0 0 6 0L6 7"></path>
-                  <path d="M20 7l-2 5a3 3 0 0 0 6 0L22 7"></path>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <path d="m9 15 2 2 4-4"></path>
                 </svg>
-                <span>Grounded Case Law Citations</span>
+                <span>Detailed Examiner Diagnostics</span>
               </div>
               <div class="trust-divider"></div>
               <div class="trust-badge-item">
@@ -1144,7 +1309,7 @@
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   <polyline points="9 12 11 14 15 10"></polyline>
                 </svg>
-                <span>Calibrated UPSC CSE Standards</span>
+                <span>Authentic UPSC CSE Standards</span>
               </div>
             </div>
           </form>

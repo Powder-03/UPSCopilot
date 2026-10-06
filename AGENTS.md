@@ -337,6 +337,11 @@ evaluator/
     - Prominent scorecard PDF attachment callout box
   - **Dual MIME Format**: Automatically builds `multipart/alternative` (`text/plain` and `text/html`) inside `multipart/mixed` for spam filter resilience.
   - **Full Details in PDF**: All question-by-question marks, pros, what to do better, and model suggestions remain exclusively in the attached high-resolution PDF (`UPSC_Evaluation_Scorecard.pdf`).
+- [x] Landing Page Alignment Overhaul & AI Jargon Purge:
+  - **Fixed Visual Alignment & Broken Images**: Removed missing image tags (`botanical_corner.png`, `hero_illustration_smooth.png`) that caused alt-text overlapping and huge empty layout gaps. Replaced with pure CSS ambient glow and responsive SVG vector icons.
+  - **Balanced 2-Column Responsive Grid**: Redesigned `.main-grid` into a balanced `1.15fr : 0.85fr` flex-aligned grid centered on desktop and tablet screens without horizontal or vertical clipping.
+  - **Purged Internal AI Jargon**: Replaced technical jargon ("G-Eval", "dual-groundedness", "token logprob head", "465 articles") with clean, student-centric value propositions (*Realistic UPSC Scoring*, *Question-by-Question Diagnostics*, *Scorecard PDF to Your Email*).
+  - **Browser Verified**: Tested across 1440px desktop, tablet, and mobile viewports with zero errors and smooth responsive reflow.
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance
