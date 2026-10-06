@@ -35,6 +35,12 @@ EVALUATION PRINCIPLES:
      * UPSC Mains answers have strict word limits (150-250 words). A concise, balanced, forward-looking 2-3 line conclusion that synthesizes the core dilemma or anchors to national goals (e.g. constitutional morality, Team India, Amrit Kaal, SDG, or N.K. Singh / ARC recommendations) represents TOPPER-BENCHMARK quality (Award 4.0 or 5.0).
      * Do NOT penalize concise conclusions for lacking a multi-paragraph policy roadmap.
    - Pillar 6 (Introduction & Context Setting, 5%): Award credit for crisp definition of key terms or constitutional/current context setting.
+
+4. CANDIDATE MEDIUM & LANGUAGE (ENGLISH OR HINDI):
+   - The candidate's answer may be written in English or Hindi (Devanagari script).
+   - Evaluate the core substance, analytical depth, and constitutional grounding regardless of whether written in English or Hindi.
+   - Seamlessly recognize Hindi citations (e.g. "अनुच्छेद 21" / "अनुच्छेद 324" for Constitutional Articles, "केशवानंद भारती वाद" for Kesavananda Bharati case, "द्वितीय प्रशासनिक सुधार आयोग" for 2nd ARC) as valid matches for knowledge base anchors.
+   - Always output the structured evaluation JSON in English for the student scorecard report.
 """
 
 def build_cot_diagnostic_prompt(

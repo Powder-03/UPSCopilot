@@ -14,11 +14,34 @@ Parameters:
     Default: "project-1b52589d-0827-46ab-9be"
   EmailProvider:
     Type: String
-    Description: "Email delivery provider: 'ses' or 'mock'"
-    Default: "ses"
+    Description: "Email delivery provider: 'google', 'smtp', 'ses', or 'mock'"
+    Default: "google"
     AllowedValues:
+      - "google"
+      - "smtp"
       - "ses"
       - "mock"
+  SmtpHost:
+    Type: String
+    Description: "SMTP Server Host (e.g. smtp.gmail.com)"
+    Default: "smtp.gmail.com"
+  SmtpPort:
+    Type: String
+    Description: "SMTP Server Port (587 for STARTTLS, 465 for SSL)"
+    Default: "587"
+  SmtpUser:
+    Type: String
+    Description: "Google / Gmail Account Email for SMTP authentication"
+    Default: "yujitodoyuta@gmail.com"
+  SmtpPassword:
+    Type: String
+    NoEcho: true
+    Description: "Google 16-character App Password for SMTP authentication"
+    Default: ""
+  MailFromName:
+    Type: String
+    Description: "Friendly Sender Name for Scorecard Emails"
+    Default: "UPSC Evaluator"
   SesFromEmail:
     Type: String
     Description: "Verified Amazon SES Sender Email"
@@ -70,6 +93,11 @@ Globals:
         QUEUE_URL: !Ref EvaluationQueue
         EVAL_LAMBDA_FUNCTION_NAME: !Sub "${AWS::StackName}-single-question-eval"
         EMAIL_PROVIDER: !Ref EmailProvider
+        SMTP_HOST: !Ref SmtpHost
+        SMTP_PORT: !Ref SmtpPort
+        SMTP_USER: !Ref SmtpUser
+        SMTP_PASSWORD: !Ref SmtpPassword
+        MAIL_FROM_NAME: !Ref MailFromName
         SES_FROM_EMAIL: !Ref SesFromEmail
 
 Resources:

@@ -97,7 +97,7 @@ ANALYSIS GUIDELINES:
    - A question header ONLY designates the beginning of an entirely new question attempt.
 
 5. HANDWRITING & FORMATTING FIDELITY:
-   - Transcribe all handwritten English and technical terms with high accuracy.
+   - Transcribe all handwritten candidate text with high fidelity, whether written in English or Hindi (Devanagari script).
    - Maintain structural formatting: preserve main headings, subheadings, underlined phrases, numbered points, and bulleted lists.
    - Convert handwritten tables into standard GitHub Flavored Markdown tables:
      | Parameter | Aspect A | Aspect B |

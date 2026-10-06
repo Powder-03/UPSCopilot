@@ -72,10 +72,12 @@ class Settings(BaseSettings):
     eval_lambda_function_name: str | None = Field(default=None, alias="EVAL_LAMBDA_FUNCTION_NAME")
     parsed_booklets_table: str | None = Field(default=None, alias="PARSED_BOOKLETS_TABLE")
 
-    # Email Delivery Configuration (SES, SMTP, or Mock)
-    email_provider: str = Field(default="mock", alias="EMAIL_PROVIDER")
+    # Email Delivery Configuration (Google SMTP, SES, or Mock)
+    email_provider: str = Field(default="google", alias="EMAIL_PROVIDER")
+    mail_from_name: str = Field(default="UPSC Evaluator", alias="MAIL_FROM_NAME")
+    mail_from_email: str | None = Field(default=None, alias="MAIL_FROM_EMAIL")
     ses_from_email: str = Field(default="evaluator@upscopilot.com", alias="SES_FROM_EMAIL")
-    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_host: str = Field(default="smtp.gmail.com", alias="SMTP_HOST")
     smtp_port: int = Field(default=587, alias="SMTP_PORT")
     smtp_user: str = Field(default="", alias="SMTP_USER")
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
@@ -124,6 +126,15 @@ class Settings(BaseSettings):
             or os.environ.get("AWS_PROFILE")
             or (os.path.exists(os.path.expanduser("~/.aws/credentials")))
         )
+
+    @property
+    def default_from_email(self) -> str:
+        """Returns the sender email, falling back to SMTP user or SES from email."""
+        if self.mail_from_email:
+            return self.mail_from_email
+        if self.smtp_user:
+            return self.smtp_user
+        return self.ses_from_email
 
 
 settings = Settings()

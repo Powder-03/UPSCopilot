@@ -315,8 +315,28 @@ evaluator/
     - Never discards candidate handwriting as "front matter" if non-empty answer text exists.
   - **Sectional Mock Test Reconciliation (`reconcile_and_sort_questions`)**:
     - For sectional mock tests (e.g., Q1 to Q5, or Q1 to Q10), only reconciles internal skipped questions within the attempted range; does NOT fabricate bogus blank questions up to 20 unless `total_expected_questions=20` or a 20-question `master_questions` paper is provided.
-  - **Safe Blank Detection Threshold**: Adjusted `darkness_threshold` in `PDFPreprocessor` from 0.005 to 0.002 so light pencil strokes or brief conclusions are never falsely dropped before vision OCR.
   - **Validation**: 66 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
+- [x] Migrated Email Delivery from Amazon SES to Google SMTP (Zero Sandbox Restrictions):
+  - **The SES Sandbox Issue**: Amazon SES in new AWS accounts is restricted to a sandbox environment, refusing to send emails to unverified student email addresses.
+  - **Google SMTP Engine (`src/services/email_service.py`)**:
+    - Upgraded `EmailService` to default to `provider="google"` (`smtp.gmail.com`).
+    - Supports port 587 (STARTTLS) and port 465 (SSL) with automatic 3-attempt retry on transient socket timeouts.
+    - Sets friendly display name (`From: UPSC Evaluator <user@gmail.com>`).
+    - Guarantees envelope sender matches authenticated Google account to satisfy SPF/DKIM and prevent Gmail spam filtering.
+    - Preserves high-resolution Scorecard PDF attachments via `MIMEMultipart("mixed")` and `MIMEApplication`.
+  - **Validation & Live Verification**:
+    - Added `scripts/dev/test_google_mail.py` live test probe.
+    - Verified real email delivery to `yujitodoyuta@gmail.com` via Google SMTP (`smtp.gmail.com:587`) with high-resolution Scorecard PDF attached (147 KB).
+    - Full test suite: 70 passed, 7 Bedrock-skipped, 0 failures, 100% clean `ruff` check.
+- [x] Streamlined Student Email Scorecard Format (Concise Body + PDF Attachment):
+  - **No Question Text in Email Body**: Purged verbose question cards and diagnostic walls of text from the email body.
+  - **Strictly Concise Summary**: Email body strictly contains:
+    - Total Marks (`X / Y (Z%)`)
+    - What You Did Good (top 1-2 lines / bullets from key strengths)
+    - What Could Be Better (top 1-2 lines / bullets from priority improvements)
+    - Prominent scorecard PDF attachment callout box
+  - **Dual MIME Format**: Automatically builds `multipart/alternative` (`text/plain` and `text/html`) inside `multipart/mixed` for spam filter resilience.
+  - **Full Details in PDF**: All question-by-question marks, pros, what to do better, and model suggestions remain exclusively in the attached high-resolution PDF (`UPSC_Evaluation_Scorecard.pdf`).
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance
