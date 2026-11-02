@@ -114,7 +114,7 @@ def _run_pdf_generation(report: StudentEvaluationReport) -> bytes:
     return generate_scorecard_pdf(report)
 
 
-@traceable(name="Amazon_SES_Email_Delivery", run_type="tool")
+@traceable(name="SMTP_Scorecard_Email_Delivery", run_type="tool")
 def _run_email_delivery(
     email_svc: EmailService,
     to_email: str,
@@ -122,7 +122,7 @@ def _run_email_delivery(
     job_id: str,
     pdf_bytes: bytes | None,
 ) -> bool:
-    """Sends evaluation scorecard email via Amazon SES."""
+    """Sends evaluation scorecard email with PDF attachment via SMTP (or configured provider)."""
     return email_svc.send_evaluation_email(
         to_email=to_email,
         report=report,
@@ -366,7 +366,7 @@ class EC2CoordinatorOrchestrator:
             except Exception as pdf_err:
                 logger.warning("PDF generation failed for %s: %s", job_id, pdf_err)
 
-            # 8. Send Email via Amazon SES
+            # 8. Send Scorecard Email via SMTP
             email_sent = False
             target_email = email
             if target_email:

@@ -137,7 +137,21 @@ def test_google_smtp_service_defaults():
         smtp_user="aspirant@gmail.com",
         smtp_password="app_password_123",
     )
-    assert service.provider == "google"
+    assert service.provider in ("smtp", "google")
+    assert service.smtp_host == "smtp.gmail.com"
+    assert service.smtp_port == 587
+    assert service.from_email == "aspirant@gmail.com"
+
+
+def test_smtp_service_defaults():
+    """Verifies that SMTP provider initializes with smtp.gmail.com and port 587 by default."""
+    service = EmailService(
+        provider="smtp",
+        from_email="aspirant@gmail.com",
+        smtp_user="aspirant@gmail.com",
+        smtp_password="app_password_123",
+    )
+    assert service.provider == "smtp"
     assert service.smtp_host == "smtp.gmail.com"
     assert service.smtp_port == 587
     assert service.from_email == "aspirant@gmail.com"
@@ -202,4 +216,38 @@ def test_google_smtp_dispatch_ssl_465():
         mock_ssl_cls.assert_called_once_with("smtp.gmail.com", 465, timeout=20)
         mock_ssl_instance.login.assert_called_once_with("sender@gmail.com", "app_password_ssl")
         assert mock_ssl_instance.sendmail.called
+
+
+def test_email_service_overrides_ses_env_to_smtp(monkeypatch):
+    """Verifies that EmailService() without explicit provider overrides settings.email_provider='ses' to 'smtp'."""
+    monkeypatch.setattr("src.services.email_service.settings.email_provider", "ses")
+    service = EmailService()
+    assert service.provider in ("smtp", "google")
+
+
+def test_ses_fallback_to_google_smtp_on_failure():
+    """Verifies that if SES fails (e.g. sandbox restriction), EmailService automatically falls back to SMTP."""
+    from unittest.mock import MagicMock, patch
+
+    report = _create_sample_report()
+    service = EmailService(
+        provider="ses",
+        smtp_user="sender@gmail.com",
+        smtp_password="app_password",
+    )
+
+    mock_smtp_instance = MagicMock()
+    with patch.object(service, "_send_via_ses", return_value=False) as mock_ses, \
+         patch("smtplib.SMTP") as mock_smtp_cls:
+        mock_smtp_cls.return_value.__enter__.return_value = mock_smtp_instance
+
+        success = service.send_evaluation_email(
+            to_email="unverified_student@gmail.com",
+            report=report,
+        )
+
+        assert success is True
+        mock_ses.assert_called_once()
+        mock_smtp_cls.assert_called_once()
+
 

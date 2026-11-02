@@ -72,15 +72,15 @@ class Settings(BaseSettings):
     eval_lambda_function_name: str | None = Field(default=None, alias="EVAL_LAMBDA_FUNCTION_NAME")
     parsed_booklets_table: str | None = Field(default=None, alias="PARSED_BOOKLETS_TABLE")
 
-    # Email Delivery Configuration (Google SMTP, SES, or Mock)
-    email_provider: str = Field(default="google", alias="EMAIL_PROVIDER")
+    # Email Delivery Configuration (SMTP, Google Mail, or Mock)
+    email_provider: str = Field(default="smtp", alias="EMAIL_PROVIDER")
     mail_from_name: str = Field(default="UPSC Evaluator", alias="MAIL_FROM_NAME")
-    mail_from_email: str | None = Field(default=None, alias="MAIL_FROM_EMAIL")
-    ses_from_email: str = Field(default="evaluator@upscopilot.com", alias="SES_FROM_EMAIL")
+    mail_from_email: str | None = Field(default="yujitodoyuta@gmail.com", alias="MAIL_FROM_EMAIL")
+    ses_from_email: str = Field(default="yujitodoyuta@gmail.com", alias="SES_FROM_EMAIL")
     smtp_host: str = Field(default="smtp.gmail.com", alias="SMTP_HOST")
     smtp_port: int = Field(default=587, alias="SMTP_PORT")
-    smtp_user: str = Field(default="", alias="SMTP_USER")
-    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_user: str = Field(default="yujitodoyuta@gmail.com", alias="SMTP_USER")
+    smtp_password: str = Field(default="dtkyuvivhwoysdtm", alias="SMTP_PASSWORD")
 
     # Confident AI / DeepEval Key
     confident_api_key: str | None = Field(default=None, alias="CONFIDENT_API_KEY")

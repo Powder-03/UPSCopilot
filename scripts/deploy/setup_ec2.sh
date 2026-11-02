@@ -113,9 +113,10 @@ echo "EC2 Setup Complete! Available Memory:"
 free -h
 echo ""
 echo "To start the services on EC2:"
-echo "  1. Copy your .env secrets into /home/ubuntu/evaluator/.env"
+echo "  1. Copy your .env secrets (including EMAIL_PROVIDER=smtp and SMTP credentials) into /home/ubuntu/evaluator/.env"
 echo "  2. Start Web Portal: sudo systemctl enable --now upscopilot"
 echo "  3. Start SQS Worker: sudo systemctl enable --now upscopilot-worker"
 echo "  4. Check logs: journalctl -u upscopilot-worker -f"
+echo "  5. For subsequent updates: bash scripts/deploy/update_ec2.sh"
 echo "=================================================================="
 

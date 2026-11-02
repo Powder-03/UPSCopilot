@@ -34,17 +34,36 @@ class EmailService:
         smtp_user: str | None = None,
         smtp_password: str | None = None,
     ):
-        raw_provider = (provider or settings.email_provider).strip().lower()
-        if raw_provider in ("google", "gmail", "smtp"):
-            self.provider = "google"
-        elif raw_provider == "ses":
-            self.provider = "ses"
+        # Provider selection:
+        # SMTP is the primary delivery mechanism to ensure reliable scorecard delivery to all students
+        # without being blocked by AWS SES sandbox restrictions.
+        if provider is not None:
+            raw_provider = provider.strip().lower()
+            if raw_provider in ("smtp", "google", "gmail"):
+                self.provider = "smtp"
+            elif raw_provider == "ses":
+                self.provider = "ses"
+            else:
+                self.provider = "mock"
         else:
-            self.provider = "mock"
+            raw_provider = settings.email_provider.strip().lower()
+            if raw_provider == "ses":
+                logger.warning(
+                    "EMAIL_PROVIDER is configured as 'ses', but AWS SES is in sandbox mode "
+                    "(unverified student emails cannot receive scorecards). Overriding to SMTP "
+                    "via %s:%s to guarantee delivery.",
+                    settings.smtp_host or "smtp.gmail.com",
+                    settings.smtp_port or 587,
+                )
+                self.provider = "smtp"
+            elif raw_provider in ("smtp", "google", "gmail"):
+                self.provider = "smtp"
+            else:
+                self.provider = "mock"
 
         self.from_name = from_name if from_name is not None else settings.mail_from_name
         self.from_email = from_email or settings.default_from_email
-        self.smtp_host = smtp_host or (settings.smtp_host or "smtp.gmail.com")
+        self.smtp_host = smtp_host or settings.smtp_host or "smtp.gmail.com"
         self.smtp_port = smtp_port or settings.smtp_port
         self.smtp_user = smtp_user or settings.smtp_user
         self.smtp_password = smtp_password or settings.smtp_password
@@ -196,14 +215,25 @@ class EmailService:
                     logger.warning("Failed to save email preview: %s", e)
             return True
 
-        if self.provider in ("google", "gmail", "smtp"):
-            return self._send_via_google_smtp(
+        if self.provider in ("smtp", "google", "gmail"):
+            return self._send_via_smtp(
                 to_email, subject, html_content, text_body=text_content, pdf_bytes=pdf_bytes, job_id=job_id
             )
         elif self.provider == "ses":
-            return self._send_via_ses(
+            success = self._send_via_ses(
                 to_email, subject, html_content, text_body=text_content, pdf_bytes=pdf_bytes, job_id=job_id
             )
+            # If SES delivery fails (e.g. unverified recipient in AWS SES sandbox), fallback to SMTP
+            if not success and (self.smtp_user or self.from_email):
+                logger.warning(
+                    "Amazon SES delivery failed for %s (likely AWS SES sandbox restriction). "
+                    "Auto-falling back to SMTP...",
+                    to_email,
+                )
+                return self._send_via_smtp(
+                    to_email, subject, html_content, text_body=text_content, pdf_bytes=pdf_bytes, job_id=job_id
+                )
+            return success
         else:
             logger.warning("Unknown email provider '%s'; falling back to mock logging.", self.provider)
             return True
@@ -227,10 +257,11 @@ class EmailService:
             body_container = msg
 
         msg["Subject"] = subject
-        if self.from_name and "<" not in self.from_email:
-            msg["From"] = f"{self.from_name} <{self.from_email}>"
+        sender = self.from_email or self.smtp_user
+        if self.from_name and sender and "<" not in sender:
+            msg["From"] = f"{self.from_name} <{sender}>"
         else:
-            msg["From"] = self.from_email
+            msg["From"] = sender or ""
         msg["To"] = to_email
 
         if text_body:
@@ -250,7 +281,7 @@ class EmailService:
 
         return msg
 
-    def _send_via_google_smtp(
+    def _send_via_smtp(
         self,
         to_email: str,
         subject: str,
@@ -259,7 +290,7 @@ class EmailService:
         pdf_bytes: bytes | None = None,
         job_id: str | None = None,
     ) -> bool:
-        """Sends email using Google SMTP (smtp.gmail.com) with SSL or STARTTLS and retry logic."""
+        """Sends email using SMTP (e.g. Gmail smtp.gmail.com or custom host) with SSL (465) or STARTTLS (587) and retry logic."""
         import time
 
         host = self.smtp_host or "smtp.gmail.com"
@@ -267,7 +298,7 @@ class EmailService:
         envelope_from = self.smtp_user or self.from_email
 
         if not envelope_from:
-            logger.warning("No sender email or SMTP_USER configured for Google SMTP. Falling back to log.")
+            logger.warning("No sender email or SMTP_USER configured for SMTP. Falling back to log.")
             return False
 
         msg = self._build_mime_message(
@@ -290,19 +321,20 @@ class EmailService:
                             server.login(self.smtp_user, self.smtp_password)
                         server.sendmail(envelope_from, [to_email], msg.as_string())
 
-                logger.info("Google SMTP email sent successfully to %s via %s:%d", to_email, host, port)
+                logger.info("SMTP email sent successfully to %s via %s:%d", to_email, host, port)
                 return True
             except smtplib.SMTPAuthenticationError as auth_err:
                 logger.error(
-                    "Google SMTP authentication failed for user '%s': %s. "
-                    "Make sure to use a 16-character Google App Password (not your standard Gmail login password).",
+                    "SMTP authentication failed for user '%s': %s. "
+                    "Make sure to use a 16-character Google App Password (not your standard Gmail login password) "
+                    "when using smtp.gmail.com.",
                     self.smtp_user,
                     auth_err,
                 )
                 return False
             except Exception as e:
                 logger.warning(
-                    "Google SMTP delivery attempt %d/3 to %s failed: %s",
+                    "SMTP delivery attempt %d/3 to %s failed: %s",
                     attempt,
                     to_email,
                     e,
@@ -310,11 +342,11 @@ class EmailService:
                 if attempt < 3:
                     time.sleep(2.0)
                 else:
-                    logger.error("All Google SMTP delivery attempts failed to %s: %s", to_email, e)
+                    logger.error("All SMTP delivery attempts failed to %s: %s", to_email, e)
                     return False
         return False
 
-    def _send_via_smtp(
+    def _send_via_google_smtp(
         self,
         to_email: str,
         subject: str,
@@ -323,8 +355,8 @@ class EmailService:
         pdf_bytes: bytes | None = None,
         job_id: str | None = None,
     ) -> bool:
-        """Alias for _send_via_google_smtp for backward compatibility."""
-        return self._send_via_google_smtp(
+        """Alias for _send_via_smtp for backward compatibility."""
+        return self._send_via_smtp(
             to_email, subject, html_body, text_body=text_body, pdf_bytes=pdf_bytes, job_id=job_id
         )
 

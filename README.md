@@ -2,216 +2,106 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Tests Passing](https://img.shields.io/badge/tests-55%20passed-success.svg)](tests/)
-[![Architecture: Decoupled Serverless](https://img.shields.io/badge/AWS-Lambda%20%7C%20SQS%20%7C%20DynamoDB%20%7C%20SES-orange.svg)](template.yaml)
-[![LLM: Any Logprob-Capable LLM](https://img.shields.io/badge/LLM-Any%20Logprob--Enabled%20LLM%20(Vertex%20AI%20%7C%20Bedrock)-purple.svg)](src/providers/)
+[![Tests Passing](https://img.shields.io/badge/tests-72%20passed-success.svg)](tests/)
+[![Architecture: AWS Hybrid Serverless](https://img.shields.io/badge/AWS-S3%20%7C%20SQS%20%7C%20DynamoDB%20%7C%20EC2%20%7C%20Lambda-orange.svg)](template.yaml)
+[![LLM: Any Logprob-Capable LLM](https://img.shields.io/badge/LLM-Vertex%20AI%20%7C%20AWS%20Bedrock-purple.svg)](src/providers/)
 [![Observability: LangSmith](https://img.shields.io/badge/Observability-LangSmith-2496ED.svg)](https://smith.langchain.com/public/f553aa87-076d-4431-944a-cb8aecad7743/r/01a10363-900f-7be1-976d-17257b4deca1?start_time=2026-10-03T20%3A10%3A19.023878Z)
-[![RAG Benchmark: DeepEval](https://img.shields.io/badge/RAG%20Eval-DeepEval-FF5722.svg)](https://confident-ai.com/)
 
 > **Calibrated, grounded, and anti-sycophantic evaluation engine for UPSC Civil Services Mains handwritten answers.**  
-> Powered by continuous logprob G-Eval scoring, hybrid sparse-dense RAG retrieval, DeepEval RAG benchmarking, LangSmith tracing, multimodal QCAB vision OCR, and authentic UPSC CSE marking calibration.
+> Powered by dynamic page-by-page multimodal vision OCR, Knowledge Base RAG verification, and continuous logprob G-Eval scoring calibrated to authentic UPSC CSE standards.
 
 <p align="center">
   <img src="assets/homepage_preview.png" alt="UPSCopilot Evaluation Interface" width="900"/>
 </p>
 
-> **Model-Agnostic Logprob Engine**: UPSCopilot is completely provider- and model-agnostic. Any frontier LLM with token logprob extraction (e.g., Gemini 2.5, Moonshot Kimi 2.5, or any future logprob-enabled model) can power the G-Eval scoring engine. The active provider and model IDs are dynamically toggled via `.env` without modifying domain code.
+> 📊 **[View Full 6-Pillar Marking Rubrics & Empirical Benchmarks →](RUBRICS_AND_BENCHMARKS.md)**
 
 ---
 
-## The Problem: Why Standard LLM Evaluation Fails UPSC Mains
+## Why UPSCopilot?
 
-Generic LLM prompts fail catastrophically when evaluating UPSC Civil Services Mains answers:
-1. **Severe Grade Inflation**: Standard LLMs give 140–165 / 250 marks (56–66%). In authentic UPSC CSE Mains, all-India toppers (AIR 1–50) score **105–118 / 250 marks** (42–47%). Marks above 135+ are statistically non-existent.
-2. **Evaluation Sycophancy**: LLMs praise fluent English, overlooking missing core directives (e.g., *Critically Analyze* vs. *Elucidate*), lack of legal grounding, and shallow governance dimensions.
-3. **Severe Score Drift & Non-Determinism**: Re-prompting standard models on the same answer creates arbitrary score swings of $\pm 20\%$.
-4. **Hallucinated Citations**: Models fail to verify whether cited Articles, Supreme Court landmark cases, and Law Commission reports actually exist or support the arguments made.
+Generic LLM prompts fail when evaluating UPSC Civil Services Mains answer copies:
+1. **Severe Grade Inflation**: Standard LLMs award 140–165 / 250 marks (56–66%), whereas real UPSC CSE all-India toppers (AIR 1–50) score **105–118 / 250 marks** (42–47%).
+2. **Evaluation Sycophancy**: Models praise fluent English while ignoring missed directives (*Critically Analyze* vs. *Elucidate*), shallow dimensions, and missing citations.
+3. **Score Drift**: Re-running standard prompts on the same copy produces arbitrary swings of $\pm 20\%$.
+4. **Unverified Citations**: Standard models fail to verify whether cited legal and statutory references actually exist or support the argument.
 
-**UPSCopilot** eliminates these pathologies through **grounded RAG verification**, **hard demand relevance gates**, and **probability-weighted continuous logprob scoring**.
+**UPSCopilot** eliminates these issues through **Knowledge Base RAG grounding**, **Hard Demand Relevance Gates**, and **Probability-Weighted Continuous Logprob Scoring**—achieving near-deterministic stability ($\sigma = 0.82$ marks across 250-mark full-length copies).
 
----
-
-## Empirical Benchmark Data & Consistency Verification
-
-UPSCopilot was evaluated across multiple complete 20-question UPSC General Studies answer copies under repeated autonomous evaluation runs. Below is empirical benchmark data showing near-deterministic stability.
-
-### 1. High-Quality / Selection-Trajectory Copy (5 Consecutive Evaluation Runs)
-
-Evaluating a full 20-question copy across 5 independent evaluation cycles with zero cross-question CoT contamination:
-
-#### Run-by-Run Total Score Stability
-
-| Run # | Total Marks Awarded | Percentage |
-| :--- | :--- | :--- |
-| **Run 1** | **104.33** / 250.00 marks | **41.7%** |
-| **Run 2** | **104.26** / 250.00 marks | **41.7%** |
-| **Run 3** | **104.44** / 250.00 marks | **41.8%** |
-| **Run 4** | **106.12** / 250.00 marks | **42.4%** |
-| **Run 5** | **105.41** / 250.00 marks | **42.2%** |
-
-#### Statistical Spread Metrics
-- **Mean Copy Score**: `104.91 / 250.00 marks` (Authentic UPSC CSE Interview Cutoff / Selection Zone)
-- **Standard Deviation ($\sigma$)**: `0.82 marks`
-- **Score Range ($\text{Max} - \text{Min}$)**: `1.86 marks` (Min: 104.26, Max: 106.12)
-- **Spread as % of Total Marks**: `0.74%`
-- **Coefficient of Variation ($CV$)**: `0.78%`
-- **Consistency Verdict**: **Exceptional Stability (Near-Deterministic)**
-
-#### Per-Question Marking Comparison Sample
-
-| Q# | Max | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Mean | StdDev ($\sigma$) | Range |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Q01** | 10 | 5.00 | 5.20 | 5.14 | 5.00 | 5.20 | **5.11** | 0.10 | 0.20 |
-| **Q02** | 10 | 4.15 | 4.51 | 4.15 | 4.60 | 4.56 | **4.39** | 0.23 | 0.45 |
-| **Q03** | 10 | 3.55 | 3.55 | 3.78 | 4.21 | 4.20 | **3.86** | 0.33 | 0.66 |
-| **Q04** | 10 | 3.75 | 4.30 | 4.60 | 4.30 | 4.60 | **4.31** | 0.35 | 0.85 |
-| **Q05** | 10 | 4.35 | 4.40 | 4.57 | 4.25 | 4.80 | **4.47** | 0.22 | 0.55 |
-| **Q06** | 10 | 4.48 | 4.40 | 4.90 | 4.18 | 4.56 | **4.50** | 0.26 | 0.72 |
+👉 See [**`RUBRICS_AND_BENCHMARKS.md`**](RUBRICS_AND_BENCHMARKS.md) for the complete 6-pillar scoring rubric, mathematical calibration formulas, and multi-run consistency benchmarks.
 
 ---
 
-### 2. Poor-Quality & Stress-Test Copy (4 Consecutive Evaluation Runs)
+## AWS Request Flow & Cloud Architecture
 
-Stress-testing with gross factual hallucinations, off-topic digressions, and unattempted questions:
-
-#### Run-by-Run Total Score Stability
-
-| Run # | Total Marks Awarded | Percentage |
-| :--- | :--- | :--- |
-| **Run 1** | **35.63** / 250.00 marks | **14.3%** |
-| **Run 2** | **35.64** / 250.00 marks | **14.3%** |
-| **Run 3** | **29.48** / 250.00 marks | **11.8%** |
-| **Run 4** | **31.99** / 250.00 marks | **12.8%** |
-
-#### Statistical Spread Metrics
-- **Mean Copy Score**: `33.19 / 250.00 marks`
-- **Standard Deviation ($\sigma$)**: `3.01 marks`
-- **Score Range ($\text{Max} - \text{Min}$)**: `6.16 marks` (Min: 29.48, Max: 35.64)
-- **Consistency Verdict**: **Exceptional Stability** (Strictly penalizes poor attempts without hallucinated leniency)
-
-#### Per-Question Stress Breakdown
-
-| Q# | Max | Run 1 | Run 2 | Run 3 | Run 4 | Mean | StdDev ($\sigma$) | Evaluation Behavior |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Q01** | 10 | 2.50 | 0.25 | 0.40 | 0.25 | **0.85** | 1.10 | Severe penalty for constitutional errors |
-| **Q02** | 10 | 2.50 | 2.50 | 2.50 | 2.50 | **2.50** | 0.00 | Exact deterministic floor score |
-| **Q03** | 10 | 2.67 | 2.50 | 2.50 | 2.50 | **2.54** | 0.08 | Floor stability |
-| **Q04** | 10 | 2.55 | 2.55 | 2.80 | 3.30 | **2.80** | 0.35 | Marginal attempt scored strictly |
-| **Q05** | 10 | 0.00 | 0.25 | 0.26 | 0.27 | **0.20** | 0.13 | **Off-Topic Gate Triggered** (Hard penalty floor) |
-| **Q07** | 10 | 0.38 | 0.27 | 0.25 | 0.25 | **0.29** | 0.06 | Gatekeeper floor |
-| **Q08** | 10 | **0.00** | **0.00** | **0.00** | **0.00** | **0.00** | **0.00** | **Unattempted Fast-Path** (0.00ms, zero-mark lock) |
-
-#### 6-Pillar G-Eval Stability Across Runs (Whole-Copy Aggregates)
-
-| Pillar Name | Weight | Mean Score | StdDev ($\sigma$) | Stability |
-| :--- | :---: | :---: | :---: | :---: |
-| **P1: Directive & Demand Fulfillment** | 25% | 14.23 marks | 0.25 | High |
-| **P2: Structural Architecture & Presentation** | 15% | 9.42 marks | 0.18 | High |
-| **P3: Multi-Dimensional Breadth (GS Governance)** | 20% | 11.34 marks | 0.11 | High |
-| **P4: Grounded Legal Citations & Accuracy** | 20% | 11.35 marks | 0.11 | High |
-| **P5: Conclusion & Constructive Way Forward** | 15% | 8.61 marks | 0.11 | High |
-| **P6: Introduction & Context Setting** | 5% | 2.88 marks | 0.05 | High |
-
----
-
-## Core Engine Architecture
+The diagram below illustrates how an evaluation request travels across AWS services from browser upload to scorecard delivery:
 
 ```
-                    Scanned Answer Booklet (PDF / QCAB)
-                                     │
-                                     ▼
-                ┌──────────────────────────────────────────┐
-                │        Stage 1: Vision OCR Worker        │
-                │  • PyMuPDF Rendering & Visual Blank Skip │
-                │  • Multimodal Vision OCR                 │
-                │  • Bilingual Header Sanitizer            │
-                │  • Diagram & Table Markdown Extraction   │
-                └────────────────────┬─────────────────────┘
-                                     │ Parsed Questions JSON
-                                     ▼
-                ┌──────────────────────────────────────────┐
-                │          Knowledge Base (RAG)            │
-                │  • 465 Authentic Constitution Articles   │
-                │  • Central Statutory Acts (RTI, DPDP...) │
-                │  • 14 Supreme Court Landmark Cases       │
-                │  • Pinecone Vector Store + FlashRank     │
-                └────────────────────┬─────────────────────┘
-                                     │ Ground-Truth Anchors
-                                     ▼
-                ┌──────────────────────────────────────────┐
-                │       Stage 2: 2-Call Evaluation         │
-                │                                          │
-                │  Call 1: Deep Diagnostic CoT             │
-                │  • Demand Decomposition (Micro-Demands)  │
-                │  • Citation Fact-Check & Verification    │
-                │  • Presentation Archetype Analysis       │
-                │                                          │
-                │  Call 2: Continuous G-Eval Logprob Score │
-                │  • Token Logprob Expected Rating E[R]    │
-                │  • Authentic UPSC Linear Calibration:    │
-                │    Score% = 12% + (E[R] * 8%)            │
-                │  • Hard Demand Relevance Gatekeeper      │
-                └────────────────────┬─────────────────────┘
-                                     │
-                                     ▼
-                ┌──────────────────────────────────────────┐
-                │          Student Scorecard Engine        │
-                │  • PyMuPDF High-Res Executive PDF        │
-                │  • Amazon SES Email Delivery             │
-                └──────────────────────────────────────────┘
+┌───────────────────────────┐
+│     Candidate Browser     │
+└─────────────┬─────────────┘
+              │
+              │ 1. GET /api/v1/jobs/upload-url (Request Presigned S3 URL)
+              ▼
+┌──────────────────────────────────────────────────────────┐
+│  FastAPI Web Server (AWS EC2 / API Gateway + ApiLambda)  │
+└──────┬────────────────────────────────────────────┬──────┘
+       │                                            │
+       │ 2. Direct HTTP PUT (Up to 200 MB PDF)      │ 3. POST /api/v1/jobs/submit-direct
+       ▼                                            │    • Creates Job (PENDING) in DynamoDB
+┌───────────────────────────┐                       │    • Enqueues Job ID in SQS
+│         Amazon S3         │                       ▼
+│      (UploadsBucket)      │         ┌───────────────────────────┐
+└─────────────┬─────────────┘         │        Amazon SQS         │
+              │                       │ (EvaluationQueue + DLQ)   │
+              │                       └─────────────┬─────────────┘
+              │                                     │
+              │ 4. Download PDF                     │ 4. Long-Poll Job Message
+              └─────────────────┐   ┌───────────────┘
+                                ▼   ▼
+              ┌───────────────────────────────────────────┐
+              │       EC2 Coordinator Worker Daemon       │
+              │        (Concurrency-Gated: Max 2)         │
+              │                                           │
+              │  a) Dynamic Page-by-Page Vision OCR       │
+              │     & Question Boundary Stitching         │
+              │  b) Parallel Knowledge Base (RAG)         │
+              │     Ground-Truth Prefetch                 │
+              └─────────────────────┬─────────────────────┘
+                                    │
+                                    │ 5. Parallel Fan-Out Invocations (boto3 Lambda Invoke)
+                    ┌───────────────┼───────────────┐
+                    ▼               ▼               ▼
+            ┌───────────────┐ ┌───────────┐ ┌───────────────┐
+            │  AWS Lambda   │ │    ...    │ │  AWS Lambda   │
+            │  Question 1   │ │  Q2..Q19  │ │  Question 20  │
+            ├───────────────┤ └───────────┘ ├───────────────┤
+            │ • Call 1: CoT │               │ • Call 1: CoT │
+            │ • Call 2:     │               │ • Call 2:     │
+            │   G-Eval      │               │   G-Eval      │
+            └───────┬───────┘               └───────┬───────┘
+                    └───────────────┬───────────────┘
+                                    │ 6. Return Question Evaluations
+                                    ▼
+              ┌───────────────────────────────────────────┐
+              │         Finalization & Delivery           │
+              │                                           │
+              │  • Distills Student Evaluation Report     │
+              │  • Renders High-Res PDF Scorecard         │
+              │  • Sends Email + PDF Attachment (SMTP)    │
+              │  • Updates Amazon DynamoDB (COMPLETED)    │
+              │  • Deletes Temporary PDF from Amazon S3   │
+              │  • Flushes Hierarchical Trace (LangSmith) │
+              └───────────────────────────────────────────┘
 ```
 
-### The 2-Call Evaluation Protocol
-1. **Call 1: Deep Diagnostic Chain-of-Thought (CoT)**:
-   - Breaks down question demand into micro-demands based on explicit directives (*Discuss*, *Examine*, *Critically Analyze*, *Evaluate*).
-   - Audits all legal/constitutional citations against ground-truth knowledge base items (`VERIFIED_ACCURATE`, `HALLUCINATED_INVENTED`, `MISATTRIBUTED`, or `VALID_OPEN_WORLD`).
-   - Analyzes presentation archetype (Paragraph-Heavy vs. Diagrammatic vs. Hybrid Tabular).
-2. **Call 2: Probability-Weighted Continuous G-Eval Scoring**:
-   - Instead of asking the model for an arbitrary integer score, requests discrete token distribution logprobs for ratings $1 \dots 5$.
-   - Computes expected rating:
-     $$E[R] = \sum_{r=1}^{5} P(\text{token}=r) \cdot r$$
-   - Maps expected rating into realistic UPSC CSE Mains marks:
-     $$\text{UPSC Mark \%} = 0.12 + (E[R] \times 0.08)$$
-   - Applies weighted pillar formula across **P1–P6**.
-   - Triggers **Hard Demand Relevance Gate** if core demand is unaddressed, capping score at $\le 2.5\% - 25\%$.
-
----
-
-## Observability & Evaluation Framework: LangSmith & DeepEval
-
-UPSCopilot integrates enterprise-grade production observability via **LangSmith** and automated RAG evaluation metrics via **DeepEval** (`deepeval`).
-
-### 1. End-to-End Tracing with LangSmith
-Every evaluation job is tracked as a single, coherent hierarchical trace in LangSmith, providing real-time visibility into the entire multi-stage pipeline:
-
-```
-UnifiedEvaluationPipeline.run_pipeline (Parent Trace)
-├── DocumentParsingPipeline.parse_pdf (Vision OCR)
-│   ├── extract_answer_from_page_images [Q1]
-│   ├── extract_answer_from_page_images [Q2]
-│   └── ...
-└── UPSCEvaluationEngine.evaluate_answer [Q1..Q20]
-    ├── HybridRetriever.retrieve_with_scores (RRF + FlashRank)
-    ├── _run_diagnostic (Call 1: Deep Diagnostic CoT & Citation Audit)
-    └── _apply_marking_policy (Call 2: G-Eval Continuous Logprob Scoring)
-```
-
-> 🔗 **[Inspect Live Production Evaluation Trace on LangSmith](https://smith.langchain.com/public/f553aa87-076d-4431-944a-cb8aecad7743/r/01a10363-900f-7be1-976d-17257b4deca1?start_time=2026-10-03T20%3A10%3A19.023878Z)**  
-> Click through to view the exact production trace tree for an answer booklet evaluation—including nested per-question diagnostics, token logprob distributions, latency metrics, and citation fact-checks.
-
-- **Asynchronous Serverless Trace Flushing (`flush_traces()`)**: In AWS Lambda environments (`vision_worker`, `eval_worker`), execution freezes immediately when the handler returns. UPSCopilot enforces synchronous lifecycle flushing via `src.utils.tracing.flush_traces()` to guarantee zero dropped traces.
-- **Intelligent Payload Redaction (`mask_vision_inputs`)**: Multi-megabyte raw base64 image strings are sanitized before posting to LangSmith, ensuring fast trace uploads while keeping extracted text, prompts, and logprob responses fully transparent.
-
-### 2. RAG Retrieval Benchmarking with DeepEval
-To guarantee that the knowledge base retrieves exact statutory articles and judicial precedents without noise, UPSCopilot implements automated test cases using Confident AI's **DeepEval**:
-- **`ContextualPrecisionMetric`**: Validates that retrieved constitutional articles (e.g., Article 21, Article 324) and SC rulings appear at the top of the context window without noisy distractors.
-- **`ContextualRecallMetric`**: Verifies that 100% of the ground-truth legal citations specified in the canonical GS-2 golden benchmark (`tests/fixtures/golden_dataset.json`) are successfully retrieved by the hybrid retriever.
-- **`UniversalDeepEvalJudge`**: Bridges any active LLM configured in the system (via Google Cloud Vertex AI or AWS Bedrock) as the evaluator judge for automated testing suites.
-
-Run the retrieval benchmark:
-```bash
-uv run python scripts/evaluate/retrieval.py --top-k 8
-```
+### Step-by-Step Request Lifecycle
+1. **Presigned URL Generation**: The client requests a short-lived S3 upload URL from `GET /api/v1/jobs/upload-url`.
+2. **Direct-to-S3 PDF Upload**: The browser streams the scanned answer booklet PDF directly into **Amazon S3 (`UploadsBucket`)**, bypassing API Gateway payload limits.
+3. **Asynchronous Job Dispatch**: The client calls `POST /api/v1/jobs/submit-direct`. The API records the initial `PENDING` state (with a 14-day TTL) in **Amazon DynamoDB (`JobStateTable`)**, dispatches the job payload to **Amazon SQS (`EvaluationQueue`)**, and immediately returns `HTTP 202 Accepted`.
+4. **OCR & Knowledge Base Prefetch (EC2 Coordinator)**: The long-polling **EC2 Worker Daemon** pulls the SQS message, updates **DynamoDB** to `PROCESSING`, downloads the PDF from **Amazon S3**, runs **Dynamic Page-by-Page Vision OCR** to stitch question boundaries, and prefetches relevant ground-truth context from the **Knowledge Base** in parallel.
+5. **Parallel AWS Lambda Fan-Out**: The coordinator fans out concurrent invocations to **AWS Lambda (`SingleQuestionEvalFunction`)** across questions. Each micro-worker executes the 2-call evaluation protocol (Call 1: Diagnostic CoT & Citation Verification; Call 2: Continuous Logprob G-Eval Scoring).
+6. **Scorecard Delivery & Cleanup**: Results are aggregated into a high-resolution `UPSC_Evaluation_Scorecard.pdf` (via `PyMuPDF Story`), emailed to the candidate via **SMTP**, marked `COMPLETED` in **Amazon DynamoDB**, purged from **Amazon S3**, and logged as a single nested trace tree in **LangSmith**.
 
 ---
 
@@ -220,76 +110,29 @@ uv run python scripts/evaluate/retrieval.py --top-k 8
 ```
 evaluator/
 ├── pyproject.toml              # Dependencies, pytest config, ruff config
-├── template.yaml               # AWS SAM IaC: S3, DynamoDB, SQS, API/Vision/Eval Lambdas
-├── Dockerfile                  # Multi-stage production container image for AWS Lambda
-├── conftest.py                 # Pytest configuration & markers
-├── .env.example                # Local environment secrets & model configurations
+├── template.yaml               # AWS SAM IaC (S3, DynamoDB, SQS, API & SingleQuestionEval Lambdas)
+├── Dockerfile                  # Production container image for AWS Lambda
+├── RUBRICS_AND_BENCHMARKS.md   # 6-pillar rubrics, calibration math & empirical benchmarks
+├── .env.example                # Environment configuration template
 │
-├── data/                       # Local raw data & dossiers (NOT importable package code)
-│   ├── raw/                    # Authentic source corpus (constitution_raw.json)
-│   ├── documents/              # SC landmark case dossiers, Central Acts, NCERT modules
-│   ├── jobs/                   # Local dev job state
-│   └── uploads/                # Local dev uploads
-│
+├── data/                       # Local data & Knowledge Base directory
 ├── src/                        # Production application package
-│   ├── config.py               # Pydantic Settings singleton (reads .env / Lambda env)
-│   ├── orchestrator.py         # Unified end-to-end evaluation & distillation pipeline
-│   │
-│   ├── api/                    # FastAPI web application
-│   │   └── app.py              # Endpoints: /submit, /submit-direct, /upload-url, /health
-│   │
-│   ├── handlers/               # AWS Serverless Lambda entrypoints
-│   │   ├── api.py              # Mangum ASGI adapter for API Gateway
-│   │   ├── vision_worker.py    # SQS Stage 1 Multimodal Vision OCR worker
-│   │   └── eval_worker.py      # SQS Stage 2 RAG + Evaluation + SES worker
-│   │
-│   ├── providers/              # Multi-provider client abstraction layer
-│   │   ├── vertex.py           # ChatVertexExpress (Google GenAI SDK)
-│   │   ├── vision.py           # VertexVisionClient & BedrockVisionClient
-│   │   └── factory.py          # Provider factory (get_eval_llm, get_vision_client)
-│   │
-│   ├── evaluation/             # Core UPSC evaluation engine
-│   │   ├── engine.py           # UPSCEvaluationEngine (2-call protocol & marking policy)
-│   │   ├── geval_scorer.py     # Continuous logprob probability-weighted scoring
-│   │   └── prompt_templates.py # Calibrated UPSC marking prompts & CoT schemas
-│   │
-│   ├── parsing/                # Multimodal booklet parsing
-│   │   ├── document_parser.py  # DocumentParsingPipeline (parallel page OCR orchestrator)
-│   │   ├── preprocessor.py     # PyMuPDF rendering & visual blank detection
-│   │   ├── prompts.py          # Vision OCR prompts (Devanagari removal, diagram OCR)
-│   │   └── segmenter.py        # QCAB question boundary slicer (10M / 15M)
-│   │
-│   ├── kb/                     # Grounding Knowledge Base
-│   │   ├── corpus_loader.py    # Constitution & statutory dossier loaders
-│   │   ├── retriever.py        # Hybrid Sparse (BM25) + Dense (Chroma/Pinecone) + FlashRank
-│   │   └── vector_store.py     # Vector store interface & Titan Embeddings
-│   │
-│   ├── models/                 # Single-ownership Pydantic schemas
-│   │   ├── api.py              # Job submit, status, scorecard schemas
-│   │   ├── enums.py            # PillarType, DirectiveType, UPSCPerformanceBand
-│   │   ├── evaluation.py       # EvaluationResult, CitationAudit, PillarGEvalScore
-│   │   └── parsing.py          # ParsedDocument, ParsedQuestion
-│   │
-│   ├── services/               # Pluggable infrastructure adapters
-│   │   ├── email_service.py    # Responsive HTML + Scorecard PDF attachment delivery (SES)
-│   │   ├── job_manager.py      # Background worker execution & thread-safe state
-│   │   ├── job_state_service.py# Pluggable state (Local JSON vs DynamoDB)
-│   │   ├── queue_service.py    # Pluggable queue (Local Thread vs AWS SQS)
-│   │   ├── scorecard_pdf.py    # PyMuPDF Story native PDF scorecard renderer
-│   │   └── storage_service.py  # Pluggable storage (Local Disk vs S3 Presigned URLs)
-│   │
-│   └── static/                 # Production web application
-│       └── index.html          # High-performance responsive single-page evaluation UI
+│   ├── config.py               # Pydantic Settings singleton
+│   ├── orchestrator.py         # Local unified evaluation & distillation pipeline
+│   ├── orchestrator_ec2.py     # EC2 concurrency-gated coordinator + Lambda fan-out
+│   ├── api/                    # FastAPI routes (/upload-url, /submit-direct, /submit, /health)
+│   ├── handlers/               # Cloud & daemon entrypoints (ec2_worker, single_question_eval, api)
+│   ├── providers/              # Multi-provider LLM & Vision clients (Vertex AI & AWS Bedrock)
+│   ├── evaluation/             # 2-call diagnostic engine, G-Eval logprob scorer & prompts
+│   ├── parsing/                # Dynamic page-by-page OCR, stitcher, preprocessor & segmenter
+│   ├── kb/                     # Knowledge Base loader, retriever & batch prefetcher
+│   ├── models/                 # Pydantic schemas (api, evaluation, parsing, kb, enums)
+│   ├── services/               # S3 storage, DynamoDB state, SQS queue, PDF & SMTP email adapters
+│   ├── static/                 # Single-page responsive web UI (index.html)
+│   └── utils/                  # JSON parser, CLI helpers & LangSmith tracing utilities
 │
-├── scripts/                    # Thin CLI tools
-│   ├── dev/                    # Developer test scripts (test_llm.py, probe scripts)
-│   ├── evaluate/               # topper_copy_evaluation.py, evaluate_pdf.py, retrieval.py
-│   ├── ingest/                 # Pinecone & statutory ingestion pipelines
-│   └── parse/                  # parse_copy.py (PDF OCR transcription CLI)
-│
-└── tests/                      # Automated test suite (55 offline tests pass)
-    ├── fixtures/               # Golden evaluation datasets & benchmarks
-    └── test_*.py               # Endpoints, schemas, engine, parser, worker tests
+├── scripts/                    # CLI tools (evaluate/, parse/, ingest/, deploy/, dev/)
+└── tests/                      # Automated test suite (72 offline tests passing)
 ```
 
 ---
@@ -298,116 +141,69 @@ evaluator/
 
 ### 1. Prerequisites
 - Python 3.11+
-- `uv` package manager (`pip install uv` or via standalone installer)
+- [`uv`](https://docs.astral.sh/uv/) package manager
 
 ### 2. Installation
 ```bash
 git clone https://github.com/Powder-03/UPSCopilot.git
 cd evaluator
-
-# Install dependencies into local virtualenv using uv
 uv sync
 ```
 
 ### 3. Environment Configuration
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and configure your credentials:
 ```env
 LLM_PROVIDER=vertex                   # "vertex" or "bedrock"
-GEMINI_API_KEY=your_gemini_api_key    # Required for Vertex AI provider
+GEMINI_API_KEY=your_gemini_api_key
 GCP_PROJECT_ID=your_gcp_project_id
 GCP_LOCATION=us-central1
 
-# Optional: LangSmith Full-Lifecycle Tracing
-LANGSMITH_TRACING=true
-LANGSMITH_API_KEY=your_langsmith_api_key
-LANGSMITH_PROJECT=upsc-evaluator
+# Email Delivery (SMTP / Gmail)
+EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_google_app_password
 
-# Optional: AWS Bedrock / SQS / DynamoDB (for serverless production deployment)
+# Optional: AWS Cloud Services (S3, SQS, DynamoDB, Lambda Fan-Out)
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your_aws_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret
+
+# Optional: LangSmith Tracing
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your_langsmith_api_key
+LANGSMITH_PROJECT=upsc-evaluator
 ```
 
-### 4. Running the Tests
+### 4. Run Tests & Linter
 ```bash
-# Run all 55 offline unit and integration tests (zero API calls needed)
+# Run all 72 offline unit & integration tests
 uv run pytest -m "not bedrock"
 
-# Run code style & lint check
+# Run Ruff linter
 uv run ruff check .
 ```
 
 ---
 
-## Usage Examples
+## Usage
 
-### 1. Evaluate a Scanned QCAB Answer Booklet via CLI
-Transcribe handwritten pages, retrieve ground truth from the statutory KB, evaluate each question, and generate a scorecard:
-```bash
-uv run python scripts/evaluate/evaluate_pdf.py \
-  --pdf path/to/answer_booklet.pdf \
-  --email aspirant@upsc.org \
-  --workers 4
-```
-
-### 2. Run Multi-Run Consistency Benchmark
-Verify score stability and compute standard deviation over multiple runs:
-```bash
-uv run python scripts/evaluate/topper_copy_evaluation.py \
-  --copy tests/fixtures/gs2_copy_parsed.json \
-  --runs 5 \
-  --workers 4 \
-  --report-out data/outputs/consistency_benchmark.json
-```
-
-### 3. Benchmark Knowledge Base Retrieval with DeepEval
-Measure Contextual Precision and Contextual Recall against the canonical GS-2 golden dataset:
-```bash
-uv run python scripts/evaluate/retrieval.py --top-k 8
-```
-
-### 4. Start the Web Evaluation Server
-Launch the FastAPI server with direct S3 upload capability and interactive live status updates:
+### Start the Web Application
 ```bash
 uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
-Navigate to `http://localhost:8000` to access the UPSC evaluation dashboard.
+Navigate to `http://localhost:8000` to upload a scanned UPSC answer booklet PDF and receive a compiled PDF scorecard via email.
 
----
-
-## AWS Serverless Architecture (SAM Deployment)
-
-The system deploys to AWS via AWS SAM as an asynchronous, decoupled assembly line bypassing the API Gateway 10MB payload limit:
-
-```
-[Candidate Browser]
-       │
-       │ 1. Request Presigned URL (GET /upload-url)
-       ▼
- [FastAPI / Lambda] ────► Returns short-lived S3 PUT URL
-       │
-       │ 2. Direct Multi-Part Stream (up to 250 MB PDF)
-       ▼
-  [Amazon S3]
-       │
-       │ 3. Submit Job (POST /submit-direct)
-       ▼
- [VisionQueue SQS]
-       │
-       ▼
-[Stage 1: VisionWorker Lambda]
-  • Multimodal Vision OCR
-  • Stores Parsed JSON in DynamoDB
-  • Pushes to EvalQueue SQS
-       │
-       ▼
-[Stage 2: EvalWorker Lambda]
-  • Parallel RAG Retrieval + 2-Call CoT & G-Eval
-  • Compiles PyMuPDF High-Res Scorecard PDF
-  • Delivers Report & PDF via Amazon SES Email
+### Evaluate a PDF Booklet via CLI
+```bash
+uv run python scripts/evaluate/evaluate_pdf.py \
+  --pdf path/to/answer_booklet.pdf \
+  --email aspirant@example.com \
+  --workers 4
 ```
 
-To build and deploy with AWS SAM:
+### Deploy AWS Serverless Resources (SAM)
 ```bash
 sam build --use-container
 sam deploy --guided
@@ -416,4 +212,4 @@ sam deploy --guided
 ---
 
 ## License
-MIT License. Developed for rigorous, transparent, and calibrated UPSC Mains answer evaluation.
+MIT License. Developed for calibrated, transparent, and grounded UPSC Mains answer evaluation.

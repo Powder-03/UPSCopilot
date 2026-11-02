@@ -14,11 +14,11 @@ Parameters:
     Default: "project-1b52589d-0827-46ab-9be"
   EmailProvider:
     Type: String
-    Description: "Email delivery provider: 'google', 'smtp', 'ses', or 'mock'"
-    Default: "google"
+    Description: "Email delivery provider: 'smtp', 'google', or 'mock'"
+    Default: "smtp"
     AllowedValues:
-      - "google"
       - "smtp"
+      - "google"
       - "ses"
       - "mock"
   SmtpHost:

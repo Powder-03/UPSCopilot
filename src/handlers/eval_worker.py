@@ -2,7 +2,7 @@
 
 Triggered by the EvalQueue SQS. Reads parsed document JSON from DynamoDB (stored by the Vision
 Lambda), runs the 2-call CoT + G-Eval evaluation engine against the KB, generates a scorecard
-PDF using PyMuPDF, and dispatches the results via Amazon SES with the PDF attached.
+PDF using PyMuPDF, and dispatches the results via SMTP / Google Mail with the PDF attached.
 """
 import datetime
 import json
