@@ -342,6 +342,14 @@ evaluator/
   - **Balanced 2-Column Responsive Grid**: Redesigned `.main-grid` into a balanced `1.15fr : 0.85fr` flex-aligned grid centered on desktop and tablet screens without horizontal or vertical clipping.
   - **Purged Internal AI Jargon**: Replaced technical jargon ("G-Eval", "dual-groundedness", "token logprob head", "465 articles") with clean, student-centric value propositions (*Realistic UPSC Scoring*, *Question-by-Question Diagnostics*, *Scorecard PDF to Your Email*).
   - **Browser Verified**: Tested across 1440px desktop, tablet, and mobile viewports with zero errors and smooth responsive reflow.
+- [x] Standard SMTP Email Delivery & Zero-SES Sandbox Isolation:
+  - **Standardized on SMTP**: Made `EMAIL_PROVIDER=smtp` the first-class default in `src/config.py`, `.env`, `template.yaml`, `README.md`, and EC2 deployment scripts (`update_ec2.sh`, `setup_ec2.sh`).
+  - **SES Sandbox Protection (`src/services/email_service.py`)**:
+    - `EmailService.__init__`: Whenever `EMAIL_PROVIDER=ses` is configured or passed without production verification, it automatically routes delivery to SMTP (`self.provider = "smtp"`) with an explicit warning explaining the AWS SES sandbox restriction.
+    - `_send_via_smtp`: Primary delivery implementation supporting standard SSL (port 465) and STARTTLS (port 587) with exponential retry logic, handling Gmail, custom SMTP, and Google Workspace.
+    - Auto-fallback preserved if `provider="ses"` is explicitly tested.
+  - **Cleaned `.env.example`**: Complied with Git Safety Rule to keep all keys strictly blank (`KEY=`).
+  - **Validation**: Verified with live SMTP test (`scripts/dev/test_google_mail.py`), 73 offline unit tests passing (`uv run pytest -m "not bedrock"`), and 100% clean `ruff` check.
 
 <!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance
